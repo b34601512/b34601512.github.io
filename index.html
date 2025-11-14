@@ -64,10 +64,13 @@
     }
 
     .feedback-img {
-        width: 100%;
-        border-radius: 10px;
-        margin-top: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        display: block;
+        margin: 20px auto;
+        height: auto;
+        width: auto;
+        max-width: 100%; /* 不超过屏幕宽度 */
+}
+
     }
 
     .footer {
@@ -105,7 +108,7 @@
 
 <div class="section">
     <h2>用户反馈</h2>
-    <img class="feedback-img" src="feedback1.png" />
+    <img class="feedback-img" src="feedback1.png">
     <img class="feedback-img" src="feedback2.png" />
     <img class="feedback-img" src="feedback3.png" />
 </div>
