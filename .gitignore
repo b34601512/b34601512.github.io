@@ -1,0 +1,40 @@
+# 压缩包文件
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.gz
+*.bz2
+*.xz
+
+# 可执行文件
+*.exe
+*.msi
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.app
+
+# 打包产物目录
+dist/
+build/
+out/
+release/
+packages/
+
+# 临时文件和缓存
+*.tmp
+*.temp
+*.cache
+.DS_Store
+Thumbs.db
+
+# IDE 配置文件（可选，根据团队需要）
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
