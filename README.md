@@ -1,4 +1,4 @@
-# 话术精灵SoftTalk 官网
+﻿# 话术精灵SoftTalk 官网
 
 这是话术精灵SoftTalk 的官网源码，部署在 GitHub Pages：
 
@@ -8,4 +8,5 @@
 本仓库主要用于：
 
 - 展示 话术精灵SoftTalk 的功能与用户反馈；
-- 提供最新版 Windows 客户端（当前为 v0.32）的下载入口。
+- 提供最新版 Windows 客户端（当前为 v0.33）的下载入口。
+
