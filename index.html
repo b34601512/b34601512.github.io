@@ -63,6 +63,22 @@
         background: #0060d6;
     }
 
+    .btn-secondary {
+        display: inline-block;
+        margin-top: 14px;
+        padding: 12px 26px;
+        font-size: 18px;
+        background: #fff;
+        color: #007aff;
+        border: 1px solid #007aff;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: 0.15s;
+    }
+    .btn-secondary:hover {
+        background: #f2f7ff;
+    }
+
     .feedback-img {
         display: block;
         margin: 20px auto;
@@ -89,6 +105,8 @@
     <p>天猫｜京东｜拼多多｜抖音 客服都在用的智能话术精灵工具</p>
     <p style="margin-top: 12px; color: #888; font-size: 16px;">云端服务器稳定运行</p>
     <a class="btn-download" href="download.html">立即下载 话术精灵SoftTalk</a>
+    <br />
+    <a class="btn-secondary" id="btn-tutorial" href="https://www.kdocs.cn/l/crEfTnE6toV0" target="_blank" rel="noopener">话术精灵使用教程</a>
 </div>
 
 <div class="section">
@@ -121,6 +139,23 @@
     作者微信：luyao2089  
     <br />© 2025 话术精灵SoftTalk
 </div>
+
+<script src="site.config.js"></script>
+<script>
+    // 通过配置文件统一管理外链地址，避免后续改链接还要到处找 HTML
+    (function () {
+        const cfg = window.SOFTTALK_SITE_CONFIG || {};
+        const tutorialUrl = cfg.tutorialUrl;
+        if (!tutorialUrl) {
+            throw new Error("站点配置缺失：请在 site.config.js 中配置「tutorialUrl」");
+        }
+        const btn = document.getElementById("btn-tutorial");
+        if (!btn) {
+            throw new Error("页面缺少按钮：未找到 id=btn-tutorial");
+        }
+        btn.href = tutorialUrl;
+    })();
+</script>
 
 </body>
 </html>
