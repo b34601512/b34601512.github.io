@@ -3,159 +3,177 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>话术精灵SoftTalk｜电商客服 AI 工具</title>
-<style>
-    body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            Helvetica, Arial, sans-serif;
-        background: #fff;
-        color: #111;
+<title>话术精灵SoftTalk｜客户话术软件｜客服话术软件｜电商客服 AI 话术助手</title>
+<meta name="description" content="话术精灵SoftTalk 是面向电商团队的客户话术软件和客服话术软件，支持 AI 自动回复、安抚情绪、议价催付和未成交分析，适用于天猫、京东、拼多多、抖音客服场景。" />
+<meta name="keywords" content="客户话术软件,客服话术软件,电商客服话术软件,客服话术助手,AI话术软件,电商客服工具,天猫客服话术,京东客服话术,拼多多客服话术,抖音客服话术,话术精灵SoftTalk" />
+<meta name="robots" content="index,follow,max-image-preview:large" />
+<link rel="canonical" href="https://luyao2089.cc/" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:site_name" content="话术精灵SoftTalk" />
+<meta property="og:title" content="话术精灵SoftTalk｜客户话术软件｜客服话术软件" />
+<meta property="og:description" content="专为电商客服打造的 AI 话术助手，覆盖回复生成、情绪安抚、议价催付与未成交分析。" />
+<meta property="og:url" content="https://luyao2089.cc/" />
+<meta property="og:image" content="https://luyao2089.cc/feedback1.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="话术精灵SoftTalk｜客户话术软件｜客服话术软件" />
+<meta name="twitter:description" content="电商客服团队常用的 AI 话术软件，提升回复效率和转化率。" />
+<meta name="twitter:image" content="https://luyao2089.cc/feedback1.png" />
+<link rel="stylesheet" href="assets/css/site.css" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "话术精灵SoftTalk",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Windows",
+      "description": "面向电商团队的客户话术软件与客服话术软件，支持 AI 自动生成回复、安抚情绪、议价催付和未成交分析。",
+      "url": "https://luyao2089.cc/",
+      "downloadUrl": "https://luyao2089.cc/download.html",
+      "keywords": "客户话术软件,客服话术软件,电商客服话术软件,客服话术助手,AI话术软件"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "客户话术软件和客服话术软件有什么区别？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "在大多数电商场景里这两个词表达的是同一类工具，都是帮助客服快速生成更专业、更容易成交的回复内容。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "话术精灵SoftTalk 适合哪些平台客服？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "适合天猫、京东、拼多多、抖音等主流电商平台客服团队，尤其适合高频咨询和转化压力大的岗位。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "它能解决哪些客服话术问题？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "可解决回复慢、安抚难、议价催付话术不统一、未成交原因不清晰等问题，帮助客服稳定输出高质量回复。"
+          }
+        }
+      ]
     }
-
-    .nav {
-        padding: 20px 40px;
-        font-size: 22px;
-        font-weight: 600;
-        border-bottom: 1px solid #eee;
-    }
-
-    .hero {
-        padding: 100px 40px 80px;
-        text-align: center;
-    }
-    .hero h1 {
-        font-size: 46px;
-        margin: 0 0 20px;
-    }
-    .hero p {
-        font-size: 20px;
-        color: #555;
-    }
-
-    .section {
-        max-width: 800px;
-        margin: 60px auto;
-        padding: 0 20px;
-    }
-    .section h2 {
-        font-size: 28px;
-        margin-bottom: 10px;
-    }
-    .section p {
-        line-height: 1.8;
-        color: #444;
-        font-size: 18px;
-    }
-
-    .btn-download {
-        display: inline-block;
-        margin-top: 30px;
-        padding: 14px 28px;
-        font-size: 20px;
-        background: #007aff;
-        color: #fff;
-        border-radius: 12px;
-        text-decoration: none;
-        transition: 0.15s;
-    }
-    .btn-download:hover {
-        background: #0060d6;
-    }
-
-    .btn-secondary {
-        display: inline-block;
-        margin-top: 14px;
-        padding: 12px 26px;
-        font-size: 18px;
-        background: #fff;
-        color: #007aff;
-        border: 1px solid #007aff;
-        border-radius: 12px;
-        text-decoration: none;
-        transition: 0.15s;
-    }
-    .btn-secondary:hover {
-        background: #f2f7ff;
-    }
-
-    .feedback-img {
-        display: block;
-        margin: 20px auto;
-        height: auto;
-        width: auto;
-        max-width: 100%; /* 不超过屏幕宽度 */
-    }
-
-    .footer {
-        text-align: center;
-        padding: 50px 20px;
-        color: #777;
-        border-top: 1px solid #eee;
-        margin-top: 80px;
-    }
-</style>
+  ]
+}
+</script>
 </head>
-<body>
+<body class="home-page">
 
-<div class="nav">黎路遥 · 话术精灵SoftTalk</div>
+<header class="nav">
+    <div class="nav-inner">
+        <div class="brand">黎路遥 · 话术精灵SoftTalk</div>
+        <div class="nav-actions">
+            <a class="nav-link" href="download.html">Windows 下载</a>
+            <a class="nav-link" href="contact.html">联系我们</a>
+        </div>
+    </div>
+</header>
 
-<div class="hero">
-    <h1>电商客服 AI 话术精灵SoftTalk</h1>
-    <p>天猫｜京东｜拼多多｜抖音 客服都在用的智能话术精灵工具</p>
-    <p style="margin-top: 12px; color: #888; font-size: 16px;">云端服务器稳定运行</p>
-    <a class="btn-download" href="download.html">立即下载 话术精灵SoftTalk</a>
-    <br />
-    <a class="btn-secondary" id="btn-tutorial" href="https://www.kdocs.cn/l/crEfTnE6toV0" target="_blank" rel="noopener">话术精灵使用教程</a>
-</div>
+<main class="page">
+    <section class="hero">
+        <p class="hero-eyebrow">电商客服效率引擎</p>
+        <h1>客户话术软件 / 客服话术软件<br />话术精灵SoftTalk</h1>
+        <p>天猫｜京东｜拼多多｜抖音 客服常用的电商 AI 话术助手</p>
+        <p>云端服务稳定运行，客户端轻量，打开即用。</p>
+        <div class="hero-tags">
+            <span>天猫客服</span>
+            <span>京东客服</span>
+            <span>拼多多客服</span>
+            <span>抖音客服</span>
+            <span>高频咨询场景</span>
+        </div>
+        <div class="btn-row">
+            <a class="btn-download" href="download.html">立即下载 话术精灵SoftTalk</a>
+            <a class="btn-secondary" id="btn-tutorial" href="https://www.kdocs.cn/l/crEfTnE6toV0" target="_blank" rel="noopener">话术精灵使用教程</a>
+        </div>
+    </section>
 
-<div class="section">
-    <h2>软件简介</h2>
-    <p>
-        「话术精灵SoftTalk」是一款为电商客服设计的 AI 工具，
-        可根据聊天记录自动生成专业回复，大幅提升工作效率，
-        适合天猫、京东、拼多多、抖音等客服场景。
-    </p>
-    <p>
-        当前版本已将核心生成服务部署在独立云端服务器上，客户端只负责界面展示、
-        自动复制与一键插入话术，不占用本机算力，保持运行轻量稳定。
-    </p>
-    <p>核心功能包括：</p>
-    <p>① 根据聊天记录模仿销冠生成专业回复话术</p>
-    <p>② 自动生成“安抚情绪”回复，轻松应对难缠客户</p>
-    <p>③ 基于对话，生成议价话术、催付话术等高转化内容</p>
-    <p>④ 分析未成交原因、退货原因</p>
-    <p>⑤ 一键自动复制聊天记录，并自动生成话术后插入到客服聊天窗口</p>
-</div>
+    <section class="section" style="--delay:0.08s;">
+        <h2>你可能正在找的就是这类软件</h2>
+        <p>
+            如果你在搜索「客户话术软件」「客服话术软件」「电商客服话术助手」「AI 话术软件」，
+            本质上都在找一件事：让客服更快给出更专业、更容易成交的回复。
+        </p>
+        <ul class="keyword-list">
+            <li>客户话术软件：强调面向客户沟通与成交转化。</li>
+            <li>客服话术软件：强调客服岗位效率与回复质量。</li>
+            <li>电商客服话术软件：强调天猫、京东、拼多多、抖音等平台场景。</li>
+        </ul>
+    </section>
 
-<div class="section">
-    <h2>用户反馈</h2>
-    <img class="feedback-img" src="feedback1.png">
-    <img class="feedback-img" src="feedback2.png" />
-    <img class="feedback-img" src="feedback3.png" />
-</div>
+    <section class="section" style="--delay:0.16s;">
+        <h2>软件简介</h2>
+        <p>
+            「话术精灵SoftTalk」是一款专为电商客服打造的 AI 话术工具，
+            可根据聊天记录自动生成专业回复，帮助团队减少卡壳、提速回复并提升转化率。
+        </p>
+        <p>
+            当前版本核心生成服务已部署在独立云端服务器，客户端只负责展示、
+            自动复制和一键插入话术，不占用本机算力，保证长时间运行更稳定。
+        </p>
+        <div class="feature-grid">
+            <article class="feature-item">
+                <h3>销冠风格回复</h3>
+                <p>基于聊天上下文生成更像高绩效客服的表达，减少回复犹豫时间。</p>
+            </article>
+            <article class="feature-item">
+                <h3>情绪安抚话术</h3>
+                <p>自动生成可直接使用的安抚文本，降低冲突升级概率。</p>
+            </article>
+            <article class="feature-item">
+                <h3>议价与催付支持</h3>
+                <p>围绕对话自动生成议价、催付等高转化内容，拉高成交机会。</p>
+            </article>
+            <article class="feature-item">
+                <h3>成交复盘分析</h3>
+                <p>针对未成交和退货原因给出结构化分析，方便团队持续优化话术。</p>
+            </article>
+        </div>
+    </section>
 
-<div class="footer">
-    作者微信：luyao2089  
-    <br />© 2025 话术精灵SoftTalk
-</div>
+    <section class="section" style="--delay:0.24s;">
+        <h2>用户反馈</h2>
+        <div class="feedback-grid">
+            <img class="feedback-img" src="feedback1.png" alt="话术精灵SoftTalk 用户反馈截图 1" loading="lazy" decoding="async" />
+            <img class="feedback-img" src="feedback2.png" alt="话术精灵SoftTalk 用户反馈截图 2" loading="lazy" decoding="async" />
+            <img class="feedback-img" src="feedback3.png" alt="话术精灵SoftTalk 用户反馈截图 3" loading="lazy" decoding="async" />
+        </div>
+    </section>
+
+    <section class="section" style="--delay:0.32s;">
+        <h2>常见问题</h2>
+        <div class="faq-item">
+            <strong>客户话术软件和客服话术软件有什么区别？</strong>
+            <p>在电商业务里通常是同类工具的不同叫法，核心目标都是提升客服回复效率和成交能力。</p>
+        </div>
+        <div class="faq-item">
+            <strong>适合哪些行业和平台？</strong>
+            <p>重点适配天猫、京东、拼多多、抖音等电商客服场景，也适合任何高频客户咨询岗位。</p>
+        </div>
+        <div class="faq-item">
+            <strong>新客服能快速上手吗？</strong>
+            <p>可以。系统会按聊天上下文自动生成可直接使用的话术，减少培训期内的回复压力。</p>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    作者微信：luyao2089
+    <br />© 2026 话术精灵SoftTalk
+</footer>
 
 <script src="site.config.js"></script>
-<script>
-    // 通过配置文件统一管理外链地址，避免后续改链接还要到处找 HTML
-    (function () {
-        const cfg = window.SOFTTALK_SITE_CONFIG || {};
-        const tutorialUrl = cfg.tutorialUrl;
-        if (!tutorialUrl) {
-            throw new Error("站点配置缺失：请在 site.config.js 中配置「tutorialUrl」");
-        }
-        const btn = document.getElementById("btn-tutorial");
-        if (!btn) {
-            throw new Error("页面缺少按钮：未找到 id=btn-tutorial");
-        }
-        btn.href = tutorialUrl;
-    })();
-</script>
+<script src="assets/js/index-page.js"></script>
 
 </body>
 </html>
