@@ -59,7 +59,7 @@
     );
   }
 
-  const historyLimit = Number(source.historyLimit);
+  const historyLimit = Number(source && source.historyLimit);
   if (!Number.isInteger(historyLimit) || historyLimit < 1) {
     throw new Error(
       "站点配置错误：releaseSource.historyLimit 必须是大于等于 1 的整数"
