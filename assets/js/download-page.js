@@ -30,6 +30,20 @@
     return primary;
   }
 
+  function formatReleaseVersionText(release) {
+    // 统一把 alpha 预发布版本补上「Alpha内测」标识，避免下载页把预发布版本误看成正式版。
+    const tagName = String((release && release.tag_name) || "").trim();
+    if (!tagName) {
+      throw new Error("发布版本号缺失：tag_name 不能为空");
+    }
+    const isAlphaRelease =
+      tagName.toLowerCase().includes("alpha") || Boolean(release && release.prerelease);
+    if (!isAlphaRelease || tagName.includes("Alpha内测")) {
+      return tagName;
+    }
+    return `${tagName} Alpha内测`;
+  }
+
   function formatDate(dateText) {
     // 统一把 GitHub 时间戳转为 YYYY-MM-DD 文案，保证展示一致。
     const date = new Date(dateText);
@@ -81,11 +95,9 @@
     throw new Error("GitHub 返回格式异常：releases 不是数组");
   }
 
-  const onlineReleases = releaseList.filter(
-    (item) => item && item.draft === false && item.prerelease === false
-  );
+  const onlineReleases = releaseList.filter((item) => item && item.draft === false);
   if (onlineReleases.length === 0) {
-    throw new Error("发布列表为空：当前仓库没有可用正式版");
+    throw new Error("发布列表为空：当前仓库没有可用发布版本");
   }
 
   printTrace("download-page.js:3", "初始化", "下载页", "渲染最新版下载信息");
@@ -95,7 +107,7 @@
   const latestLinkNode = requireElement("latest-download-link");
   const latestDateNode = requireElement("latest-release-date");
   const latestSetupNode = requireElement("latest-setup-name");
-  latestVersionNode.textContent = latestRelease.tag_name;
+  latestVersionNode.textContent = formatReleaseVersionText(latestRelease);
   latestLinkNode.href = latestAsset.browser_download_url;
   latestDateNode.textContent = formatDate(
     latestRelease.published_at || latestRelease.created_at
@@ -114,7 +126,7 @@
     const link = document.createElement("a");
     link.href = asset.browser_download_url;
     link.download = "";
-    link.textContent = `下载 ${release.tag_name}（${formatDate(
+    link.textContent = `下载 ${formatReleaseVersionText(release)}（${formatDate(
       release.published_at || release.created_at
     )}）`;
     historyListNode.appendChild(link);

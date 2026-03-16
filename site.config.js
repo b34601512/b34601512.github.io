@@ -7,6 +7,6 @@ window.SOFTTALK_SITE_CONFIG = {
   releaseSource: {
     owner: "b34601512",
     repo: "b34601512.github.io",
-    historyLimit: 6,
+    historyLimit: 7,
   },
 };
