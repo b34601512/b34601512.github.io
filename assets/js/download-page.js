@@ -66,7 +66,11 @@
 
   printTrace("download-page.js:1", "初始化", "下载页", "读取站点配置");
   const cfg = window.SOFTTALK_SITE_CONFIG || {};
+  const tutorialUrl = cfg.tutorialUrl;
   const source = cfg.releaseSource;
+  if (!tutorialUrl) {
+    throw new Error("站点配置缺失：请在 site.config.js 中配置「tutorialUrl」");
+  }
   if (!source || !source.owner || !source.repo) {
     throw new Error(
       "站点配置缺失：请在 site.config.js 中配置「releaseSource.owner/repo」"
@@ -80,8 +84,12 @@
     );
   }
 
+  printTrace("download-page.js:2", "初始化", "下载页", "绑定备用下载地址");
+  const backupDownloadNode = requireElement("backup-download-link");
+  backupDownloadNode.href = tutorialUrl;
+
   const apiUrl = `https://api.github.com/repos/${source.owner}/${source.repo}/releases?per_page=20`;
-  printTrace("download-page.js:2", "初始化", "下载页", "请求 GitHub 发布列表");
+  printTrace("download-page.js:3", "初始化", "下载页", "请求 GitHub 发布列表");
   const response = await fetch(apiUrl, {
     method: "GET",
     headers: { Accept: "application/vnd.github+json" },
@@ -100,7 +108,7 @@
     throw new Error("发布列表为空：当前仓库没有可用发布版本");
   }
 
-  printTrace("download-page.js:3", "初始化", "下载页", "渲染最新版下载信息");
+  printTrace("download-page.js:4", "初始化", "下载页", "渲染最新版下载信息");
   const latestRelease = onlineReleases[0];
   const latestAsset = resolvePrimaryAsset(latestRelease);
   const latestVersionNode = requireElement("latest-version");
@@ -114,7 +122,7 @@
   );
   latestSetupNode.textContent = buildInstallFileName(latestAsset.name);
 
-  printTrace("download-page.js:4", "初始化", "下载页", "渲染历史版本列表");
+  printTrace("download-page.js:5", "初始化", "下载页", "渲染历史版本列表");
   const historyTitleNode = requireElement("history-title");
   const historyListNode = requireElement("history-list");
   const historyReleases = onlineReleases.slice(1, 1 + historyLimit);
@@ -132,7 +140,7 @@
     historyListNode.appendChild(link);
   }
 
-  printTrace("download-page.js:5", "初始化", "下载页", "初始化完成");
+  printTrace("download-page.js:6", "初始化", "下载页", "初始化完成");
 })().catch((error) => {
   const now = new Date().toISOString();
   console.error(

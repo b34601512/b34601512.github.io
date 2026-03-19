@@ -93,6 +93,8 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   position:relative; z-index:1; max-width:920px; margin:24px auto 50px; padding:28px 20px; text-align:center;
   border:1px solid #dce8f7; border-radius:16px; background:rgba(255,255,255,.84); color:#567; font-size:14px;
 }
+.footer-line + .footer-line { margin-top:8px; }
+.footer-line--en { color:#6b7d96; letter-spacing:.02em; }
 .download-wrap { max-width:760px; padding-top:44px; }
 .download-card { padding:42px 34px; animation:rise-in .6s ease both; }
 .download-card + .download-card { margin-top:22px; }
