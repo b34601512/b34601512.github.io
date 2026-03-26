@@ -167,6 +167,13 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 }
 .footer-line + .footer-line { margin-top:8px; }
 .footer-line--en { color:#6b7d96; letter-spacing:.02em; }
+.footer-link {
+  color:#3a5f97; text-decoration:none; font-weight:600;
+}
+.footer-link:hover { text-decoration:underline; }
+.footer-link:focus-visible {
+  outline:2px solid #0a6dff; outline-offset:2px; border-radius:4px;
+}
 .download-wrap { max-width:760px; padding-top:44px; }
 .download-card { padding:42px 34px; animation:rise-in .6s ease both; }
 .download-card + .download-card { margin-top:22px; }
