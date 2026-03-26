@@ -4,6 +4,7 @@
   --shadow-md:0 10px 28px rgba(18,56,120,.12); --radius-xl:24px;
 }
 * { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
 body {
   margin:0; min-height:100vh; color:var(--ink-main);
   font-family:"MiSans","HarmonyOS Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
@@ -27,7 +28,9 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   color:var(--ink-main); font-size:14px; font-weight:600; text-decoration:none; padding:8px 12px;
   border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.78);
 }
+.nav-link--pricing { color:#fff; border-color:#0a6dff; background:linear-gradient(140deg,#0e7bff 0%,#0a64f0 54%,#0058e8 100%); box-shadow:0 10px 22px rgba(0,92,235,.22); }
 .nav-link:hover { color:var(--brand-deep); border-color:#b9d4ff; background:#f3f8ff; }
+.nav-link.nav-link--pricing:hover { color:#fff; border-color:#0a64f0; background:linear-gradient(140deg,#0b73f0 0%,#085ee1 54%,#004fd1 100%); }
 .nav-link:focus-visible, .btn-download:focus-visible, .download-btn:focus-visible, .btn-secondary:focus-visible, .home-link:focus-visible, .history-list a:focus-visible {
   outline:2px solid #0a6dff; outline-offset:2px;
 }
@@ -65,8 +68,39 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   max-width:920px; margin:30px auto 0; padding:34px 30px;
   opacity:0; animation:rise-in .6s ease forwards; animation-delay:var(--delay,0s);
 }
+.section--pricing { scroll-margin-top:104px; }
+.section--pricing:target {
+  border-color:#7eb4ff;
+  box-shadow:0 26px 58px rgba(18,56,120,.18), 0 0 0 4px rgba(10,109,255,.10);
+}
 .section h2, .download-card h2, .history-title { margin:0 0 14px; color:var(--ink-strong); font-size:29px; line-height:1.35; }
 .section p, .download-card p { margin:10px 0; line-height:1.9; color:var(--ink-main); font-size:17px; }
+.pricing-lead { margin-bottom:18px; }
+.pricing-policy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
+.pricing-policy-item, .pricing-card {
+  position:relative; overflow:hidden; padding:18px 16px; border-radius:16px; border:1px solid #d8e6fb;
+  background:linear-gradient(150deg,#fff 0%,#f7fbff 100%); box-shadow:var(--shadow-md);
+}
+.pricing-policy-item--free {
+  border-color:#b9d7ff;
+  background:linear-gradient(145deg,#edf5ff 0%,#f8fbff 100%);
+}
+.pricing-policy-tag {
+  display:inline-flex; align-items:center; min-height:30px; padding:0 10px; border-radius:999px;
+  background:#eaf3ff; border:1px solid #bfd6ff; color:#1f57a7; font-size:13px; font-weight:700;
+}
+.pricing-policy-item h3, .pricing-card h3 { margin:14px 0 8px; color:#17356b; font-size:22px; }
+.pricing-policy-item p { margin:0; font-size:15px; line-height:1.82; color:#465873; }
+.pricing-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:16px; }
+.pricing-card { min-height:158px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.pricing-card p { margin:0; color:#6a7d96; font-size:18px; font-weight:600; }
+.pricing-card--featured { border-color:#ffc38e; background:linear-gradient(145deg,#fff9f2 0%,#fff 100%); }
+.pricing-badge {
+  position:absolute; top:0; right:0; padding:5px 12px;
+  background:linear-gradient(140deg,#ff9f3f 0%,#ff6d1f 100%); color:#fff; font-size:12px; font-weight:700;
+  border-bottom-left-radius:12px;
+}
+.pricing-footnote { margin-top:14px; color:#58708f; }
 .keyword-list { margin:14px 0 0; padding-left:18px; }
 .keyword-list li { margin-bottom:8px; color:var(--ink-main); line-height:1.8; font-size:16px; }
 .feature-grid { margin-top:16px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
@@ -123,9 +157,12 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 @keyframes rise-in { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
 
 @media (max-width:900px) {
-  .feature-grid, .feedback-grid, .contact-grid, .version-item { grid-template-columns:1fr; }
+  .feature-grid, .feedback-grid, .contact-grid, .version-item, .pricing-grid { grid-template-columns:1fr; }
+  .pricing-policy { grid-template-columns:1fr; }
 }
 @media (max-width:700px) {
+  .nav-inner { flex-wrap:wrap; }
+  .nav-actions { width:100%; justify-content:flex-start; flex-wrap:wrap; }
   .brand { font-size:18px; }
   .nav-link { font-size:13px; padding:7px 10px; }
   .hero { padding:42px 20px; }
