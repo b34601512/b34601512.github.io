@@ -4,7 +4,6 @@
   --shadow-md:0 10px 28px rgba(18,56,120,.12); --radius-xl:24px;
 }
 * { box-sizing:border-box; }
-html { scroll-behavior:smooth; }
 body {
   margin:0; min-height:100vh; color:var(--ink-main);
   font-family:"MiSans","HarmonyOS Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
@@ -68,16 +67,40 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   max-width:920px; margin:30px auto 0; padding:34px 30px;
   opacity:0; animation:rise-in .6s ease forwards; animation-delay:var(--delay,0s);
 }
-.section--pricing { scroll-margin-top:104px; }
-.section--pricing:target {
-  border-color:#7eb4ff;
-  box-shadow:0 26px 58px rgba(18,56,120,.18), 0 0 0 4px rgba(10,109,255,.10);
-}
 .section h2, .download-card h2, .history-title { margin:0 0 14px; color:var(--ink-strong); font-size:29px; line-height:1.35; }
 .section p, .download-card p { margin:10px 0; line-height:1.9; color:var(--ink-main); font-size:17px; }
-.pricing-lead { margin-bottom:18px; }
+.pricing-page-layout { padding-top:34px; }
+.pricing-page-layout .section { max-width:1120px; }
+.pricing-showcase {
+  display:grid; grid-template-columns:minmax(0,1.35fr) minmax(320px,.95fr); gap:18px;
+  margin-top:20px; padding:36px 34px; border:1px solid rgba(176,202,242,.65); border-radius:var(--radius-xl);
+  background:linear-gradient(155deg,rgba(255,255,255,.97) 0%,rgba(246,251,255,.95) 100%); box-shadow:var(--shadow-lg);
+  animation:rise-in .6s ease both;
+}
+.pricing-showcase-copy h1 {
+  margin:14px 0 16px; font-family:"STZhongsong","STSong","MiSans",serif; color:var(--ink-strong);
+  font-size:clamp(30px,4.8vw,46px); line-height:1.34;
+}
+.pricing-showcase-copy p { margin:8px 0; max-width:720px; color:var(--ink-muted); font-size:18px; line-height:1.82; }
+.pricing-showcase-copy .hero-tags { justify-content:flex-start; }
+.pricing-showcase-copy .btn-row { justify-content:flex-start; }
+.pricing-summary-card {
+  padding:24px 22px; border-radius:22px; background:linear-gradient(160deg,#0a63ea 0%,#1580ff 56%,#59bbff 100%);
+  box-shadow:0 22px 38px rgba(0,92,235,.28); color:#fff;
+}
+.pricing-summary-label {
+  margin:0; display:inline-flex; align-items:center; min-height:30px; padding:0 12px; border-radius:999px;
+  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.24); font-size:13px; font-weight:700; letter-spacing:.04em;
+}
+.pricing-summary-card h2 { margin:16px 0 10px; color:#fff; font-size:36px; line-height:1.2; }
+.pricing-summary-note { margin:0; color:rgba(255,255,255,.88); font-size:15px; line-height:1.8; }
+.pricing-summary-list { margin-top:18px; display:grid; gap:10px; }
+.pricing-summary-item {
+  padding:12px 14px; border-radius:14px; border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.12); font-size:15px; line-height:1.72;
+}
 .pricing-policy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
-.pricing-policy-item, .pricing-card {
+.pricing-policy-item, .pricing-card, .pricing-feature-item, .pricing-scene-item {
   position:relative; overflow:hidden; padding:18px 16px; border-radius:16px; border:1px solid #d8e6fb;
   background:linear-gradient(150deg,#fff 0%,#f7fbff 100%); box-shadow:var(--shadow-md);
 }
@@ -89,17 +112,25 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   display:inline-flex; align-items:center; min-height:30px; padding:0 10px; border-radius:999px;
   background:#eaf3ff; border:1px solid #bfd6ff; color:#1f57a7; font-size:13px; font-weight:700;
 }
-.pricing-policy-item h3, .pricing-card h3 { margin:14px 0 8px; color:#17356b; font-size:22px; }
-.pricing-policy-item p { margin:0; font-size:15px; line-height:1.82; color:#465873; }
+.pricing-policy-item h3, .pricing-card h3, .pricing-feature-item h3, .pricing-scene-item h3 { margin:14px 0 8px; color:#17356b; font-size:22px; }
+.pricing-policy-item p, .pricing-feature-item p, .pricing-scene-item p { margin:0; font-size:15px; line-height:1.82; color:#465873; }
 .pricing-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:16px; }
-.pricing-card { min-height:158px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-.pricing-card p { margin:0; color:#6a7d96; font-size:18px; font-weight:600; }
+.pricing-grid--plans .pricing-card { min-height:220px; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; text-align:left; }
+.pricing-card--starter {
+  border-color:#8ab9ff;
+  background:linear-gradient(145deg,#edf5ff 0%,#fff 100%);
+  box-shadow:0 14px 30px rgba(10,109,255,.12);
+}
+.pricing-plan-price { margin:0; color:#16386e; font-size:30px; font-weight:800; line-height:1.2; }
+.pricing-plan-note { margin-top:auto; color:#637792; font-size:14px; line-height:1.8; }
 .pricing-card--featured { border-color:#ffc38e; background:linear-gradient(145deg,#fff9f2 0%,#fff 100%); }
 .pricing-badge {
   position:absolute; top:0; right:0; padding:5px 12px;
   background:linear-gradient(140deg,#ff9f3f 0%,#ff6d1f 100%); color:#fff; font-size:12px; font-weight:700;
   border-bottom-left-radius:12px;
 }
+.pricing-feature-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:12px; }
+.pricing-scene-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
 .pricing-footnote { margin-top:14px; color:#58708f; }
 .keyword-list { margin:14px 0 0; padding-left:18px; }
 .keyword-list li { margin-bottom:8px; color:var(--ink-main); line-height:1.8; font-size:16px; }
@@ -157,7 +188,7 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 @keyframes rise-in { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
 
 @media (max-width:900px) {
-  .feature-grid, .feedback-grid, .contact-grid, .version-item, .pricing-grid { grid-template-columns:1fr; }
+  .pricing-showcase, .feature-grid, .feedback-grid, .contact-grid, .version-item, .pricing-grid, .pricing-feature-grid, .pricing-scene-grid { grid-template-columns:1fr; }
   .pricing-policy { grid-template-columns:1fr; }
 }
 @media (max-width:700px) {
@@ -167,6 +198,11 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   .nav-link { font-size:13px; padding:7px 10px; }
   .hero { padding:42px 20px; }
   .hero p { font-size:16px; }
+  .pricing-showcase { padding:24px 18px; border-radius:18px; }
+  .pricing-showcase-copy h1 { font-size:clamp(28px,10vw,38px); }
+  .pricing-showcase-copy p { font-size:16px; }
+  .pricing-showcase-copy .hero-tags, .pricing-showcase-copy .btn-row { justify-content:center; }
+  .pricing-summary-card h2 { font-size:30px; }
   .section, .download-card { padding:24px 18px; border-radius:18px; }
   .section h2 { font-size:24px; }
   .btn-download, .btn-secondary, .download-btn, .home-link { width:100%; text-align:center; }
