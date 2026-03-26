@@ -27,8 +27,17 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   color:var(--ink-main); font-size:14px; font-weight:600; text-decoration:none; padding:8px 12px;
   border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.78);
 }
+.nav-link--current {
+  color:#fff; border-color:#0a6dff;
+  background:linear-gradient(140deg,#0f77f8 0%,#0a64f0 54%,#0057e5 100%);
+  box-shadow:0 10px 22px rgba(0,92,235,.18);
+}
 .nav-link--pricing { color:#fff; border-color:#0a6dff; background:linear-gradient(140deg,#0e7bff 0%,#0a64f0 54%,#0058e8 100%); box-shadow:0 10px 22px rgba(0,92,235,.22); }
 .nav-link:hover { color:var(--brand-deep); border-color:#b9d4ff; background:#f3f8ff; }
+.nav-link.nav-link--current:hover {
+  color:#fff; border-color:#0a64f0;
+  background:linear-gradient(140deg,#0d6fe8 0%,#085ee1 54%,#004fd1 100%);
+}
 .nav-link.nav-link--pricing:hover { color:#fff; border-color:#0a64f0; background:linear-gradient(140deg,#0b73f0 0%,#085ee1 54%,#004fd1 100%); }
 .nav-link:focus-visible, .btn-download:focus-visible, .download-btn:focus-visible, .btn-secondary:focus-visible, .home-link:focus-visible, .history-list a:focus-visible {
   outline:2px solid #0a6dff; outline-offset:2px;
