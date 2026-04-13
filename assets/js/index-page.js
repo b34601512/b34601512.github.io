@@ -16,16 +16,16 @@
     return node;
   }
 
-  printTrace("index-page.js:1", "初始化", "首页教程按钮", "读取站点配置");
+  printTrace("index-page.js:1", "初始化", "知识库教程按钮", "读取站点配置");
   const cfg = window.SOFTTALK_SITE_CONFIG || {};
   const tutorialUrl = cfg.tutorialUrl;
   if (!tutorialUrl) {
     throw new Error("站点配置缺失：请在 site.config.js 中配置「tutorialUrl」");
   }
 
-  printTrace("index-page.js:2", "初始化", "首页教程按钮", "绑定跳转地址");
+  printTrace("index-page.js:2", "初始化", "知识库教程按钮", "绑定跳转地址");
   const tutorialButton = requireElement("btn-tutorial");
   tutorialButton.href = tutorialUrl;
 
-  printTrace("index-page.js:3", "初始化", "首页教程按钮", "初始化完成");
+  printTrace("index-page.js:3", "初始化", "知识库教程按钮", "初始化完成");
 })();

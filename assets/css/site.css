@@ -37,7 +37,7 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   color:#fff; border-color:#0a64f0;
   background:linear-gradient(140deg,#0d6fe8 0%,#085ee1 54%,#004fd1 100%);
 }
-.nav-link:focus-visible, .btn-download:focus-visible, .download-btn:focus-visible, .btn-secondary:focus-visible, .home-link:focus-visible, .history-list a:focus-visible {
+.nav-link:focus-visible, .btn-download:focus-visible, .btn-secondary:focus-visible {
   outline:2px solid #0a6dff; outline-offset:2px;
 }
 
@@ -58,23 +58,23 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   padding:6px 12px; border-radius:999px; border:1px solid #c9ddff; background:#f3f9ff; color:#2e5d9c; font-size:13px; font-weight:600;
 }
 .btn-row { margin-top:28px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
-.btn-download, .download-btn {
+.btn-download {
   display:inline-block; padding:13px 26px; font-size:17px; font-weight:700; border-radius:12px; text-decoration:none; color:#fff;
   background:linear-gradient(140deg,#0e7bff 0%,#0a64f0 54%,#0058e8 100%); box-shadow:0 12px 26px rgba(0,92,235,.3);
   transition:transform .2s ease, box-shadow .2s ease;
 }
-.btn-download:hover, .download-btn:hover { transform:translateY(-1px); box-shadow:0 16px 30px rgba(0,92,235,.35); }
-.btn-secondary, .home-link {
+.btn-download:hover { transform:translateY(-1px); box-shadow:0 16px 30px rgba(0,92,235,.35); }
+.btn-secondary {
   display:inline-block; padding:12px 20px; border-radius:12px; border:1px solid #c8ddff; background:#fff;
   color:#2257a4; text-decoration:none; font-size:16px; font-weight:600; transition:background .2s ease, border-color .2s ease;
 }
-.btn-secondary:hover, .home-link:hover { border-color:#abcdfd; background:#f4f9ff; }
+.btn-secondary:hover { border-color:#abcdfd; background:#f4f9ff; }
 
 .section {
   max-width:920px; margin:30px auto 0; padding:34px 30px;
   opacity:0; animation:rise-in .6s ease forwards; animation-delay:var(--delay,0s);
 }
-.section h2, .download-card h2, .history-title { margin:0 0 14px; color:var(--ink-strong); font-size:29px; line-height:1.35; }
+.section h2 { margin:0 0 14px; color:var(--ink-strong); font-size:29px; line-height:1.35; }
 .section p, .download-card p { margin:10px 0; line-height:1.9; color:var(--ink-main); font-size:17px; }
 .pricing-page-layout { padding-top:34px; }
 .pricing-page-layout .section { max-width:1120px; }
@@ -106,21 +106,16 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   padding:12px 14px; border-radius:14px; border:1px solid rgba(255,255,255,.18);
   background:rgba(255,255,255,.12); font-size:15px; line-height:1.72;
 }
-.pricing-policy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
-.pricing-policy-item, .pricing-card, .pricing-feature-item, .pricing-scene-item {
+.pricing-card, .pricing-feature-item, .pricing-scene-item {
   position:relative; overflow:hidden; padding:18px 16px; border-radius:16px; border:1px solid #d8e6fb;
   background:linear-gradient(150deg,#fff 0%,#f7fbff 100%); box-shadow:var(--shadow-md);
-}
-.pricing-policy-item--free {
-  border-color:#b9d7ff;
-  background:linear-gradient(145deg,#edf5ff 0%,#f8fbff 100%);
 }
 .pricing-policy-tag {
   display:inline-flex; align-items:center; min-height:30px; padding:0 10px; border-radius:999px;
   background:#eaf3ff; border:1px solid #bfd6ff; color:#1f57a7; font-size:13px; font-weight:700;
 }
-.pricing-policy-item h3, .pricing-card h3, .pricing-feature-item h3, .pricing-scene-item h3 { margin:14px 0 8px; color:#17356b; font-size:22px; }
-.pricing-policy-item p, .pricing-feature-item p, .pricing-scene-item p { margin:0; font-size:15px; line-height:1.82; color:#465873; }
+.pricing-card h3, .pricing-feature-item h3, .pricing-scene-item h3 { margin:14px 0 8px; color:#17356b; font-size:22px; }
+.pricing-feature-item p, .pricing-scene-item p { margin:0; font-size:15px; line-height:1.82; color:#465873; }
 .pricing-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:16px; }
 .pricing-grid--plans .pricing-card { min-height:220px; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; text-align:left; }
 .pricing-card--starter {
@@ -139,8 +134,6 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 .pricing-feature-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:12px; }
 .pricing-scene-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
 .pricing-footnote { margin-top:14px; color:#58708f; }
-.keyword-list { margin:14px 0 0; padding-left:18px; }
-.keyword-list li { margin-bottom:8px; color:var(--ink-main); line-height:1.8; font-size:16px; }
 .feature-grid { margin-top:16px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .feature-item {
   padding:16px 14px; border-radius:14px; border:1px solid #d8e6fb;
@@ -170,24 +163,7 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 }
 .download-wrap { max-width:760px; padding-top:44px; }
 .download-card { padding:42px 34px; animation:rise-in .6s ease both; }
-.download-card + .download-card { margin-top:22px; }
 .download-card h1 { font-size:clamp(28px,4.5vw,40px); text-align:center; }
-.download-card .small { margin-top:14px; font-size:14px; color:#5b6d8a; }
-.version-roadmap { margin-top:16px; display:grid; gap:12px; }
-.version-item {
-  display:grid; grid-template-columns:72px 1fr; gap:14px; align-items:start;
-  padding:16px 14px; border-radius:14px; border:1px solid #d8e6fb;
-  background:linear-gradient(150deg,#fff 0%,#f7fbff 100%); box-shadow:var(--shadow-md);
-}
-.version-badge {
-  display:inline-flex; align-items:center; justify-content:center; min-height:34px; padding:0 10px;
-  border-radius:999px; background:#e9f2ff; border:1px solid #bfd7ff; color:#1f57a7; font-weight:700; font-size:15px;
-}
-.version-item h3 { margin:0 0 6px; color:#17356b; font-size:18px; }
-.version-item p { margin:0; font-size:15px; line-height:1.78; color:#465873; }
-.history-title { margin-top:26px; margin-bottom:8px; font-size:20px; }
-.history-list a { display:block; margin-top:8px; color:#1f57a7; text-decoration:none; font-size:15px; }
-.history-list a:hover { text-decoration:underline; }
 .contact-grid { margin-top:14px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .contact-item { padding:16px 14px; border-radius:14px; border:1px solid #d8e6fb; background:linear-gradient(150deg,#fff 0%,#f7fbff 100%); box-shadow:var(--shadow-md); }
 .contact-item h3 { margin:0 0 8px; color:#17356b; font-size:18px; }
@@ -196,8 +172,7 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 @keyframes rise-in { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
 
 @media (max-width:900px) {
-  .pricing-showcase, .feature-grid, .contact-grid, .version-item, .pricing-grid, .pricing-feature-grid, .pricing-scene-grid { grid-template-columns:1fr; }
-  .pricing-policy { grid-template-columns:1fr; }
+  .pricing-showcase, .feature-grid, .contact-grid, .pricing-grid, .pricing-feature-grid, .pricing-scene-grid { grid-template-columns:1fr; }
 }
 @media (max-width:700px) {
   .nav-inner { flex-wrap:wrap; }
@@ -213,10 +188,10 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
   .pricing-summary-card h2 { font-size:30px; }
   .section, .download-card { padding:24px 18px; border-radius:18px; }
   .section h2 { font-size:24px; }
-  .btn-download, .btn-secondary, .download-btn, .home-link { width:100%; text-align:center; }
+  .btn-download, .btn-secondary { width:100%; text-align:center; }
   .btn-row { gap:10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero, .section, .download-card { animation:none; opacity:1; transform:none; }
-  .btn-download, .download-btn { transition:none; }
+  .btn-download { transition:none; }
 }
