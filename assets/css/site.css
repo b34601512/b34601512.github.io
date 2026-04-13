@@ -148,12 +148,6 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 }
 .feature-item h3 { margin:0 0 8px; color:#17356b; font-size:18px; }
 .feature-item p { margin:0; font-size:15px; line-height:1.78; color:#465873; }
-.feedback-grid { margin-top:6px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-.feedback-img {
-  width:100%; height:auto; border-radius:12px; border:1px solid #d9e7fb; box-shadow:var(--shadow-md); background:#fff;
-  transition:transform .25s ease, box-shadow .25s ease;
-}
-.feedback-img:hover { transform:translateY(-3px); box-shadow:0 14px 30px rgba(18,56,120,.16); }
 .faq-item {
   border:1px solid #d9e7fb; border-radius:14px; padding:14px 16px; margin-top:10px;
   background:linear-gradient(150deg,#fff 0%,#f7fbff 100%);
@@ -202,7 +196,7 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 @keyframes rise-in { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
 
 @media (max-width:900px) {
-  .pricing-showcase, .feature-grid, .feedback-grid, .contact-grid, .version-item, .pricing-grid, .pricing-feature-grid, .pricing-scene-grid { grid-template-columns:1fr; }
+  .pricing-showcase, .feature-grid, .contact-grid, .version-item, .pricing-grid, .pricing-feature-grid, .pricing-scene-grid { grid-template-columns:1fr; }
   .pricing-policy { grid-template-columns:1fr; }
 }
 @media (max-width:700px) {
@@ -224,5 +218,5 @@ body::after { width:320px; height:320px; right:-90px; bottom:20px; background:#8
 }
 @media (prefers-reduced-motion: reduce) {
   .hero, .section, .download-card { animation:none; opacity:1; transform:none; }
-  .btn-download, .download-btn, .feedback-img { transition:none; }
+  .btn-download, .download-btn { transition:none; }
 }
