@@ -432,10 +432,10 @@
           sendPhrase(cat.sections[sIdx].items[iIdx], itemEl);
         }
       });
-      itemEl.addEventListener('mouseenter', function () {
+      itemEl.addEventListener('mouseenter', function (e) {
         var sIdx = parseInt(itemEl.getAttribute('data-sec'), 10);
         var iIdx = parseInt(itemEl.getAttribute('data-item'), 10);
-        showTooltip(cat.sections[sIdx].items[iIdx].text, itemEl);
+        showTooltip(cat.sections[sIdx].items[iIdx].text, e);
       });
       itemEl.addEventListener('mouseleave', hideTooltip);
     });
@@ -538,9 +538,9 @@
         var idx = parseInt(itemEl.getAttribute('data-ridx'), 10);
         sendPhrase(cache[idx].item, itemEl);
       });
-      itemEl.addEventListener('mouseenter', function () {
+      itemEl.addEventListener('mouseenter', function (e) {
         var idx = parseInt(itemEl.getAttribute('data-ridx'), 10);
-        showTooltip(cache[idx].item.text, itemEl);
+        showTooltip(cache[idx].item.text, e);
       });
       itemEl.addEventListener('mouseleave', hideTooltip);
     });
@@ -550,23 +550,21 @@
   //  话术悬停预览 tooltip
   // ══════════════════════════════════════════════════
 
-  function showTooltip(text, itemEl) {
+  function showTooltip(text, e) {
     var tip = el('demo-tooltip');
     if (!tip || !text) return;
     tip.textContent = text;
-    // 先放到屏外以获取尺寸
     tip.style.left = '-9999px';
     tip.style.top  = '-9999px';
     tip.classList.add('demo-tooltip--visible');
 
-    var rect = itemEl.getBoundingClientRect();
     var tipW = tip.offsetWidth;
     var tipH = tip.offsetHeight;
 
-    var top  = rect.top - tipH - 6;
-    if (top < 8) top = rect.bottom + 6;
+    var top  = e.clientY + 14;
+    if (top + tipH > window.innerHeight - 8) top = e.clientY - tipH - 8;
 
-    var left = rect.left + rect.width / 2 - tipW / 2;
+    var left = e.clientX - tipW / 2;
     left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
 
     tip.style.left = left + 'px';
