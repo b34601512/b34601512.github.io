@@ -561,7 +561,7 @@
     var tipW = tip.offsetWidth;
     var tipH = tip.offsetHeight;
 
-    var top  = e.clientY + 14;
+    var top  = e.clientY + 28;
     if (top + tipH > window.innerHeight - 8) top = e.clientY - tipH - 8;
 
     var left = e.clientX - tipW / 2;
