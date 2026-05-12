@@ -368,14 +368,29 @@
   function renderLocalFiles() {
     var container = el('demo-accordion');
     if (!container) return;
-    container.innerHTML = LOCAL_FILES.map(function (f) {
-      return '<div class="demo-file-item">'
+    container.innerHTML = LOCAL_FILES.map(function (f, idx) {
+      return '<div class="demo-file-item" data-fidx="' + idx + '" role="button" tabindex="0">'
         + '<span class="demo-file-icon">' + safe(f.icon) + '</span>'
         + '<div class="demo-file-info">'
         + '<span class="demo-file-name">' + safe(f.name) + '</span>'
         + '<span class="demo-file-meta">' + safe(f.size) + ' · ' + safe(f.date) + '</span>'
         + '</div></div>';
     }).join('');
+
+    container.querySelectorAll('.demo-file-item').forEach(function (itemEl) {
+      var idx = parseInt(itemEl.getAttribute('data-fidx'), 10);
+      itemEl.addEventListener('click', function () {
+        container.querySelectorAll('.demo-file-item--selected')
+          .forEach(function (e) { e.classList.remove('demo-file-item--selected'); });
+        itemEl.classList.add('demo-file-item--selected');
+      });
+      itemEl.addEventListener('dblclick', function () {
+        sendFile(LOCAL_FILES[idx], itemEl);
+      });
+      itemEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); sendFile(LOCAL_FILES[idx], itemEl); }
+      });
+    });
   }
 
   // ══════════════════════════════════════════════════
@@ -446,6 +461,36 @@
         sendPhrase(cache[idx].item, itemEl);
       });
     });
+  }
+
+  // ══════════════════════════════════════════════════
+  //  发送本地文件
+  // ══════════════════════════════════════════════════
+
+  function sendFile(file, itemEl) {
+    if (isBusy || !file) return;
+    isBusy = true;
+    if (itemEl) itemEl.classList.add('demo-phrase-item--sending');
+    setTimeout(function () {
+      if (itemEl) itemEl.classList.remove('demo-phrase-item--sending');
+      addFileChatMsg(file);
+      isBusy = false;
+    }, 400);
+  }
+
+  function addFileChatMsg(file) {
+    var area = el('demo-messages-area');
+    if (!area) return;
+    var row = document.createElement('div');
+    row.className = 'demo-msg demo-msg--agent demo-msg--new';
+    row.innerHTML = '<div class="demo-msg-bubble demo-msg-bubble--file">'
+      + '<span class="demo-file-send-icon">' + safe(file.icon) + '</span>'
+      + '<div class="demo-file-send-info">'
+      + '<span class="demo-file-send-name">' + safe(file.name) + '</span>'
+      + '<span class="demo-file-send-meta">' + safe(file.size) + '</span>'
+      + '</div></div>';
+    area.appendChild(row);
+    area.scrollTop = area.scrollHeight;
   }
 
   // ══════════════════════════════════════════════════

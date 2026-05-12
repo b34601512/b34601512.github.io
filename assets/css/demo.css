@@ -641,7 +641,15 @@
   padding: 8px 10px;
   background: #fff;
   border-bottom: 1px solid rgba(0,0,0,.04);
-  cursor: default;
+  cursor: pointer;
+}
+
+.demo-file-item:hover { background: #fff5f0; }
+
+.demo-file-item--selected {
+  background: #ffeee4;
+  outline: 1.5px solid #d97757;
+  outline-offset: -1.5px;
 }
 
 .demo-file-icon { font-size: 18px; flex-shrink: 0; }
@@ -651,6 +659,24 @@
 .demo-file-name { font-size: 12px; color: #2a2826; font-weight: 500; }
 
 .demo-file-meta { font-size: 10px; color: #aaa; }
+
+/* 聊天区文件发送气泡 */
+.demo-msg-bubble--file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px !important;
+  background: #fff8f5 !important;
+  border: 1px solid #f0d0c0;
+}
+
+.demo-file-send-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
+
+.demo-file-send-info { display: flex; flex-direction: column; gap: 2px; }
+
+.demo-file-send-name { font-size: 12px; font-weight: 600; color: #2a2826; }
+
+.demo-file-send-meta { font-size: 10px; color: #aaa; }
 
 /* 空状态 */
 .demo-empty-state {
