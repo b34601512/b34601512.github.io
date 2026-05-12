@@ -242,28 +242,28 @@
 
   var PERSONAL_SETS = { 0: PERSONAL_CATS, 1: PERSONAL_CATS_1, 2: PERSONAL_CATS_2 };
 
-  // 本地文件 套0（产品资料）
+  // 本地文件 套0（产品资料，发给客户）
   var LOCAL_FILES = [
-    { icon: '📊', name: '话术模板2024.xlsx',   size: '23 KB',  date: '2024-03-15' },
-    { icon: '📝', name: '服务规范手册.docx',   size: '45 KB',  date: '2024-02-01' },
-    { icon: '📋', name: '产品卖点整理.pdf',    size: '156 KB', date: '2024-01-10' },
-    { icon: '📊', name: '客诉处理案例.xlsx',   size: '38 KB',  date: '2023-12-20' },
+    { icon: '📋', name: '产品使用手册.pdf',    size: '1.1 MB', date: '2024-03-15' },
+    { icon: '📊', name: '尺码对照表.xlsx',     size: '18 KB',  date: '2024-03-10' },
+    { icon: '🖼️', name: '产品详情图合集.png',  size: '3.2 MB', date: '2024-02-28' },
+    { icon: '📝', name: '常见问题解答.docx',   size: '42 KB',  date: '2024-02-15' },
   ];
 
-  // 本地文件 套1（营销素材）
+  // 本地文件 套1（促销素材，发给客户）
   var LOCAL_FILES_1 = [
-    { icon: '🖼️', name: '夏季促销海报.png',    size: '1.2 MB', date: '2024-04-01' },
+    { icon: '🖼️', name: '夏季促销海报.png',    size: '1.4 MB', date: '2024-04-01' },
+    { icon: '📋', name: '限时活动优惠说明.pdf', size: '96 KB',  date: '2024-03-28' },
     { icon: '🎬', name: '产品介绍视频.mp4',    size: '38 MB',  date: '2024-03-20' },
-    { icon: '📋', name: '活动规则说明.pdf',    size: '88 KB',  date: '2024-03-18' },
-    { icon: '📊', name: '销售数据报表.xlsx',   size: '52 KB',  date: '2024-03-10' },
+    { icon: '📊', name: '新旧款对比表.xlsx',   size: '35 KB',  date: '2024-03-10' },
   ];
 
-  // 本地文件 套2（话术模板）
+  // 本地文件 套2（售后资料，发给客户）
   var LOCAL_FILES_2 = [
-    { icon: '📝', name: '新手引导话术.docx',   size: '32 KB',  date: '2024-02-15' },
-    { icon: '📝', name: '投诉处理脚本.docx',   size: '28 KB',  date: '2024-02-10' },
-    { icon: '📊', name: '话术效果统计.xlsx',   size: '41 KB',  date: '2024-01-28' },
-    { icon: '📋', name: '培训材料汇总.pdf',    size: '210 KB', date: '2024-01-15' },
+    { icon: '📋', name: '退换货流程说明.pdf',  size: '88 KB',  date: '2024-02-20' },
+    { icon: '📝', name: '保修政策说明.docx',   size: '31 KB',  date: '2024-02-10' },
+    { icon: '📊', name: '维修费用参考表.xlsx', size: '22 KB',  date: '2024-01-28' },
+    { icon: '📋', name: '满意度调查问卷.pdf',  size: '55 KB',  date: '2024-01-15' },
   ];
 
   var LOCAL_FILE_SETS = { 0: LOCAL_FILES, 1: LOCAL_FILES_1, 2: LOCAL_FILES_2 };
