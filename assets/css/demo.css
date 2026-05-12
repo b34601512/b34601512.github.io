@@ -71,7 +71,7 @@
 
 .demo-layout {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr 290px;
   gap: 14px;
   height: 500px;
 }
@@ -311,9 +311,12 @@
   background: transparent;
   font-size: 12px;
   color: #777;
-  cursor: default;
+  cursor: pointer;
   white-space: nowrap;
+  transition: color .13s;
 }
+
+.demo-scope-btn:hover { color: #444; }
 
 .demo-scope-btn--active {
   background: #fff;
@@ -347,10 +350,13 @@
   padding: 3px 0;
   font-size: 12px;
   color: #888;
-  cursor: default;
+  cursor: pointer;
   border-radius: 3px;
   user-select: none;
+  transition: color .13s;
 }
+
+.demo-setnum:hover { color: #555; }
 
 .demo-setnum--active {
   background: #fff;
@@ -620,6 +626,44 @@
 }
 
 .demo-reset-btn:hover { background: var(--bg-soft); color: var(--ink-strong); }
+
+/* 本地文件列表 */
+.demo-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.04);
+  cursor: default;
+}
+
+.demo-file-icon { font-size: 18px; flex-shrink: 0; }
+
+.demo-file-info { display: flex; flex-direction: column; gap: 1px; }
+
+.demo-file-name { font-size: 12px; color: #2a2826; font-weight: 500; }
+
+.demo-file-meta { font-size: 10px; color: #aaa; }
+
+/* 空状态 */
+.demo-empty-state {
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #bbb;
+}
+
+/* 套话术标题行 */
+.demo-set-title {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #d97757;
+  background: rgba(217,119,87,.07);
+  border-bottom: 1px solid rgba(217,119,87,.12);
+  flex-shrink: 0;
+}
 
 /* ── 响应式 ── */
 @media (max-width: 860px) {
