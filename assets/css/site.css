@@ -527,13 +527,20 @@ body::after {
 }
 
 .screenshot-showcase {
-  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:24px;
 }
 
 .screenshot-img {
   max-width:100%;
   border-radius:16px;
   box-shadow:0 24px 56px rgba(31,27,21,.18);
+}
+
+.screenshot-img--panel {
+  max-width:560px;
 }
 
 .faq-item {
