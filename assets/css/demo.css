@@ -1,0 +1,517 @@
+/* 交互演示区块样式 */
+
+/* 三步上手 */
+.howto-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.howto-step {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.howto-step-num {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #d97757, #c6613f);
+  color: #fffaf5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 4px 12px rgba(198,97,63,.28);
+}
+
+.howto-arrow {
+  font-size: 18px;
+  color: var(--ink-soft);
+  padding-top: 8px;
+  flex-shrink: 0;
+}
+
+.howto-step h3 {
+  margin: 4px 0 5px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+.howto-step p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-muted);
+  line-height: 1.7;
+}
+
+/* 功能卡片图标 */
+.feature-icon {
+  font-size: 26px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* 演示区块容器 */
+.demo-section {
+  max-width: 1060px;
+}
+
+.demo-intro-text {
+  margin: 6px 0 18px;
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+
+/* 左右双栏布局 */
+.demo-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  height: 480px;
+}
+
+/* ── 左侧：聊天窗口 ── */
+.demo-chat-panel {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.demo-chat-header {
+  padding: 10px 14px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #ebebeb;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.demo-cus-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5b90d6, #7c62d0);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.demo-cus-info { flex: 1; }
+
+.demo-cus-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.demo-cus-source {
+  font-size: 11px;
+  color: #999;
+}
+
+.demo-online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34c759;
+  flex-shrink: 0;
+}
+
+.demo-messages-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+.demo-msg {
+  display: flex;
+  max-width: 78%;
+}
+
+.demo-msg--customer { align-self: flex-start; }
+.demo-msg--agent { align-self: flex-end; flex-direction: row-reverse; }
+
+.demo-msg-bubble {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.demo-msg--customer .demo-msg-bubble {
+  background: #f0f0f0;
+  color: #1a1a1a;
+  border-bottom-left-radius: 4px;
+}
+
+.demo-msg--agent .demo-msg-bubble {
+  background: linear-gradient(135deg, #d97757, #c05d3d);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 3px 8px rgba(192,93,61,.25);
+}
+
+/* 入场动画 */
+.demo-msg--new {
+  animation: msg-in 0.3s ease both;
+}
+
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 打字指示器 */
+.demo-typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 14px;
+}
+
+.demo-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b0b0b0;
+  animation: dot-bounce 1.3s infinite ease-in-out;
+  display: inline-block;
+}
+
+.demo-dot:nth-child(2) { animation-delay: .18s; }
+.demo-dot:nth-child(3) { animation-delay: .36s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(1); opacity: .5; }
+  40%           { transform: scale(1.25); opacity: 1; }
+}
+
+/* 输入区 */
+.demo-input-row {
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border-top: 1px solid #ebebeb;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.demo-input-box {
+  flex: 1;
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  transition: border-color .25s, background .25s;
+  overflow: hidden;
+}
+
+.demo-input-box--active {
+  border-color: #d97757;
+  background: #fff;
+}
+
+.demo-input-hint {
+  color: #aaa;
+  font-size: 12px;
+  user-select: none;
+}
+
+.demo-input-text {
+  color: #1a1a1a;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.demo-send-btn {
+  padding: 7px 14px;
+  background: linear-gradient(140deg, #d97757, #c05d3d);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: default;
+  opacity: .45;
+  transition: opacity .2s;
+  flex-shrink: 0;
+}
+
+.demo-send-btn.ready {
+  opacity: 1;
+  cursor: pointer;
+}
+
+/* ── 右侧：话术精灵 App 模拟界面 ── */
+.demo-app-panel {
+  border-radius: 14px;
+  background: #1a1918;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0,0,0,.24), 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* 标题栏 */
+.demo-app-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  background: #141312;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+
+.demo-app-icon { font-size: 14px; }
+
+.demo-app-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(240,236,230,.88);
+  letter-spacing: .01em;
+}
+
+.demo-app-winctrls {
+  display: flex;
+  gap: 5px;
+}
+
+.demo-wc {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: default;
+}
+
+.demo-wc--min  { background: #f5a623; color: #7a5000; }
+.demo-wc--max  { background: #27c93f; color: #005800; }
+.demo-wc--cls  { background: #ff5f57; color: #7a0000; }
+
+/* 搜索栏（装饰） */
+.demo-app-searchbar {
+  flex-shrink: 0;
+  margin: 8px 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.05);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.demo-searchbar-hint {
+  color: rgba(240,236,230,.3);
+  font-size: 12px;
+}
+
+/* 分类标签 */
+.demo-app-tabs {
+  flex-shrink: 0;
+  padding: 0 10px 8px;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.demo-app-tabs::-webkit-scrollbar { display: none; }
+
+.demo-tab {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(240,236,230,.45);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .18s;
+  flex-shrink: 0;
+}
+
+.demo-tab:hover {
+  background: rgba(255,255,255,.07);
+  color: rgba(240,236,230,.8);
+}
+
+.demo-tab.active {
+  background: rgba(217,119,87,.15);
+  border-color: rgba(217,119,87,.4);
+  color: #f0a88a;
+  font-weight: 600;
+}
+
+/* 话术列表 */
+.demo-phrases-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.12) transparent;
+}
+
+/* 话术卡片 */
+.demo-phrase-card {
+  padding: 9px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: all .18s;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 2px 8px;
+  align-items: center;
+}
+
+.demo-phrase-card:hover {
+  background: rgba(217,119,87,.13);
+  border-color: rgba(217,119,87,.35);
+  transform: translateX(-2px);
+}
+
+.demo-phrase-card.sending {
+  background: rgba(217,119,87,.25);
+  border-color: rgba(217,119,87,.6);
+  animation: card-flash .35s ease;
+}
+
+@keyframes card-flash {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(.97); }
+  100% { transform: scale(1); }
+}
+
+.demo-phrase-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(240,236,230,.9);
+  grid-column: 1;
+  grid-row: 1;
+  white-space: nowrap;
+}
+
+.demo-phrase-card-text {
+  font-size: 11px;
+  color: rgba(240,236,230,.4);
+  grid-column: 1 / -1;
+  grid-row: 2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.demo-phrase-card-action {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
+  font-size: 11px;
+  color: rgba(217,119,87,.7);
+  font-weight: 600;
+}
+
+.demo-phrase-card:hover .demo-phrase-card-action {
+  color: #d97757;
+}
+
+/* 底部状态行 */
+.demo-bottom-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  min-height: 28px;
+}
+
+.demo-count-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(217,119,87,.1);
+  border: 1px solid rgba(217,119,87,.22);
+  color: #b85a38;
+  font-size: 13px;
+  gap: 4px;
+}
+
+.demo-count-tag strong {
+  font-weight: 700;
+  color: #d97757;
+}
+
+.demo-reset-btn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+
+.demo-reset-btn:hover {
+  background: var(--bg-soft);
+  color: var(--ink-strong);
+}
+
+/* 响应式 */
+@media (max-width: 860px) {
+  .demo-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .demo-app-panel { height: 360px; }
+  .demo-chat-panel { height: 320px; }
+  .howto-arrow { display: none; }
+}
+
+@media (max-width: 700px) {
+  .howto-steps { flex-direction: column; gap: 16px; }
+  .demo-app-panel { height: 320px; }
+  .demo-chat-panel { height: 290px; }
+}

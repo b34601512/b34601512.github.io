@@ -21,6 +21,7 @@
 <meta name="twitter:title" content="话术精灵SoftTalk｜客服话术软件｜客户话术软件｜客服知识库" />
 <meta name="twitter:description" content="客服话术软件 / 客户话术软件，聚焦常用话术管理、分类整理、统一口径与本地自动备份。" />
 <link rel="stylesheet" href="assets/css/site.css" />
+<link rel="stylesheet" href="assets/css/demo.css" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -103,11 +104,13 @@
 </header>
 
 <main class="page">
+
+    <!-- Hero -->
     <section class="hero">
-        <p class="hero-eyebrow">电商客服知识库</p>
+        <p class="hero-eyebrow">电商客服话术工具</p>
         <h1>客服知识库 / 话术知识库<br />话术精灵SoftTalk</h1>
+        <p>把客服团队的话术、售后经验和服务规范整理成知识库，<br />查找快，发出去更快。</p>
         <p>适用于天猫｜京东｜拼多多｜抖音等电商客服团队</p>
-        <p>把常用话术、售后处理和服务规范整理成团队可复用的知识库。</p>
         <div class="hero-tags">
             <span>售前咨询</span>
             <span>成交跟进</span>
@@ -117,12 +120,115 @@
         </div>
         <div class="btn-row">
             <a class="btn-download" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">立即下载 话术精灵SoftTalk</a>
+            <a class="btn-secondary" href="#demo">↓ 演示体验</a>
             <a class="btn-secondary" id="btn-tutorial" href="https://www.kdocs.cn/l/crEfTnE6toV0" target="_blank" rel="noopener">知识库使用教程</a>
         </div>
     </section>
 
-    <section class="section" style="--delay:0.16s;">
-        <h2>软件简介</h2>
+    <!-- 三步上手 -->
+    <section class="section" style="--delay:0.10s;">
+        <h2>怎么用？</h2>
+        <div class="howto-steps">
+            <div class="howto-step">
+                <div class="howto-step-num">1</div>
+                <div>
+                    <h3>整理话术到知识库</h3>
+                    <p>按售前、售后等场景分类整理，一次整理长期受用。</p>
+                </div>
+            </div>
+            <div class="howto-arrow">→</div>
+            <div class="howto-step">
+                <div class="howto-step-num">2</div>
+                <div>
+                    <h3>接待客户时打开面板</h3>
+                    <p>话术精灵悬浮在屏幕右侧，不遮挡聊天窗口，随时可查。</p>
+                </div>
+            </div>
+            <div class="howto-arrow">→</div>
+            <div class="howto-step">
+                <div class="howto-step-num">3</div>
+                <div>
+                    <h3>点一下，话术直接发出去</h3>
+                    <p>点击话术卡片，内容自动粘贴到聊天框并发送，无需复制粘贴。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 交互演示 -->
+    <section class="section demo-section" id="demo" style="--delay:0.16s;">
+        <h2>亲眼看看，怎么用</h2>
+        <p class="demo-intro-text">点击右侧话术卡片，话术自动填入聊天框发送</p>
+
+        <div class="demo-layout">
+
+            <!-- 左侧：模拟聊天窗口 -->
+            <div class="demo-chat-panel">
+                <div class="demo-chat-header">
+                    <div class="demo-cus-avatar">客</div>
+                    <div class="demo-cus-info">
+                        <div class="demo-cus-name">客户 晓明</div>
+                        <div class="demo-cus-source">天猫咨询 · 在线</div>
+                    </div>
+                    <div class="demo-online-dot"></div>
+                </div>
+                <div class="demo-messages-area" id="demo-messages-area">
+                    <div class="demo-msg demo-msg--customer">
+                        <div class="demo-msg-bubble">老板，这款产品质量怎么样，是正品吗？🤔</div>
+                    </div>
+                </div>
+                <div class="demo-input-row">
+                    <div class="demo-input-box" id="demo-input-box">
+                        <span class="demo-input-hint" id="demo-input-hint">← 点击右侧话术</span>
+                        <span class="demo-input-text" id="demo-input-text"></span>
+                    </div>
+                    <button class="demo-send-btn" id="demo-send-btn">发送</button>
+                </div>
+            </div>
+
+            <!-- 右侧：话术精灵 SoftTalk 模拟界面 -->
+            <div class="demo-app-panel">
+                <!-- 标题栏（模拟 Windows 窗口） -->
+                <div class="demo-app-titlebar">
+                    <span class="demo-app-icon">⚡</span>
+                    <span class="demo-app-name">话术精灵 SoftTalk</span>
+                    <div class="demo-app-winctrls">
+                        <span class="demo-wc demo-wc--min">—</span>
+                        <span class="demo-wc demo-wc--max">□</span>
+                        <span class="demo-wc demo-wc--cls">✕</span>
+                    </div>
+                </div>
+                <!-- 搜索栏（装饰） -->
+                <div class="demo-app-searchbar">
+                    <span>🔍</span>
+                    <span class="demo-searchbar-hint">搜索话术...</span>
+                </div>
+                <!-- 分类标签 -->
+                <div class="demo-app-tabs" id="demo-app-tabs">
+                    <button class="demo-tab active" data-cat="presale">售前咨询</button>
+                    <button class="demo-tab" data-cat="conversion">成交跟进</button>
+                    <button class="demo-tab" data-cat="aftersale">售后处理</button>
+                    <button class="demo-tab" data-cat="comfort">安抚表达</button>
+                    <button class="demo-tab" data-cat="standard">服务规范</button>
+                </div>
+                <!-- 话术列表（由 demo.js 渲染） -->
+                <div class="demo-phrases-list" id="demo-phrases-list"></div>
+            </div>
+
+        </div>
+
+        <!-- 底部状态行 -->
+        <div class="demo-bottom-row">
+            <span class="demo-count-tag" id="demo-count-tag" hidden>
+                已发 <strong id="demo-send-count">0</strong> 条话术
+            </span>
+            <button class="demo-reset-btn" id="demo-reset-btn" hidden>↺ 重置演示</button>
+        </div>
+    </section>
+
+    <!-- 软件功能 -->
+    <section class="section" style="--delay:0.24s;">
+        <h2>软件功能</h2>
         <p>
             「话术精灵SoftTalk」本质上是一款客服话术软件 / 客户话术软件，
             用来把客服团队常用的话术、售后处理、议价思路和服务规范整理成结构清晰的知识库。
@@ -131,30 +237,33 @@
             内容按场景、分类、目录组织，老客服负责沉淀，新客服按目录查找，
             团队对外口径更容易统一。
         </p>
-        <p>
-            知识库内容支持本地按天自动备份到你的电脑本地，减少手动备份负担。
-        </p>
+        <p>知识库内容支持本地按天自动备份，减少手动备份负担。</p>
         <div class="feature-grid">
             <article class="feature-item">
+                <span class="feature-icon">📂</span>
                 <h3>场景化分类</h3>
                 <p>按售前、成交、售后等场景拆分目录，查找路径更短。</p>
             </article>
             <article class="feature-item">
+                <span class="feature-icon">⚡</span>
                 <h3>快速检索调用</h3>
                 <p>需要时直接定位到对应内容，减少翻聊天记录的时间成本。</p>
             </article>
             <article class="feature-item">
+                <span class="feature-icon">🤝</span>
                 <h3>团队统一口径</h3>
                 <p>团队围绕同一套标准内容服务客户，减少表达偏差。</p>
             </article>
             <article class="feature-item">
+                <span class="feature-icon">💾</span>
                 <h3>本地自动备份</h3>
                 <p>检测到改动后按天备份到本地，内容更稳妥。</p>
             </article>
         </div>
     </section>
 
-    <section class="section" style="--delay:0.24s;">
+    <!-- 为什么做这款软件 -->
+    <section class="section" style="--delay:0.32s;">
         <h2>为什么做这款软件</h2>
         <p>
             很多客服团队真正难的，不是不会回复，而是经验总散落在聊天记录、
@@ -166,7 +275,8 @@
         </p>
     </section>
 
-    <section class="section" style="--delay:0.32s;">
+    <!-- 常见问题 -->
+    <section class="section" style="--delay:0.40s;">
         <h2>常见问题</h2>
         <div class="faq-item">
             <strong>知识库适合哪些行业和平台？</strong>
@@ -185,6 +295,7 @@
             <p>客户端支持本地按天自动备份，并会定期自动清理过期备份文件。你编辑的知识内容会持续留在自己电脑本地。</p>
         </div>
     </section>
+
 </main>
 
 <footer class="footer">
@@ -202,6 +313,7 @@
 
 <script src="site.config.js"></script>
 <script src="assets/js/index-page.js"></script>
+<script src="assets/js/demo.js"></script>
 
 </body>
 </html>
