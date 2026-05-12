@@ -503,7 +503,6 @@ body::after {
 .screenshot-section {
   position:relative;
   z-index:1;
-  max-width:1120px;
   margin:30px auto 0;
   padding:0 20px;
   text-align:center;
