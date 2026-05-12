@@ -531,8 +531,7 @@ body::after {
 }
 
 .screenshot-img {
-  max-width:420px;
-  width:100%;
+  max-width:100%;
   border-radius:16px;
   box-shadow:0 24px 56px rgba(31,27,21,.18);
 }
