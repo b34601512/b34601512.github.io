@@ -266,7 +266,7 @@
   flex-shrink: 0;
 }
 
-.demo-app-icon { font-size: 13px; }
+.demo-app-icon { width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; }
 
 .demo-app-name {
   flex: 1;
