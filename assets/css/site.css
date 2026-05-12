@@ -555,9 +555,6 @@ body::after {
   margin:24px auto 50px;
   padding:28px 20px;
   text-align:center;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:rgba(251,248,242,.88);
   color:var(--ink-soft);
   font-size:14px;
 }
