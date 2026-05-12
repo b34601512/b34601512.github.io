@@ -192,13 +192,81 @@
     },
   };
 
-  // 本地文件
+  // 个人话术 套1（售后专用）
+  var PERSONAL_CATS_1 = {
+    complaint: {
+      label: '投诉',
+      sections: [
+        { title: '投诉安抚', open: true, items: [
+            { title: '安抚先行', text: '非常抱歉给您添麻烦了！我立刻为您跟进处理，请您稍等~' },
+            { title: '责任说明', text: '这个问题确实是我们的疏忽，已经记录，会严格改进~' },
+          ]
+        },
+      ]
+    },
+    followup: {
+      label: '跟进',
+      sections: [
+        { title: '进度跟进', open: true, items: [
+            { title: '进度更新', text: '您好，您的问题我们已在跟进中，预计今天内给您回复~' },
+            { title: '满意确认', text: '您好，您之前反馈的问题已处理，请问是否解决了呢？' },
+          ]
+        },
+      ]
+    },
+  };
+
+  // 个人话术 套2（大客户专属）
+  var PERSONAL_CATS_2 = {
+    vip: {
+      label: 'VIP',
+      sections: [
+        { title: 'VIP接待', open: true, items: [
+            { title: '专属问候', text: '您好，欢迎回来！作为尊贵客户，有任何需求优先为您服务~' },
+            { title: '专属感谢', text: '感谢您一直以来的支持！这份信任是我们最大的动力~' },
+          ]
+        },
+      ]
+    },
+    priority: {
+      label: '优先',
+      sections: [
+        { title: '优先服务', open: true, items: [
+            { title: '加急处理', text: '您的订单已标记为优先处理，我们会第一时间安排发货~' },
+            { title: '专属折扣', text: '作为老客户，这次可以为您申请额外的专属折扣哦~' },
+          ]
+        },
+      ]
+    },
+  };
+
+  var PERSONAL_SETS = { 0: PERSONAL_CATS, 1: PERSONAL_CATS_1, 2: PERSONAL_CATS_2 };
+
+  // 本地文件 套0（产品资料）
   var LOCAL_FILES = [
     { icon: '📊', name: '话术模板2024.xlsx',   size: '23 KB',  date: '2024-03-15' },
     { icon: '📝', name: '服务规范手册.docx',   size: '45 KB',  date: '2024-02-01' },
     { icon: '📋', name: '产品卖点整理.pdf',    size: '156 KB', date: '2024-01-10' },
     { icon: '📊', name: '客诉处理案例.xlsx',   size: '38 KB',  date: '2023-12-20' },
   ];
+
+  // 本地文件 套1（营销素材）
+  var LOCAL_FILES_1 = [
+    { icon: '🖼️', name: '夏季促销海报.png',    size: '1.2 MB', date: '2024-04-01' },
+    { icon: '🎬', name: '产品介绍视频.mp4',    size: '38 MB',  date: '2024-03-20' },
+    { icon: '📋', name: '活动规则说明.pdf',    size: '88 KB',  date: '2024-03-18' },
+    { icon: '📊', name: '销售数据报表.xlsx',   size: '52 KB',  date: '2024-03-10' },
+  ];
+
+  // 本地文件 套2（话术模板）
+  var LOCAL_FILES_2 = [
+    { icon: '📝', name: '新手引导话术.docx',   size: '32 KB',  date: '2024-02-15' },
+    { icon: '📝', name: '投诉处理脚本.docx',   size: '28 KB',  date: '2024-02-10' },
+    { icon: '📊', name: '话术效果统计.xlsx',   size: '41 KB',  date: '2024-01-28' },
+    { icon: '📋', name: '培训材料汇总.pdf',    size: '210 KB', date: '2024-01-15' },
+  ];
+
+  var LOCAL_FILE_SETS = { 0: LOCAL_FILES, 1: LOCAL_FILES_1, 2: LOCAL_FILES_2 };
 
   // ══════════════════════════════════════════════════
   //  状态变量
@@ -232,7 +300,7 @@
 
   function getCurrentCatMap() {
     if (currentScope === 'team')     return TEAM_SETS[currentSetNum] || {};
-    if (currentScope === 'personal') return PERSONAL_CATS;
+    if (currentScope === 'personal') return PERSONAL_SETS[currentSetNum] || {};
     return {};
   }
 
@@ -258,17 +326,17 @@
     });
   }
 
-  // 更新套号高亮，并控制套号栏显示（本地文件时隐藏）
+  // 更新套号高亮（所有范围均显示套号栏）
   function renderSetNums() {
     var row = document.querySelector('.demo-setnum-row');
-    if (row) row.style.display = currentScope === 'local' ? 'none' : '';
+    if (row) row.style.display = '';
     document.querySelectorAll('.demo-setnum').forEach(function (span) {
       var n = parseInt(span.getAttribute('data-set'), 10);
       span.classList.toggle('demo-setnum--active', n === currentSetNum);
     });
   }
 
-  // 分类 Chip 行
+  // 分类 Chip 行（本地文件无分类，隐藏芯片行）
   function renderChips() {
     var row = el('demo-chips-row');
     if (!row) return;
@@ -368,7 +436,8 @@
   function renderLocalFiles() {
     var container = el('demo-accordion');
     if (!container) return;
-    container.innerHTML = LOCAL_FILES.map(function (f, idx) {
+    var files = LOCAL_FILE_SETS[currentSetNum] || [];
+    container.innerHTML = files.map(function (f, idx) {
       return '<div class="demo-file-item" data-fidx="' + idx + '" role="button" tabindex="0">'
         + '<span class="demo-file-icon">' + safe(f.icon) + '</span>'
         + '<div class="demo-file-info">'
@@ -385,7 +454,7 @@
         itemEl.classList.add('demo-file-item--selected');
       });
       itemEl.addEventListener('dblclick', function () {
-        sendFile(LOCAL_FILES[idx], itemEl);
+        sendFile((LOCAL_FILE_SETS[currentSetNum] || [])[idx], itemEl);
       });
       itemEl.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') { e.preventDefault(); sendFile(LOCAL_FILES[idx], itemEl); }
@@ -590,7 +659,7 @@
     currentCat    = 'presale';
 
     // 重置折叠状态
-    [TEAM_0, TEAM_1, TEAM_2, PERSONAL_CATS].forEach(function (catMap) {
+    [TEAM_0, TEAM_1, TEAM_2, PERSONAL_CATS, PERSONAL_CATS_1, PERSONAL_CATS_2].forEach(function (catMap) {
       Object.keys(catMap).forEach(function (catId) {
         catMap[catId].sections.forEach(function (sec, i) { sec.open = i === 0; });
       });
@@ -631,10 +700,9 @@
         clearSearch();
         currentScope = scope;
         if (currentScope === 'team') {
-          var cats = Object.keys(TEAM_SETS[currentSetNum] || {});
-          currentCat = cats[0] || '';
+          currentCat = Object.keys(TEAM_SETS[currentSetNum] || {})[0] || '';
         } else if (currentScope === 'personal') {
-          currentCat = Object.keys(PERSONAL_CATS)[0] || '';
+          currentCat = Object.keys(PERSONAL_SETS[currentSetNum] || {})[0] || '';
         }
         renderScopeTabs();
         renderSetNums();
@@ -643,15 +711,17 @@
       });
     });
 
-    // 套号点击
+    // 套号点击（团队/个人/本地均支持）
     document.querySelectorAll('.demo-setnum').forEach(function (span) {
       var num = parseInt(span.getAttribute('data-set'), 10);
       span.addEventListener('click', function () {
-        if (currentScope !== 'team') return;
         clearSearch();
         currentSetNum = num;
-        var cats = Object.keys(TEAM_SETS[num] || {});
-        currentCat = cats[0] || '';
+        if (currentScope === 'team') {
+          currentCat = Object.keys(TEAM_SETS[num] || {})[0] || '';
+        } else if (currentScope === 'personal') {
+          currentCat = Object.keys(PERSONAL_SETS[num] || {})[0] || '';
+        }
         renderSetNums();
         renderChips();
         renderAccordion();
