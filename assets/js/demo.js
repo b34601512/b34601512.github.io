@@ -432,6 +432,12 @@
           sendPhrase(cat.sections[sIdx].items[iIdx], itemEl);
         }
       });
+      itemEl.addEventListener('mouseenter', function () {
+        var sIdx = parseInt(itemEl.getAttribute('data-sec'), 10);
+        var iIdx = parseInt(itemEl.getAttribute('data-item'), 10);
+        showTooltip(cat.sections[sIdx].items[iIdx].text, itemEl);
+      });
+      itemEl.addEventListener('mouseleave', hideTooltip);
     });
   }
 
@@ -532,7 +538,44 @@
         var idx = parseInt(itemEl.getAttribute('data-ridx'), 10);
         sendPhrase(cache[idx].item, itemEl);
       });
+      itemEl.addEventListener('mouseenter', function () {
+        var idx = parseInt(itemEl.getAttribute('data-ridx'), 10);
+        showTooltip(cache[idx].item.text, itemEl);
+      });
+      itemEl.addEventListener('mouseleave', hideTooltip);
     });
+  }
+
+  // ══════════════════════════════════════════════════
+  //  话术悬停预览 tooltip
+  // ══════════════════════════════════════════════════
+
+  function showTooltip(text, itemEl) {
+    var tip = el('demo-tooltip');
+    if (!tip || !text) return;
+    tip.textContent = text;
+    // 先放到屏外以获取尺寸
+    tip.style.left = '-9999px';
+    tip.style.top  = '-9999px';
+    tip.classList.add('demo-tooltip--visible');
+
+    var rect = itemEl.getBoundingClientRect();
+    var tipW = tip.offsetWidth;
+    var tipH = tip.offsetHeight;
+
+    var top  = rect.top - tipH - 6;
+    if (top < 8) top = rect.bottom + 6;
+
+    var left = rect.left + rect.width / 2 - tipW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+
+    tip.style.left = left + 'px';
+    tip.style.top  = top  + 'px';
+  }
+
+  function hideTooltip() {
+    var tip = el('demo-tooltip');
+    if (tip) tip.classList.remove('demo-tooltip--visible');
   }
 
   // ══════════════════════════════════════════════════
@@ -712,6 +755,14 @@
 
   function init() {
     if (!el('demo-accordion')) return;
+
+    // 创建全局 tooltip 节点（body 级，避免被 overflow:hidden 裁切）
+    if (!el('demo-tooltip')) {
+      var tip = document.createElement('div');
+      tip.id = 'demo-tooltip';
+      tip.className = 'demo-tooltip';
+      document.body.appendChild(tip);
+    }
 
     // 范围标签点击
     document.querySelectorAll('.demo-scope-btn').forEach(function (btn) {

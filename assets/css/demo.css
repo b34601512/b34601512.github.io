@@ -693,6 +693,29 @@
   color: #bbb;
 }
 
+/* 话术悬停预览 tooltip */
+.demo-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: rgba(28, 26, 24, 0.94);
+  color: #f5f3ef;
+  font-size: 12px;
+  line-height: 1.65;
+  padding: 8px 12px;
+  border-radius: 6px;
+  max-width: 260px;
+  word-break: break-all;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .12s;
+  box-shadow: 0 4px 18px rgba(0,0,0,.38);
+}
+.demo-tooltip--visible {
+  visibility: visible;
+  opacity: 1;
+}
+
 /* 套话术标题行 */
 .demo-set-title {
   padding: 5px 10px;
