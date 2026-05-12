@@ -213,9 +213,11 @@
 
   var CUSTOMER_REPLIES = [
     '运费险有吗？不满意可以退换吗？',
-    '好的，那我就放心了，现在有什么优惠活动吗？',
-    '明白了，我决定下单！帮我备注一下是送礼用的~',
-    '嗯嗯，谢谢你的耐心解答，我去付款了～',
+    '好的，那就放心了。现在有优惠活动吗？',
+    '好！我比较急，今天下单能当天发货吗？',
+    '明白了，已经拍下！麻烦帮我备注一下是送人的礼物～',
+    '收到货啦！质量很不错，跟描述完全一致，很满意！😊',
+    '好评已给！感谢你们的耐心服务，下次还来～🌟',
   ];
 
   // ══════════════════════════════════════════════════
@@ -339,13 +341,20 @@
     });
 
     container.querySelectorAll('.demo-phrase-item').forEach(function (itemEl) {
+      // 单击：选中高亮（与真实软件一致，单击不发送）
       itemEl.addEventListener('click', function () {
+        container.querySelectorAll('.demo-phrase-item--selected')
+          .forEach(function (el) { el.classList.remove('demo-phrase-item--selected'); });
+        itemEl.classList.add('demo-phrase-item--selected');
+      });
+      // 双击：发送
+      itemEl.addEventListener('dblclick', function () {
         var sIdx = parseInt(itemEl.getAttribute('data-sec'), 10);
         var iIdx = parseInt(itemEl.getAttribute('data-item'), 10);
         sendPhrase(cat.sections[sIdx].items[iIdx], itemEl);
       });
       itemEl.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === 'Enter') {
           e.preventDefault();
           var sIdx = parseInt(itemEl.getAttribute('data-sec'), 10);
           var iIdx = parseInt(itemEl.getAttribute('data-item'), 10);
@@ -428,6 +437,11 @@
 
     container.querySelectorAll('.demo-phrase-item').forEach(function (itemEl) {
       itemEl.addEventListener('click', function () {
+        container.querySelectorAll('.demo-phrase-item--selected')
+          .forEach(function (el) { el.classList.remove('demo-phrase-item--selected'); });
+        itemEl.classList.add('demo-phrase-item--selected');
+      });
+      itemEl.addEventListener('dblclick', function () {
         var idx = parseInt(itemEl.getAttribute('data-ridx'), 10);
         sendPhrase(cache[idx].item, itemEl);
       });

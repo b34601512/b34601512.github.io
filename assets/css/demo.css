@@ -459,6 +459,12 @@
 
 .demo-phrase-item:hover { background: #fff5f0; }
 
+.demo-phrase-item--selected {
+  background: #ffeee4;
+  outline: 1.5px solid #d97757;
+  outline-offset: -1.5px;
+}
+
 .demo-phrase-item--sending {
   background: #ffe8d8 !important;
   animation: item-flash .3s ease;
