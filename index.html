@@ -186,33 +186,60 @@
                 </div>
             </div>
 
-            <!-- 右侧：话术精灵 SoftTalk 模拟界面 -->
+            <!-- 右侧：话术精灵 SoftTalk 模拟界面（贴近真实客户端） -->
             <div class="demo-app-panel">
-                <!-- 标题栏（模拟 Windows 窗口） -->
+                <!-- 标题栏 -->
                 <div class="demo-app-titlebar">
                     <span class="demo-app-icon">⚡</span>
                     <span class="demo-app-name">话术精灵 SoftTalk</span>
                     <div class="demo-app-winctrls">
-                        <span class="demo-wc demo-wc--min">—</span>
-                        <span class="demo-wc demo-wc--max">□</span>
-                        <span class="demo-wc demo-wc--cls">✕</span>
+                        <span class="demo-wc-icon" title="账号">👤</span>
+                        <span class="demo-wc-icon" title="置顶">📌</span>
+                        <span class="demo-wc-min" title="最小化">—</span>
                     </div>
                 </div>
-                <!-- 搜索栏（装饰） -->
-                <div class="demo-app-searchbar">
-                    <span>🔍</span>
-                    <span class="demo-searchbar-hint">搜索话术...</span>
+                <!-- 话术范围标签：团队 / 个人 / 本地 -->
+                <div class="demo-scope-row">
+                    <button class="demo-scope-btn demo-scope-btn--active">团队话术</button>
+                    <button class="demo-scope-btn">个人话术</button>
+                    <span class="demo-scope-dot"></span>
+                    <button class="demo-scope-btn">本地文件</button>
                 </div>
-                <!-- 分类标签 -->
-                <div class="demo-app-tabs" id="demo-app-tabs">
-                    <button class="demo-tab active" data-cat="presale">售前咨询</button>
-                    <button class="demo-tab" data-cat="conversion">成交跟进</button>
-                    <button class="demo-tab" data-cat="aftersale">售后处理</button>
-                    <button class="demo-tab" data-cat="comfort">安抚表达</button>
-                    <button class="demo-tab" data-cat="standard">服务规范</button>
+                <!-- 套话术编号 0-9 -->
+                <div class="demo-setnum-row">
+                    <span class="demo-setnum demo-setnum--active">0</span>
+                    <span class="demo-setnum">1</span>
+                    <span class="demo-setnum">2</span>
+                    <span class="demo-setnum">3</span>
+                    <span class="demo-setnum">4</span>
+                    <span class="demo-setnum">5</span>
+                    <span class="demo-setnum">6</span>
+                    <span class="demo-setnum">7</span>
+                    <span class="demo-setnum">8</span>
+                    <span class="demo-setnum">9</span>
                 </div>
-                <!-- 话术列表（由 demo.js 渲染） -->
-                <div class="demo-phrases-list" id="demo-phrases-list"></div>
+                <!-- 一级分类 Chip 行（由 JS 渲染） -->
+                <div class="demo-chips-row" id="demo-chips-row"></div>
+                <!-- 折叠话术列表（由 JS 渲染） -->
+                <div class="demo-accordion" id="demo-accordion"></div>
+                <!-- 底部：快捷短语 + 搜索 + 品牌 -->
+                <div class="demo-app-bottom">
+                    <div class="demo-bottom-quick">
+                        <span class="demo-bottom-quick-text">你好</span>
+                        <span class="demo-bottom-quick-add">＋</span>
+                    </div>
+                    <div class="demo-bottom-search">
+                        <span class="demo-search-icon-txt">🔍</span>
+                        <input class="demo-search-input" id="demo-search-input"
+                               type="text"
+                               placeholder="搜索话术..."
+                               autocomplete="off" />
+                    </div>
+                    <div class="demo-bottom-branding">
+                        <span>话术精灵 官网: luyao2089.cc</span>
+                        <span class="demo-branding-bug">🐛</span>
+                    </div>
+                </div>
             </div>
 
         </div>
