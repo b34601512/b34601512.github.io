@@ -500,6 +500,18 @@ body::after {
   gap:12px;
 }
 
+.screenshot-showcase {
+  margin-top:20px;
+  text-align:center;
+}
+
+.screenshot-img {
+  max-width:380px;
+  width:100%;
+  border-radius:16px;
+  box-shadow:0 20px 50px rgba(31,27,21,.16);
+}
+
 .faq-item {
   margin-top:10px;
 }
