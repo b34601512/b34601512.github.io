@@ -268,6 +268,9 @@
 
   var LOCAL_FILE_SETS = { 0: LOCAL_FILES, 1: LOCAL_FILES_1, 2: LOCAL_FILES_2 };
 
+  // 快捷短语（单击直接发送，不需要双击）
+  var QUICK_PHRASES = ['你好～', '稍等一下~', '好的', '感谢您', '已收到', '明白了', '马上处理'];
+
   // ══════════════════════════════════════════════════
   //  状态变量
   // ══════════════════════════════════════════════════
@@ -533,6 +536,23 @@
   }
 
   // ══════════════════════════════════════════════════
+  //  快捷短语渲染（单击发送）
+  // ══════════════════════════════════════════════════
+
+  function renderQuickPhrases() {
+    var row = el('demo-quick-row');
+    if (!row) return;
+    row.innerHTML = QUICK_PHRASES.map(function (p) {
+      return '<button class="demo-qp-btn">' + safe(p) + '</button>';
+    }).join('');
+    row.querySelectorAll('.demo-qp-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        sendPhrase({ title: btn.textContent, text: btn.textContent }, null);
+      });
+    });
+  }
+
+  // ══════════════════════════════════════════════════
   //  发送本地文件
   // ══════════════════════════════════════════════════
 
@@ -683,6 +703,7 @@
     renderSetNums();
     renderChips();
     renderAccordion();
+    renderQuickPhrases();
   }
 
   // ══════════════════════════════════════════════════
@@ -745,6 +766,7 @@
     renderSetNums();
     renderChips();
     renderAccordion();
+    renderQuickPhrases();
   }
 
   if (document.readyState === 'loading') {

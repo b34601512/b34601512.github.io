@@ -525,22 +525,29 @@
 .demo-bottom-quick {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 5px;
   padding: 5px 10px;
   border-bottom: 1px solid rgba(0,0,0,.06);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.demo-bottom-quick::-webkit-scrollbar { display: none; }
 
-.demo-bottom-quick-text {
-  font-size: 12px;
-  color: #888;
+/* 快捷短语芯片：单击直接发送 */
+.demo-qp-btn {
+  flex-shrink: 0;
+  padding: 2px 9px;
+  font-size: 11px;
+  color: #555;
+  background: #f0ede8;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
 }
-
-.demo-bottom-quick-add {
-  font-size: 15px;
-  color: #d97757;
-  font-weight: 700;
-  line-height: 1;
-}
+.demo-qp-btn:hover  { background: #ffe0cc; color: #c05030; border-color: #d97757; }
+.demo-qp-btn:active { background: #ffd0b0; }
 
 .demo-bottom-search {
   display: flex;
