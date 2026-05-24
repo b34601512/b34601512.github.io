@@ -1,0 +1,93 @@
+/* 该文件用于维护站点导航样式，避免导航规则混入页面布局。 */
+
+.nav {
+  position:sticky;
+  top:0;
+  z-index:20;
+  border-bottom:1px solid rgba(85,74,59,.14);
+  background:rgba(247,244,238,.86);
+  backdrop-filter:blur(12px);
+}
+
+.nav-inner {
+  position:relative;
+  z-index:1;
+  max-width:1120px;
+  margin:0 auto;
+  padding:16px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:20px;
+  font-weight:700;
+  color:var(--ink-strong);
+  letter-spacing:.02em;
+}
+
+.brand-logo {
+  width:28px;
+  height:28px;
+  object-fit:contain;
+  flex-shrink:0;
+}
+
+.hero-logo {
+  display:block;
+  width:72px;
+  height:72px;
+  object-fit:contain;
+  margin:0 auto 12px;
+}
+
+.nav-actions {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.nav-link {
+  color:var(--ink-main);
+  font-size:14px;
+  font-weight:600;
+  text-decoration:none;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(251,248,242,.88);
+  transition:color .2s ease, border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.nav-link--current {
+  color:var(--bg-base);
+  border-color:var(--surface-dark);
+  background:linear-gradient(140deg,var(--surface-dark) 0%,var(--surface-dark-2) 100%);
+  box-shadow:0 12px 24px rgba(20,20,19,.18);
+}
+
+.nav-link:hover {
+  color:var(--ink-strong);
+  border-color:var(--line-strong);
+  background:var(--bg-soft);
+  transform:translateY(-1px);
+}
+
+.nav-link.nav-link--current:hover {
+  color:var(--bg-base);
+  border-color:var(--surface-dark);
+  background:linear-gradient(140deg,#1a1918 0%,#252320 100%);
+}
+
+.nav-link:focus-visible,
+.btn-download:focus-visible,
+.btn-secondary:focus-visible,
+.footer-link:focus-visible {
+  outline:2px solid var(--brand);
+  outline-offset:2px;
+}

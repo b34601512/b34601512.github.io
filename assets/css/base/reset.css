@@ -1,0 +1,42 @@
+/* 该文件用于维护全站基础盒模型、页面背景和基础排版。 */
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  min-height:100vh;
+  color:var(--ink-main);
+  font-family:"MiSans","HarmonyOS Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:
+    radial-gradient(circle at 10% 8%,rgba(217,119,87,.13) 0%,transparent 32%),
+    radial-gradient(circle at 88% 12%,rgba(176,174,165,.18) 0%,transparent 29%),
+    radial-gradient(circle at 82% 90%,rgba(217,119,87,.08) 0%,transparent 24%),
+    linear-gradient(180deg,#f7f4ee 0%,#f2ede3 54%,#fbf8f2 100%);
+}
+
+body::before,
+body::after {
+  content:"";
+  position:fixed;
+  z-index:0;
+  border-radius:999px;
+  pointer-events:none;
+  filter:blur(82px);
+  opacity:.34;
+}
+
+body::before {
+  width:320px;
+  height:320px;
+  top:-78px;
+  left:-86px;
+  background:#e7dccd;
+}
+
+body::after {
+  width:340px;
+  height:340px;
+  right:-96px;
+  bottom:18px;
+  background:#e7c8b9;
+}

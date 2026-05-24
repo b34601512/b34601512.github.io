@@ -1,0 +1,45 @@
+/* 该文件用于维护联系页独有布局样式，避免联系页样式散落到通用组件中。 */
+
+.download-wrap {
+  max-width:760px;
+  padding-top:44px;
+}
+
+.download-card {
+  padding:42px 34px;
+  animation:rise-in .6s ease both;
+}
+
+.download-card h1 {
+  font-size:clamp(28px,4.5vw,40px);
+  text-align:center;
+}
+
+.contact-grid {
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.contact-item--copy {
+  cursor:pointer;
+  transition:border-color .2s, box-shadow .2s;
+}
+.contact-item--copy:hover {
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(217,119,87,.12);
+}
+.contact-wechat-id {
+  font-size:20px !important;
+  font-weight:700;
+  color:var(--ink-strong) !important;
+  letter-spacing:.04em;
+}
+.contact-copy-hint {
+  display:inline-block;
+  margin-top:6px;
+  font-size:12px;
+  color:var(--brand);
+  font-weight:600;
+}

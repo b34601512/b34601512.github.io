@@ -1,0 +1,75 @@
+/* 该文件用于维护跨页面内容区块样式，避免页面文件互相依赖。 */
+
+.page,
+.download-wrap {
+  position:relative;
+  z-index:1;
+  max-width:1120px;
+  margin:0 auto;
+  padding:24px 20px 68px;
+}
+
+.hero,
+.section,
+.download-card {
+  border:1px solid rgba(187,174,159,.72);
+  border-radius:var(--radius-xl);
+  background:linear-gradient(160deg,rgba(251,248,242,.98) 0%,rgba(244,239,230,.96) 100%);
+  box-shadow:var(--shadow-lg);
+}
+
+.hero {
+  margin-top:24px;
+  padding:54px 44px;
+  text-align:center;
+  overflow:hidden;
+  animation:rise-in .6s ease both;
+}
+
+.hero-eyebrow {
+  margin:0;
+  color:#87533c;
+  font-weight:700;
+  letter-spacing:.2em;
+  font-size:13px;
+}
+
+.hero h1,
+.download-card h1,
+.pricing-showcase-copy h1 {
+  margin:14px 0 16px;
+  font-family:"STSong","Songti SC","Source Han Serif SC","Noto Serif SC",serif;
+  font-weight:600;
+  color:var(--ink-strong);
+  letter-spacing:.01em;
+  line-height:1.34;
+}
+
+.hero h1 { font-size:clamp(30px,5vw,48px); }
+
+.hero p,
+.pricing-showcase-copy p {
+  margin:8px auto;
+  max-width:860px;
+  color:var(--ink-muted);
+  font-size:18px;
+  line-height:1.82;
+}
+
+.hero-tags {
+  margin-top:18px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+}
+
+.hero-tags span {
+  padding:6px 12px;
+  border-radius:999px;
+  border:1px solid #d8c8b4;
+  background:#f1e7da;
+  color:#6f543e;
+  font-size:13px;
+  font-weight:600;
+}

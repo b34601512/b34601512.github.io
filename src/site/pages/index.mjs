@@ -1,22 +1,20 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="author" content="黎路遥" />
-<title>话术精灵SoftTalk｜客服话术软件｜客户话术软件｜客服知识库</title>
+// 该文件用于维护 index.html 的页面专属元信息和主体内容，公共结构由 layout 生成。
+export const indexPage = {
+  outputFile: "index.html",
+  brand: String.raw`<img class="brand-logo" src="assets/logo.png" alt="话术精灵logo" />黎路遥 · 话术精灵SoftTalk`,
+  head: String.raw`<title>话术精灵SoftTalk｜客服话术软件｜客户话术软件｜客服知识库</title>
 <meta name="description" content="话术精灵SoftTalk 是面向电商团队的客服话术软件、客户话术软件，也是用于沉淀团队经验的客服知识库软件，支持常用话术管理、场景分类整理、统一团队口径、本地按天自动备份，适用于天猫、京东、拼多多、抖音等客服场景。" />
 <meta name="keywords" content="客服话术软件,客户话术软件,电商客服话术软件,客服话术管理,客户话术管理,客服知识库,客户话术知识库,电商客服知识库,话术库管理,客服知识库软件,团队知识库,客服SOP,天猫客服话术,京东客服话术,拼多多客服话术,抖音客服话术,话术精灵SoftTalk" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
-<link rel="canonical" href="https://luyao2089.cc/" />
-<link rel="alternate" hreflang="zh-CN" href="https://luyao2089.cc/" />
-<link rel="alternate" hreflang="x-default" href="https://luyao2089.cc/" />
+<link rel="canonical" href="{{siteUrl}}" />
+<link rel="alternate" hreflang="zh-CN" href="{{siteUrl}}" />
+<link rel="alternate" hreflang="x-default" href="{{siteUrl}}" />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="zh_CN" />
 <meta property="og:site_name" content="话术精灵SoftTalk" />
 <meta property="og:title" content="话术精灵SoftTalk｜客服话术软件｜客户话术软件｜客服知识库" />
 <meta property="og:description" content="面向电商团队的客服话术软件和客户话术软件，聚焦常用话术管理、知识库沉淀、团队统一口径和本地自动备份。" />
-<meta property="og:url" content="https://luyao2089.cc/" />
+<meta property="og:url" content="{{siteUrl}}" />
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:title" content="话术精灵SoftTalk｜客服话术软件｜客户话术软件｜客服知识库" />
 <meta name="twitter:description" content="客服话术软件 / 客户话术软件，聚焦常用话术管理、分类整理、统一口径与本地自动备份。" />
@@ -29,7 +27,7 @@
     {
       "@type": "WebSite",
       "name": "话术精灵SoftTalk",
-      "url": "https://luyao2089.cc/",
+      "url": "{{siteUrl}}",
       "inLanguage": "zh-CN"
     },
     {
@@ -40,8 +38,8 @@
       "operatingSystem": "Windows",
       "inLanguage": "zh-CN",
       "description": "面向电商团队的客服话术软件与客户话术软件，用来整理常用话术、沉淀团队经验，并通过知识库统一团队口径与本地备份。",
-      "url": "https://luyao2089.cc/",
-      "downloadUrl": "https://www.kdocs.cn/l/cvnglmckRGBu",
+      "url": "{{siteUrl}}",
+      "downloadUrl": "{{downloadUrl}}",
       "keywords": "客服话术软件,客户话术软件,电商客服话术软件,客服话术管理,客户话术管理,客服知识库,客户话术知识库,电商客服知识库,话术库管理",
       "publisher": {
         "@type": "Person",
@@ -87,23 +85,8 @@
     }
   ]
 }
-</script>
-<link rel="stylesheet" href="assets/css/site.css" />
-</head>
-<body>
-<header class="nav">
-    <div class="nav-inner">
-        <div class="brand"><img class="brand-logo" src="assets/logo.png" alt="话术精灵logo" />黎路遥 · 话术精灵SoftTalk</div>
-        <div class="nav-actions">
-            <a class="nav-link nav-link--current" href="index.html" aria-current="page">首页</a>
-            <a class="nav-link" href="pricing.html">定价</a>
-            <a class="nav-link" href="contact.html">联系我们</a>
-            <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">Windows 下载</a>
-        </div>
-    </div>
-</header>
-
-<main class="page">
+</script>`,
+  main: String.raw`<main class="page">
 
     <!-- Hero -->
     <section class="hero">
@@ -120,9 +103,9 @@
             <span>服务规范</span>
         </div>
         <div class="btn-row">
-            <a class="btn-download" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">立即下载 话术精灵SoftTalk</a>
+            <a class="btn-download" href="{{downloadUrl}}" target="_blank" rel="noopener">立即下载 话术精灵SoftTalk</a>
             <a class="btn-secondary" href="#demo">↓ 演示体验</a>
-            <a class="btn-secondary" href="https://www.kdocs.cn/l/crEfTnE6toV0" target="_blank" rel="noopener">知识库使用教程</a>
+            <a class="btn-secondary" href="{{tutorialUrl}}" target="_blank" rel="noopener">知识库使用教程</a>
         </div>
     </section>
 
@@ -234,7 +217,7 @@
                                autocomplete="off" />
                     </div>
                     <div class="demo-bottom-branding">
-                        <span>话术精灵 官网: luyao2089.cc</span>
+                        <span>话术精灵 官网: {{authorWechat}}.cc</span>
                         <span class="demo-branding-bug">🐛</span>
                     </div>
                 </div>
@@ -331,21 +314,6 @@
         </div>
     </section>
 
-</main>
-
-<footer class="footer">
-    <div class="footer-line">©2025-2026，黎路遥 版权所有</div>
-    <div class="footer-line footer-line--en">Copyright © 2025-2026 Li Luyao. All rights reserved.</div>
-    <div class="footer-line footer-records">
-        <a class="footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2025481646号-2</a>
-        <a class="footer-link footer-security-link" href="https://beian.mps.gov.cn/#/query/webSearch?code=44030002012053" target="_blank" rel="noreferrer">
-            <img class="footer-security-icon" src="备案图标.png" alt="公安备案图标" />
-            <span>粤公网安备44030002012053号</span>
-        </a>
-    </div>
-    <div class="footer-line">作者微信：luyao2089</div>
-</footer>
-
-<script src="assets/js/demo.js"></script>
-</body>
-</html>
+</main>`,
+  bodyEnd: String.raw`<script src="assets/js/demo.js"></script>`,
+};

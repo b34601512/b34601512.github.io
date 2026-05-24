@@ -1,0 +1,25 @@
+/* 该文件用于集中维护全站设计变量，避免颜色和尺寸散落在页面样式中。 */
+
+/* 统一改为 Claude 风格的暖米色主题，后续优先在这里集中调色。 */
+:root {
+  --bg-base:#f6f3eb;
+  --bg-soft:#f0eee6;
+  --bg-panel:#fbf8f2;
+  --bg-panel-strong:#f2ece2;
+  --ink-strong:#141413;
+  --ink-main:#2f2b27;
+  --ink-muted:#615c56;
+  --ink-soft:#7a746c;
+  --line:#d8d0c4;
+  --line-strong:#bbae9f;
+  --brand:#d97757;
+  --brand-deep:#c6613f;
+  --brand-soft:#f2d8cd;
+  --brand-ink:#784733;
+  --surface-dark:#1f1e1d;
+  --surface-dark-2:#2b2825;
+  --surface-dark-line:rgba(255,255,255,.14);
+  --shadow-lg:0 28px 60px rgba(31,27,21,.08);
+  --shadow-md:0 14px 30px rgba(31,27,21,.07);
+  --radius-xl:24px;
+}

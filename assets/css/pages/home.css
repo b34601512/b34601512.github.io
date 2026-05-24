@@ -1,0 +1,59 @@
+/* 该文件用于维护首页独有列表、截图和 FAQ 样式，避免首页内容影响其他页面。 */
+
+.feature-grid {
+  margin-top:16px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.screenshot-section {
+  position:relative;
+  z-index:1;
+  margin:30px auto 0;
+  padding:0 20px;
+  text-align:center;
+  animation:rise-in .6s ease forwards;
+  animation-delay:0.22s;
+  opacity:0;
+}
+
+.screenshot-label {
+  margin:0 0 8px;
+  font-size:22px;
+  font-weight:700;
+  color:var(--ink-strong);
+}
+
+.screenshot-desc {
+  margin:0 0 20px;
+  font-size:16px;
+  line-height:1.8;
+  color:var(--ink-muted);
+}
+
+.screenshot-showcase {
+  margin-top:20px;
+  text-align:center;
+}
+
+.screenshot-img {
+  display:block;
+  max-width:100%;
+  margin:0 auto 24px;
+  border-radius:16px;
+  box-shadow:0 24px 56px rgba(31,27,21,.18);
+}
+
+.screenshot-img:last-child { margin-bottom:0; }
+
+.faq-item {
+  margin-top:10px;
+}
+
+.faq-item strong {
+  display:block;
+  margin-bottom:8px;
+  color:var(--ink-strong);
+  font-size:16px;
+}

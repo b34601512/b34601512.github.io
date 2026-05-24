@@ -1,0 +1,72 @@
+/* 该文件用于维护通用按钮和按钮行样式，保证可复用交互入口一致。 */
+
+.btn-row {
+  margin-top:28px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.btn-download {
+  display:inline-block;
+  padding:13px 26px;
+  font-size:17px;
+  font-weight:700;
+  border-radius:12px;
+  text-decoration:none;
+  color:#fffaf5;
+  background:linear-gradient(140deg,#d97757 0%,#cd6a49 58%,#c05d3d 100%);
+  box-shadow:0 14px 30px rgba(198,97,63,.26);
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.btn-download:hover {
+  transform:translateY(-1px);
+  box-shadow:0 18px 34px rgba(198,97,63,.31);
+  background:linear-gradient(140deg,#d16e4d 0%,#c6613f 58%,#b75536 100%);
+}
+
+.btn-secondary {
+  display:inline-block;
+  padding:12px 20px;
+  border-radius:12px;
+  border:1px solid #cfbea9;
+  background:rgba(251,248,242,.96);
+  color:#5d4635;
+  text-decoration:none;
+  font-size:16px;
+  font-weight:600;
+  transition:background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.btn-secondary:hover {
+  color:var(--ink-strong);
+  border-color:#c2ae97;
+  background:var(--bg-soft);
+  transform:translateY(-1px);
+}
+
+.section {
+  max-width:920px;
+  margin:30px auto 0;
+  padding:34px 30px;
+  opacity:0;
+  animation:rise-in .6s ease forwards;
+  animation-delay:var(--delay,0s);
+}
+
+.section h2 {
+  margin:0 0 14px;
+  color:var(--ink-strong);
+  font-size:29px;
+  line-height:1.35;
+}
+
+.section p,
+.download-card p {
+  margin:10px 0;
+  line-height:1.9;
+  color:var(--ink-main);
+  font-size:17px;
+}

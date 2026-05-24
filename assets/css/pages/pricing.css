@@ -1,0 +1,194 @@
+/* 该文件用于维护定价页独有布局和卡片样式，避免定价业务样式污染全站。 */
+
+.pricing-page-layout { padding-top:34px; }
+.pricing-page-layout .section { max-width:1120px; }
+
+.pricing-showcase {
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(320px,.95fr);
+  gap:18px;
+  margin-top:20px;
+  padding:36px 34px;
+  border:1px solid rgba(187,174,159,.72);
+  border-radius:var(--radius-xl);
+  background:linear-gradient(160deg,rgba(251,248,242,.98) 0%,rgba(244,239,230,.96) 100%);
+  box-shadow:var(--shadow-lg);
+  animation:rise-in .6s ease both;
+}
+
+.pricing-showcase-copy .hero-tags { justify-content:flex-start; }
+.pricing-showcase-copy .btn-row { justify-content:flex-start; }
+
+.pricing-summary-card {
+  padding:24px 22px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(160deg,#171615 0%,#23211f 100%);
+  box-shadow:0 24px 42px rgba(20,20,19,.18);
+  color:#f0eee6;
+}
+
+.pricing-summary-label {
+  margin:0;
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:0 12px;
+  border-radius:999px;
+  background:rgba(240,238,230,.1);
+  border:1px solid rgba(240,238,230,.16);
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+
+.pricing-summary-card h2 {
+  margin:16px 0 10px;
+  color:#f8f4ed;
+  font-size:36px;
+  line-height:1.2;
+}
+
+.pricing-summary-note {
+  margin:0;
+  color:rgba(240,238,230,.82);
+  font-size:15px;
+  line-height:1.8;
+}
+
+.pricing-summary-list {
+  margin-top:18px;
+  display:grid;
+  gap:10px;
+}
+
+.pricing-summary-item {
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--surface-dark-line);
+  background:rgba(255,255,255,.06);
+  font-size:15px;
+  line-height:1.72;
+}
+
+.pricing-card,
+.pricing-feature-item,
+.pricing-scene-item,
+.feature-item,
+.faq-item,
+.contact-item {
+  position:relative;
+  overflow:hidden;
+  padding:18px 16px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:linear-gradient(150deg,#fffdf8 0%,#f4eee4 100%);
+  box-shadow:var(--shadow-md);
+}
+
+.pricing-policy-tag {
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  background:#efe5d8;
+  border:1px solid #dbc9b3;
+  color:#6d503a;
+  font-size:13px;
+  font-weight:700;
+}
+
+.pricing-card h3,
+.pricing-feature-item h3,
+.pricing-scene-item h3,
+.feature-item h3,
+.contact-item h3 {
+  margin:14px 0 8px;
+  color:var(--ink-strong);
+  font-size:22px;
+}
+
+.pricing-feature-item p,
+.pricing-scene-item p,
+.feature-item p,
+.contact-item p,
+.faq-item p {
+  margin:0;
+  font-size:15px;
+  line-height:1.82;
+  color:var(--ink-muted);
+}
+
+.pricing-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin-top:16px;
+}
+
+.pricing-grid--plans .pricing-card {
+  min-height:220px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:flex-start;
+  text-align:left;
+}
+
+.pricing-card--starter {
+  border-color:#ddc2b7;
+  background:linear-gradient(145deg,#faf3eb 0%,#fffdf8 100%);
+  box-shadow:0 16px 32px rgba(198,97,63,.1);
+}
+
+.pricing-plan-price {
+  margin:0;
+  color:var(--ink-strong);
+  font-size:30px;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.pricing-plan-note {
+  margin-top:auto;
+  color:var(--ink-soft);
+  font-size:14px;
+  line-height:1.8;
+}
+
+.pricing-card--featured {
+  border-color:#d97757;
+  background:linear-gradient(145deg,#fbf1e9 0%,#fffaf6 100%);
+}
+
+.pricing-badge {
+  position:absolute;
+  top:0;
+  right:0;
+  padding:5px 12px;
+  background:linear-gradient(140deg,#d97757 0%,#c6613f 100%);
+  color:#fffaf5;
+  font-size:12px;
+  font-weight:700;
+  border-bottom-left-radius:12px;
+}
+
+.pricing-feature-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+
+.pricing-scene-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+
+.pricing-footnote {
+  margin-top:14px;
+  color:var(--ink-soft);
+}

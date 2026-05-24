@@ -1,21 +1,19 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="author" content="黎路遥" />
-<title>定价｜话术精灵SoftTalk｜客服话术软件｜客户话术软件</title>
+// 该文件用于维护 pricing.html 的页面专属元信息和主体内容，公共结构由 layout 生成。
+export const pricingPage = {
+  outputFile: "pricing.html",
+  brand: String.raw`<img class="brand-logo" src="assets/logo.png" alt="话术精灵logo" />话术精灵SoftTalk · 官方定价`,
+  head: String.raw`<title>定价｜话术精灵SoftTalk｜客服话术软件｜客户话术软件</title>
     <meta name="description" content="话术精灵SoftTalk 客服话术软件 / 客户话术软件定价页面：本地离线知识库永久免费；新用户注册首月可免费体验云同步、团队共享、云端备份等增值功能；收费标准为 1年48元/工号、2年78元/工号、3年98元/工号、100年168元/工号。" />
     <meta name="keywords" content="客服话术软件价格,客户话术软件价格,话术精灵定价,SoftTalk 定价,知识库定价,离线永久免费,云同步收费,团队共享收费,云端备份收费" />
     <meta name="robots" content="index,follow" />
-    <link rel="canonical" href="https://luyao2089.cc/pricing.html" />
-    <link rel="alternate" hreflang="zh-CN" href="https://luyao2089.cc/pricing.html" />
+    <link rel="canonical" href="{{siteUrl}}pricing.html" />
+    <link rel="alternate" hreflang="zh-CN" href="{{siteUrl}}pricing.html" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="zh_CN" />
     <meta property="og:site_name" content="话术精灵SoftTalk" />
     <meta property="og:title" content="定价｜话术精灵SoftTalk｜客服话术软件｜客户话术软件" />
     <meta property="og:description" content="客服话术软件 / 客户话术软件定价页面，离线知识库永久免费，云端协作功能首月可体验。" />
-    <meta property="og:url" content="https://luyao2089.cc/pricing.html" />
+    <meta property="og:url" content="{{siteUrl}}pricing.html" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="定价｜话术精灵SoftTalk｜客服话术软件｜客户话术软件" />
     <meta name="twitter:description" content="客服话术软件 / 客户话术软件定价页面，离线知识库永久免费，云端协作功能首月可体验。" />
@@ -31,26 +29,26 @@
               "@type": "ListItem",
               "position": 1,
               "name": "首页",
-              "item": "https://luyao2089.cc/"
+              "item": "{{siteUrl}}"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "定价",
-              "item": "https://luyao2089.cc/pricing.html"
+              "item": "{{siteUrl}}pricing.html"
             }
           ]
         },
         {
           "@type": "WebPage",
           "name": "定价｜话术精灵SoftTalk",
-          "url": "https://luyao2089.cc/pricing.html",
+          "url": "{{siteUrl}}pricing.html",
           "description": "话术精灵SoftTalk 客服话术软件 / 客户话术软件定价页面。",
           "inLanguage": "zh-CN",
           "isPartOf": {
             "@type": "WebSite",
             "name": "话术精灵SoftTalk",
-            "url": "https://luyao2089.cc/"
+            "url": "{{siteUrl}}"
           }
         },
         {
@@ -59,7 +57,7 @@
           "applicationCategory": "BusinessApplication",
           "applicationSubCategory": "客服话术软件",
           "operatingSystem": "Windows",
-          "url": "https://luyao2089.cc/",
+          "url": "{{siteUrl}}",
           "inLanguage": "zh-CN",
           "offers": {
             "@type": "AggregateOffer",
@@ -71,23 +69,8 @@
         }
       ]
     }
-    </script>
-<link rel="stylesheet" href="assets/css/site.css" />
-</head>
-<body>
-<header class="nav">
-    <div class="nav-inner">
-        <div class="brand"><img class="brand-logo" src="assets/logo.png" alt="话术精灵logo" />话术精灵SoftTalk · 官方定价</div>
-        <div class="nav-actions">
-            <a class="nav-link" href="index.html">首页</a>
-            <a class="nav-link nav-link--current" href="pricing.html" aria-current="page">定价</a>
-            <a class="nav-link" href="contact.html">联系我们</a>
-            <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">Windows 下载</a>
-        </div>
-    </div>
-</header>
-
-<main class="page pricing-page-layout">
+    </script>`,
+  main: String.raw`<main class="page pricing-page-layout">
         <section class="pricing-showcase">
             <div class="pricing-showcase-copy">
                 <p class="hero-eyebrow">客服话术软件定价</p>
@@ -101,7 +84,7 @@
                     <span>长期版可选</span>
                 </div>
                 <div class="btn-row">
-                    <a class="btn-download" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">立即下载并体验</a>
+                    <a class="btn-download" href="{{downloadUrl}}" target="_blank" rel="noopener">立即下载并体验</a>
                     <a class="btn-secondary" href="contact.html">咨询购买与续费</a>
                 </div>
             </div>
@@ -182,20 +165,6 @@
                 </article>
             </div>
         </section>
-    </main>
-
-<footer class="footer">
-    <div class="footer-line">©2025-2026，黎路遥 版权所有</div>
-    <div class="footer-line footer-line--en">Copyright © 2025-2026 Li Luyao. All rights reserved.</div>
-    <div class="footer-line footer-records">
-        <a class="footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">粤ICP备2025481646号-2</a>
-        <a class="footer-link footer-security-link" href="https://beian.mps.gov.cn/#/query/webSearch?code=44030002012053" target="_blank" rel="noreferrer">
-            <img class="footer-security-icon" src="备案图标.png" alt="公安备案图标" />
-            <span>粤公网安备44030002012053号</span>
-        </a>
-    </div>
-    <div class="footer-line">作者微信：luyao2089</div>
-</footer>
-
-</body>
-</html>
+    </main>`,
+  bodyEnd: String.raw``,
+};
