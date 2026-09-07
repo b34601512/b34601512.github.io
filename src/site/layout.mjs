@@ -75,7 +75,7 @@ function replaceSiteTokens(markup) {
     .replaceAll("{{downloadUrl}}", siteData.downloadUrl)
     .replaceAll("{{tutorialUrl}}", siteData.tutorialUrl)
     .replaceAll("{{authorWechat}}", siteData.authorWechat)
-    .replaceAll("{{customerWechat}}", siteData.customerWechat);
+    .replaceAll("{{authorEmail}}", siteData.authorEmail);
 }
 
 function renderBodyEnd(pageDefinition) {

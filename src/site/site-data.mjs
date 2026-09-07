@@ -3,7 +3,7 @@ export const siteData = {
   siteUrl: "https://luyao2089.cc/",
   authorName: "黎路遥",
   authorWechat: "luyao2089",
-  customerWechat: "yuan1027560706",
+  authorEmail: "576798643@qq.com",
   downloadUrl: "https://www.kdocs.cn/l/cvnglmckRGBu",
   tutorialUrl: "https://www.kdocs.cn/l/crEfTnE6toV0",
   copyrightChinese: "©2025-2026，黎路遥 版权所有",

@@ -30,7 +30,7 @@
   border-color:var(--brand);
   box-shadow:0 0 0 3px rgba(217,119,87,.12);
 }
-.contact-wechat-id {
+.contact-id {
   font-size:20px !important;
   font-weight:700;
   color:var(--ink-strong) !important;
