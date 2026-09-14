@@ -218,6 +218,7 @@
 
 .chat-foot {
   display: flex;
+  align-items: flex-end;
   gap: 8px;
   padding: 8px;
   border-top: 1px solid var(--wx-line);
@@ -226,8 +227,8 @@
 
 .chat-input {
   flex: 1;
-  min-height: 34px;
-  max-height: 76px;
+  min-height: 70px;
+  max-height: 140px;
   padding: 7px 9px;
   border: 1px solid #dcdcdc;
   border-radius: 4px;
@@ -253,7 +254,7 @@
 
 .chat-send {
   flex: 0 0 auto;
-  padding: 0 14px;
+  padding: 7px 16px;
   border: 1px solid #d0d0d0;
   border-radius: 4px;
   background: #f2f2f2;

@@ -455,10 +455,11 @@
     el.send.classList.remove("chat-send--ready");
   };
 
-  // 输入框是多行编辑框：内容行数变化时自动长高（最高 76px）。
+  // 输入框是多行编辑框：随内容长高，上限取 CSS 的 max-height，避免改样式时两处不同步。
   const resizeInput = () => {
     el.input.style.height = "auto";
-    el.input.style.height = `${Math.min(el.input.scrollHeight, 76)}px`;
+    const max = parseFloat(getComputedStyle(el.input).maxHeight);
+    el.input.style.height = `${Number.isFinite(max) ? Math.min(el.input.scrollHeight, max) : el.input.scrollHeight}px`;
   };
 
   // 把话术写进输入框：只填入、不发送，用户还能自己改字（对应客户端双击整行）。
@@ -624,13 +625,14 @@
     el.send.classList.toggle("chat-send--ready", el.input.value.trim() !== "");
   });
 
-  // 输入框支持直接打字：回车换行，Ctrl/Cmd + 回车发送；不劫持 Esc（留给搜索）。
+  // 输入框支持直接打字：回车发送（微信习惯），Shift+Enter 换行。
+  // 用中文输入法选词时的回车不能当发送，否则会误发（isComposing / keyCode 229）。
   el.input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-      event.preventDefault();
-      const text = el.input.value.trim();
-      if (text) sendText(text, null);
-    }
+    if (event.key !== "Enter" || event.shiftKey) return;
+    if (event.isComposing || event.keyCode === 229) return;
+    event.preventDefault();
+    const text = el.input.value.trim();
+    if (text) sendText(text, null);
   });
 
   el.search.addEventListener("input", () => {
