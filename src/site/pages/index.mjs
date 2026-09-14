@@ -92,33 +92,6 @@ export const indexPage = {
     </div>
   </section>
 
-  <section class="section">
-    <h2>三步用起来</h2>
-    <ol class="steps">
-      <li class="step">
-        <span class="step-num">01</span>
-        <div>
-          <h3>整理话术</h3>
-          <p>按场景建一级、二级分类，已有话术表可以用 Excel 导入。</p>
-        </div>
-      </li>
-      <li class="step">
-        <span class="step-num">02</span>
-        <div>
-          <h3>接待时呼出</h3>
-          <p>面板吸附在聊天窗口旁边，Alt+W 显示或隐藏，Alt+R 一键磁吸。</p>
-        </div>
-      </li>
-      <li class="step">
-        <span class="step-num">03</span>
-        <div>
-          <h3>双击贴入、点箭头发送</h3>
-          <p>双击话术贴进输入框，确认后再发；点左侧箭头则直接发送。Alt+Q 跳到搜索框。</p>
-        </div>
-      </li>
-    </ol>
-  </section>
-
   <section class="section" id="demo">
     <h2>看一眼就会用</h2>
     <p class="section-sub">左边是客服聊天窗口，右边是话术精灵主界面：双击话术会贴进输入框，点左侧箭头直接发送。</p>
@@ -187,11 +160,11 @@ export const indexPage = {
     <div class="grid-3">
       <article class="feature">
         <h3>三套话术库</h3>
-        <p>团队话术、个人话术、离线话术分开管理，一级分类配色可以自己配。</p>
+        <p>团队话术、个人话术、离线话术分开管理，一级分类配色可以自己配，已有话术表支持 Excel 导入。</p>
       </article>
       <article class="feature">
-        <h3>快速检索</h3>
-        <p>Alt+Q 直接跳到搜索框，可按全部、当前分类或自定义范围搜索，命中后双击贴入。</p>
+        <h3>呼出与检索</h3>
+        <p>Alt+Q 跳到搜索框，可按全部、当前分类或自定义范围搜索；Alt+W 显示或隐藏面板，Alt+R 磁吸到聊天窗口旁边。</p>
       </article>
       <article class="feature">
         <h3>本地备份</h3>

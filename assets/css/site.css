@@ -290,38 +290,6 @@ a {
   }
 }
 
-/* 步骤 */
-.steps {
-  margin: 28px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.step {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 0 20px;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.step-num {
-  padding-top: 3px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--accent);
-}
-
-.step h3 {
-  font-size: 16px;
-}
-
-.step p {
-  margin-top: 6px;
-  color: var(--fg-muted);
-  font-size: 14.5px;
-}
-
 /* 截图 */
 .shot {
   margin-top: 24px;
@@ -540,11 +508,6 @@ a {
 
   .nav-link {
     font-size: 13px;
-  }
-
-  .step {
-    grid-template-columns: 44px 1fr;
-    gap: 0 14px;
   }
 
   .copy-row {
