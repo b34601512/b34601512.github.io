@@ -85,7 +85,6 @@ export const indexPage = {
     <p class="eyebrow">电商客服话术工具</p>
     <h1>把客服话术<br />沉淀成<span class="hl">团队知识库</span></h1>
     <p class="lead">话术精灵 SoftTalk 是一款 Windows 桌面工具：团队话术、个人话术、离线话术分开管理，双击把话术贴进聊天输入框，点左侧箭头直接发送，内容保存在本机。</p>
-    <p class="hero-meta">适用于天猫、京东、拼多多、抖音等客服场景，面板吸附在聊天窗口旁边，不遮挡对话</p>
     <div class="actions">
       <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载 Windows 版</a>
       <a class="btn btn--ghost" href="#demo">试用演示</a>

@@ -250,12 +250,6 @@ a {
   color: var(--accent);
 }
 
-.hero-meta {
-  margin-top: 16px;
-  color: var(--fg-dim);
-  font-size: 13.5px;
-}
-
 .section {
   padding: clamp(48px, 8vh, 72px) 0;
   border-top: 1px solid var(--line);
