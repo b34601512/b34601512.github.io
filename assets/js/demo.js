@@ -279,8 +279,10 @@
     scope: "team",
     category: 0,
     query: "",
-    busy: false,
     sent: 0,
+    replied: 0,
+    replyPending: false,
+    epoch: 0,
   };
 
   let rows = [];
@@ -291,8 +293,6 @@
   const el = {
     log: $("demo-log"),
     input: $("demo-input"),
-    inputHint: $("demo-input-hint"),
-    inputText: $("demo-input-text"),
     send: $("demo-send-btn"),
     tabs: $("demo-tabs"),
     digits: $("demo-digits"),
@@ -450,43 +450,64 @@
   };
 
   const clearInput = () => {
-    el.inputText.textContent = "";
-    el.inputHint.hidden = false;
-    el.input.classList.remove("chat-input--active");
+    el.input.value = "";
+    resizeInput();
     el.send.classList.remove("chat-send--ready");
   };
 
+  // 输入框是多行编辑框：内容行数变化时自动长高（最高 76px）。
+  const resizeInput = () => {
+    el.input.style.height = "auto";
+    el.input.style.height = `${Math.min(el.input.scrollHeight, 76)}px`;
+  };
+
+  // 把话术写进输入框：只填入、不发送，用户还能自己改字（对应客户端双击整行）。
+  const fillInput = (text) => {
+    el.input.value = text;
+    resizeInput();
+    el.input.focus({ preventScroll: true });
+    el.send.classList.add("chat-send--ready");
+  };
+
   const sendText = (text, node) => {
-    if (state.busy || !text) return;
-    state.busy = true;
+    if (!text) return;
+    const epoch = state.epoch;
     node?.classList.add("app-row--sending");
 
-    el.inputHint.hidden = true;
-    el.inputText.textContent = text;
-    el.input.classList.add("chat-input--active");
-    el.send.classList.add("chat-send--ready");
+    fillInput(text);
 
     setTimeout(() => {
       node?.classList.remove("app-row--sending");
+      if (epoch !== state.epoch) return;
       clearInput();
       addMessage(text, "out");
       state.sent += 1;
       updateCounter();
-
-      const reply = CUSTOMER_REPLIES[state.sent - 1];
-      if (!reply) {
-        state.busy = false;
-        return;
-      }
-      setTimeout(() => {
-        showTyping();
-        setTimeout(() => {
-          hideTyping();
-          addMessage(reply, "in");
-          state.busy = false;
-        }, 900);
-      }, 350);
+      scheduleReply();
     }, 520);
+  };
+
+  // 客户回复一次只排一条：连发多条时不会掉队，也不会抢答。
+  const scheduleReply = () => {
+    if (state.replyPending) return;
+    const reply = CUSTOMER_REPLIES[state.replied];
+    if (!reply) return;
+    state.replyPending = true;
+    const epoch = state.epoch;
+    setTimeout(() => {
+      if (epoch !== state.epoch) return;
+      showTyping();
+      setTimeout(() => {
+        if (epoch !== state.epoch) {
+          hideTyping();
+          return;
+        }
+        hideTyping();
+        addMessage(reply, "in");
+        state.replied += 1;
+        state.replyPending = false;
+      }, 900);
+    }, 350);
   };
 
   /* ---------- 交互 ---------- */
@@ -498,10 +519,7 @@
   // 双击＝仅粘贴（对应客户端“双击整行”），内容先落到聊天输入框，不直接发送。
   const pasteIntoInput = (item) => {
     if (!item) return;
-    el.inputHint.hidden = true;
-    el.inputText.textContent = item.text;
-    el.input.classList.add("chat-input--active");
-    el.send.classList.add("chat-send--ready");
+    fillInput(item.text);
   };
 
   const focusCategory = (index) => {
@@ -513,7 +531,15 @@
   };
 
   const reset = () => {
-    Object.assign(state, { scope: "team", category: 0, query: "", busy: false, sent: 0 });
+    Object.assign(state, {
+      scope: "team",
+      category: 0,
+      query: "",
+      sent: 0,
+      replied: 0,
+      replyPending: false,
+      epoch: state.epoch + 1,
+    });
     Object.values(SCOPES).forEach((scope) =>
       scope.categories.forEach((category) =>
         category.sections.forEach((section, index) => {
@@ -589,8 +615,22 @@
 
   // 聊天窗口自己的发送按钮：把输入框里的内容发出去（用户确认后再发的那一步）。
   el.send.addEventListener("click", () => {
-    const text = el.inputText.textContent.trim();
+    const text = el.input.value.trim();
     if (text) sendText(text, null);
+  });
+
+  el.input.addEventListener("input", () => {
+    resizeInput();
+    el.send.classList.toggle("chat-send--ready", el.input.value.trim() !== "");
+  });
+
+  // 输入框支持直接打字：回车换行，Ctrl/Cmd + 回车发送；不劫持 Esc（留给搜索）。
+  el.input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      const text = el.input.value.trim();
+      if (text) sendText(text, null);
+    }
   });
 
   el.search.addEventListener("input", () => {
