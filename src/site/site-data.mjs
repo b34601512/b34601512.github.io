@@ -1,22 +1,27 @@
-// 该文件用于集中维护全站公共数据，避免导航、页脚、链接和备案信息散落在页面里。
+// 全站唯一数据源：域名、产品信息、下载与教程入口、联系方式、备案信息。
+// 页面模块直接 import 这里的字段拼 HTML，不再使用占位符替换。
 export const siteData = {
   siteUrl: "https://luyao2089.cc/",
+  siteName: "话术精灵 SoftTalk",
+  siteTitle: "话术精灵 SoftTalk｜客服话术软件与团队知识库",
   authorName: "黎路遥",
   authorWechat: "luyao2089",
   authorEmail: "576798643@qq.com",
   downloadUrl: "https://www.kdocs.cn/l/cvnglmckRGBu",
   tutorialUrl: "https://www.kdocs.cn/l/crEfTnE6toV0",
-  copyrightChinese: "©2025-2026，黎路遥 版权所有",
-  copyrightEnglish: "Copyright © 2025-2026 Li Luyao. All rights reserved.",
-  icpText: "粤ICP备2025481646号-2",
-  icpUrl: "https://beian.miit.gov.cn/",
-  policeRecordText: "粤公网安备44030002012053号",
-  policeRecordUrl: "https://beian.mps.gov.cn/#/query/webSearch?code=44030002012053",
-  policeIconPath: "备案图标.png",
-  navItems: [
-    { label: "首页", href: "index.html" },
-    { label: "定价", href: "pricing.html" },
-    { label: "联系我们", href: "contact.html" },
-    { label: "Windows 下载", href: "downloadUrl", external: true },
-  ],
+  copyright: "© 2025–2026 黎路遥 · 话术精灵 SoftTalk",
+  icp: {
+    text: "粤ICP备2025481646号-2",
+    url: "https://beian.miit.gov.cn/",
+  },
+  police: {
+    text: "粤公网安备44030002012053号",
+    url: "https://beian.mps.gov.cn/#/query/webSearch?code=44030002012053",
+    icon: "assets/beian.png",
+  },
 };
+
+// 把页面文件名解析成绝对地址，供 canonical、og:url 和 sitemap 共用。
+export function pageUrl(file) {
+  return new URL(file, siteData.siteUrl).href;
+}

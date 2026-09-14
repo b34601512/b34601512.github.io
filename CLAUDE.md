@@ -1,142 +1,200 @@
-# 话术精灵·官网项目档案
+# 话术精灵 SoftTalk · 官网项目档案
 
-> 建档时间：2026-08-07 11:34:06 +08:00（Asia/Shanghai）
+> 更新时间：2026-09-15（演示区按真实客户端复刻 + 全站提亮配色）
 > 项目目录：`D:\SoftTalk官网`
 
 ## 项目目标
 
-这是商业项目「话术精灵 SoftTalk」的官方网站，用来向电商客服团队介绍产品、展示实际使用效果、公开价格和联系方式，并把访客引导到 Windows 客户端下载页与知识库教程。
+商业项目「话术精灵 SoftTalk」的官方网站，用来介绍 Windows 客户端、公开价格、提供联系方式，并把访客引向下载页与知识库教程。
 
-网站现在有三张正式页面：
+三张正式页面：
 
-- `index.html`：首页，介绍产品、功能、常见问题，并提供一个纯浏览器交互演示。
-- `pricing.html`：定价页，说明免费功能、云端协作功能和各档价格。
-- `contact.html`：联系页，展示作者微信与作者邮箱，点击卡片可以复制联系方式。
+- `index.html`：首页。极简介绍 + 可交互演示 + 真实界面截图 + 功能 + 常见问题。
+- `pricing.html`：定价页。本地免费与云端按工号付费的价格表、云端包含的能力。
+- `contact.html`：联系页。作者微信与邮箱，点击整行复制。
+
+内容原则（重构时定下的基调，后续新增内容也要遵守）：
+
+- 极简、纯黑、少即是多。宁可删掉一块，也不要再堆一块。
+- 一个信息只说一次：首页讲产品与演示，定价页讲价格，联系页讲联系方式，页脚只留版权与备案。
+- 不用 emoji 当图标，不用卡片阴影、渐变、光斑、多层圆角。分隔靠 1px 细线。
+- 数字、链接入口必须可点、可复制；不要在页面上放不可交互的装饰。
 
 ## 技术形态
 
-- 项目形态：静态官网，不是前后端分离项目，也没有后端服务。
-- 页面技术：HTML5、CSS3、原生 JavaScript，没有 React、Vue 等前端框架。
-- 构建技术：Node.js 的 ES Module（`.mjs`）脚本，只使用 Node 自带模块，没有第三方依赖。
-- 依赖管理：没有 `package.json` 和锁文件，第一次运行不需要执行 `npm install`。
-- 数据能力：没有数据库、登录、接口请求或服务端存储。首页演示数据都写在 `assets/js/demo.js` 中，只存在当前浏览器页面的内存里，刷新页面就会复原。
-- 发布方式：`README.md` 说明网站由 GitHub Pages 托管，线上域名是 `https://luyao2089.cc`，`CNAME` 负责绑定该域名。
-- 部署配置：仓库里没有 GitHub Actions、Docker、Vercel、Netlify 等部署配置，也没有单独的部署命令。GitHub Pages 使用哪个分支和目录发布，需要到仓库的 Pages 设置中确认。
-- 当前已验证环境：Node.js `v22.17.1`；本地预览使用 Python `3.10.11` 自带的静态文件服务器。
+- 静态站点：HTML5 + CSS3 + 原生 JavaScript（ES2022），无框架、无构建工具链。
+- 构建脚本：Node.js ES Module（`.mjs`），只用 Node 自带模块，无第三方依赖。
+- 没有 `package.json`、锁文件和 `node_modules`，克隆后不需要 `npm install`。
+- 没有后端、数据库、接口请求、登录或服务端存储。
+- 发布：GitHub Pages，域名 `https://luyao2089.cc`（`CNAME` 绑定），仓库根目录即发布目录。
+- 已验证环境：Node.js `v24.19.0`；本地预览用 Python `3.10.11` 的静态文件服务器。
 
-根目录的三张 HTML 是构建结果，不是首选维护入口。改文案、页面结构或公共信息时，应先改 `src/site/`，再运行构建脚本生成 HTML；不要长期同时手改源文件和生成后的 HTML，否则两边会不一致。
+根目录三张 HTML 与 `sitemap.xml` 都是构建产物，**不要手改**；改 `src/site/` 后运行构建脚本。
 
 ## 模块结构
 
 ```text
 D:\SoftTalk官网
 ├─ src\site\
-│  ├─ site-data.mjs          全站公共数据：域名、下载/教程链接、联系方式、备案和导航
-│  ├─ layout.mjs             公共页面骨架：head、导航、页脚、占位符替换
+│  ├─ site-data.mjs          全站唯一数据源：域名、产品名、下载/教程链接、联系方式、版权、备案
+│  ├─ layout.mjs             公共骨架：head 基础项、导航、页脚；导航由页面清单自动生成
 │  └─ pages\
-│     ├─ index.mjs           首页内容和 SEO 信息
-│     ├─ pricing.mjs         定价页内容和 SEO 信息
-│     └─ contact.mjs         联系页内容、SEO 信息和复制联系方式脚本
+│     ├─ index.mjs           首页 head（SEO/JSON-LD）+ 主体 + 演示脚本引用
+│     ├─ pricing.mjs         定价页 head + 价格表
+│     └─ contact.mjs         联系页 head + 复制脚本
 ├─ scripts\
-│  └─ build-site.mjs         把页面源文件生成到根目录三张 HTML
+│  ├─ build-site.mjs         生成根目录三张 HTML 与 sitemap.xml
+│  ├─ check-site.mjs         站点自检（见“自动检查”）
+│  └─ optimize-images.py     图片压缩（仅本地需要 Pillow，站点运行不依赖 Python）
 ├─ assets\
-│  ├─ css\
-│  │  ├─ site.css            全站样式总入口，继续导入基础、组件、页面和响应式样式
-│  │  └─ demo.css            首页交互演示专用样式
-│  ├─ js\demo.js             首页演示数据、页面状态、搜索、切换和模拟发送逻辑
-│  ├─ logo.png               产品标志
-│  ├─ screenshot.png         客户端截图
-│  └─ screenshot2.png        客户端与聊天窗口并排截图
-├─ index.html                构建生成的首页，也是 GitHub Pages 默认入口
-├─ pricing.html              构建生成的定价页
-├─ contact.html              构建生成的联系页
+│  ├─ css\site.css           全站唯一样式入口（变量/基础/导航/组件/区块/页脚/响应式）
+│  ├─ css\demo.css           首页交互演示样式（复刻客户端白色主题）
+│  ├─ js\demo.js             首页演示数据 + 渲染 + 模拟发送
+│  ├─ logo.png               168×187 调色板 PNG（1.3 KB）
+│  ├─ favicon.png            128×128 调色板 PNG（2.2 KB）
+│  ├─ screenshot.webp        975×819 有损 WebP，质量 82（64 KB）
+│  ├─ type-text.png          28×28 话术类型角标（纯文本）
+│  ├─ type-image.png         28×28 话术类型角标（带图片）
+│  ├─ type-pdf.png           28×28 话术类型角标（带文件）
+│  └─ beian.png              公安备案图标（16px 显示）
+├─ index.html / pricing.html / contact.html   构建产物
+├─ sitemap.xml               构建产物，由页面清单生成
+├─ robots.txt                抓取规则，指向 sitemap
 ├─ CNAME                     GitHub Pages 自定义域名
-├─ robots.txt                搜索引擎抓取规则
-├─ sitemap.xml               三张正式页面的站点地图
-├─ 备案图标.png              页脚公安备案图标
-└─ README.md                 项目和线上地址的简要说明
+├─ README.md                 对外说明（预览、修改、图片）
+└─ CLAUDE.md                 本文件
 ```
 
-补充说明：
+页面模块写 HTML 时直接 `import { siteData }` 拼字符串，**不使用占位符替换**（旧版的 `{{downloadUrl}}` 机制已移除，不要再引入）。
 
-- `assets/css/site.css` 是公共样式入口；首页还会额外加载 `assets/css/demo.css`。
-- `.claude/worktrees/` 是工具留下的辅助工作树，不是当前官网的正式源码，摸底和维护时不要把里面的旧文件当成主项目文件。
-- `全仓代码重构审计索引.txt` 是历史审计记录，其中提到的个别旧文件已经不在当前主项目里，不能把它当成现在的运行清单。
+## 设计规范
+
+设计变量集中在 `assets/css/site.css` 顶部，改色只改这里：
+
+| 变量 | 值 | 用途 |
+| --- | --- | --- |
+| `--bg` | `#000` | 页面背景，纯黑 |
+| `--surface` / `--surface-2` | `#0d0c0b` / `#1a1815` | 面板与控件底色（微暖，和纯黑背景拉开层次） |
+| `--fg` | `#f5f5f5` | 主文字 |
+| `--fg-muted` / `--fg-dim` | `#b8b8b8` / `#8c8c8c` | 次级文字、说明与占位（小字提示必须 ≥ `--fg-dim`，否则看不清） |
+| `--line` / `--line-strong` | `#262626` / `#3f3f3f` | 细线分隔、可交互描边 |
+| `--accent` / `--accent-soft` | `#ff6b2c` / `rgba(255,107,44,.1)` | 品牌橙：标题高亮、小标签、主按钮底、选中态、焦点圈、价格推荐档 |
+| `--ok` | `#3ddc84` | 仅用于状态点（客户端演示区的在线绿点） |
+| `--width` | `1000px` | 内容最大宽度 |
+| `--mono` | 系统等宽字体 | 价格、编号、套号 |
+
+约定：
+
+- 主按钮是「橙底黑字」（`.btn--primary`），次级按钮是细描边（`.btn--ghost`，hover 变橙描边橙字）。
+- 区块用 `.section`（顶部 1px 细线 + 上下留白）分隔，内容包在 `.wrap` 里；区块标题上方有一道橙色短线（`.section h2::before`）。
+- 正文以白/浅灰为主，橙色只做强调：小标签、标题关键词、选中态、按钮；不要用它铺大面积色块。
+- 正文里的小字提示（如「点击复制」）用橙色，比灰色更容易看见。
+- 首页演示（`demo.css` + `demo.js`）的类名、元素 ID 是一套契约：改一边必须改另一边；`check-site.mjs` 会拦住不一致。
+- 动效只用一次性的轻微上浮（`@keyframes rise`）与消息入场（`@keyframes msg-in`），并尊重 `prefers-reduced-motion`。
+
+### 演示区＝客户端复刻
+
+首页演示区不是自创 UI，而是客户端主界面的复刻，配色与结构以客户端代码为准，改之前先看客户端：
+
+- 配色唯一来源：`D:\SoftTalk\softtalk_shared\knowledge_main_visual_theme.py`（白色主题），映射到 `demo.css` 里的 `--w-*` 变量。
+- 结构对应：标题栏（磁吸/置顶/最小化）→ 团队话术/个人话术/离线话术页签（云域页签底部蓝线 `--w-cloud`）→ 0-9 套号 → 一级分类标签（浅底胶囊 + 选中暗红下划线）→ 二级分类（`--w-lv2-bg` 蓝底行）→ 话术行（题红字 `--w-title-fg` + 灰答案）→ 常用短语 → 搜索行（`Alt+Q 定位搜索栏` + 范围按钮）→ 底栏官网文案 + 小精灵。
+- 一级分类色板取自 `softtalk_knowledge_client/lv1_color_presets.py` 的浅色组；话术类型角标取自客户端 `platform_images/script-*.png`。
+- 左侧聊天窗口按微信风格（`--wx-*` 变量）：灰底、白色收到的气泡、绿色 `#95ec69` 发出的气泡。
+- 演示区仍是假数据，只用于展示操作路径：页签切换话术域、套号/分类切换、二级分类展开收起、单击选中并回显、双击或回车发送、常用短语直发、搜索（全部范围，结果带路径）、客户自动回复、重置。
 
 ## 数据流
 
-构建时的数据流很简单：
+构建时：
 
-1. `src/site/site-data.mjs` 提供全站共用的域名、导航、下载地址、教程地址、联系方式和备案信息。
-2. `src/site/pages/*.mjs` 分别提供三张页面自己的标题、SEO 信息、主体内容和页面专属脚本。
-3. `src/site/layout.mjs` 把公共数据、公共导航、页脚和单页内容拼成完整 HTML，并替换 `{{siteUrl}}`、`{{downloadUrl}}` 等占位符。
-4. `scripts/build-site.mjs` 调用公共布局，把结果写成根目录的 `index.html`、`pricing.html` 和 `contact.html`。
-5. GitHub Pages 直接把根目录 HTML、CSS、JavaScript 和图片作为静态文件交给浏览器。
+1. `scripts/build-site.mjs` 依次读取 `indexPage`、`pricingPage`、`contactPage`。
+2. 每个页面模块从 `site-data.mjs` 取公共数据，拼出自己的 `head` 与 `main`。
+3. `layout.mjs` 用页面清单生成导航（当前页高亮 `aria-current="page"`）、页脚与完整 HTML。
+4. 构建脚本写出三张 HTML，并按页面清单生成 `sitemap.xml`（首页用站点根地址，其余用绝对地址）。
 
-浏览器运行时没有后端数据流：
+浏览器运行时（没有任何后端请求）：
 
-- 首页加载 `assets/js/demo.js` 后，在浏览器内存中维护演示状态；分类切换、搜索、模拟发送和重置都只改当前页面，不会上传或保存数据。
-- 联系页调用浏览器的剪贴板能力复制联系方式，不会把信息提交到服务器。
-- 下载、教程和备案入口只是普通外链，分别跳往金山文档或备案网站。
-- 定价页是纯展示页，没有下单、支付或账号接口。
+- 首页加载 `demo.js`：演示数据都在文件内，切换团队/个人/离线话术、切套号与一级分类、折叠二级分类、搜索、单击选中回显、双击或回车发送、常用短语直发、模拟客户回复、重置，全部只改当前页面内存。
+- 联系页点击整行调用 `navigator.clipboard` 复制；失败时提示手动选中（非安全上下文下会失败，属预期）。
+- 下载、教程、备案是普通外链。
 
 ## 运行测试
 
-### 本地生成页面
-
-在 PowerShell 中进入项目目录后运行：
+### 生成与自检
 
 ```powershell
 cd 'D:\SoftTalk官网'
 node .\scripts\build-site.mjs
+node .\scripts\check-site.mjs
 ```
 
-这条命令会直接覆盖根目录的三张 HTML。只改 `src/site/` 后再运行它；如果只是预览当前已有页面，可以跳过这一步。
+`check-site.mjs` 检查这些内容，任何一条不通过就以非 0 退出：
 
-### 本地打开网站
+1. 三张 HTML 与源文件的生成结果完全一致（防止手改产物）。
+2. 没有残留的 `{{占位符}}`。
+3. HTML/JS 用到的类名都在对应 CSS 里有定义（防止新旧样式混用导致的裸奔元素）。
+4. CSS 里定义的类名都被用到（防止旧设计的死规则残留，只有警告不算错误）。
+5. JS 里 `getElementById`/`$()` 引用的 ID 在 HTML 或 JS 动态创建中存在。
+6. `assets/` 引用都存在。
+7. `sitemap.xml` 覆盖所有页面。
 
-不要直接双击 HTML，建议在项目根目录启动本地静态服务器：
-
-```powershell
-cd 'D:\SoftTalk官网'
-python -m http.server 8000
-```
-
-然后用浏览器打开 `http://localhost:8000/`。预览结束后，在运行命令的窗口按 `Ctrl+C` 停止服务器。这里的 Python 只负责把静态文件送给浏览器，不是项目后端。
-
-### 自动检查
-
-项目目前没有自动化测试框架。可以先用 Node 自带的语法检查确认所有脚本能解析：
+### 语法检查
 
 ```powershell
 $files = @(
-  '.\scripts\build-site.mjs',
-  '.\src\site\layout.mjs',
-  '.\src\site\site-data.mjs',
-  '.\src\site\pages\index.mjs',
-  '.\src\site\pages\pricing.mjs',
-  '.\src\site\pages\contact.mjs',
+  '.\scripts\build-site.mjs', '.\scripts\check-site.mjs',
+  '.\src\site\layout.mjs', '.\src\site\site-data.mjs',
+  '.\src\site\pages\index.mjs', '.\src\site\pages\pricing.mjs', '.\src\site\pages\contact.mjs',
   '.\assets\js\demo.js'
 )
-
-foreach ($file in $files) {
-  node --check $file
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-}
+foreach ($file in $files) { node --check $file; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }
 ```
 
-2026-08-07 建档时，上述脚本全部通过语法检查，三张根目录 HTML 也都与源文件的生成结果完全一致。
+### 本地预览
 
-### 浏览器验收
+```powershell
+python -m http.server 8000
+```
 
-本地打开后至少检查这些内容：
+打开 http://localhost:8000/ 。注意 Python 3.10 的 `http.server` 不认 `.webp`，本地预览会以 `application/octet-stream` 返回，浏览器仍能正常显示；GitHub Pages 会返回正确的 `image/webp`。
 
-- 首页、定价页、联系页都能打开，导航能互相跳转，图片和样式没有丢失。
-- 首页演示能切换团队话术、个人话术、本地文件和不同套号；搜索、单击选中、双击发送、快捷短语、重置都能工作。
-- 定价、下载、教程、备案信息和外链内容正确。
-- 联系页点击作者微信或作者邮箱卡片都能复制，并出现“已复制”提示。
-- 缩窄浏览器窗口后，导航、卡片、按钮和首页演示仍能正常显示。
+### 浏览器验收清单
 
-### 部署
+- 三张页面都能打开，导航互相跳转，当前页有下划线，图片与样式完整。
+- 首页演示：切团队/个人/离线话术（页签蓝线跟动）、点套号与一级分类切换、二级分类展开收起、搜索（结果带路径、无结果提示、Esc 退出）、单击选中并回显到聊天输入框、双击发送后出现绿色气泡与客户回复、常用短语直接发送、重置后回到初始状态。
+- 首页演示窗口在小屏（≤900px）改为上下堆叠，仍可完整操作，无横向溢出。
+- 首页截图（WebP）正常显示，无横向滚动条。
+- 联系页点击微信/邮箱整行能复制并弹出「已复制」。
+- 缩到手机宽度（约 375px）时无横向溢出。
 
-当前仓库没有可执行的部署命令。正式页面是根目录的三张 HTML，发布前应先运行构建和本地验收；之后由仓库外部的 GitHub Pages 设置负责上线。
+## 图片管线
+
+`scripts/optimize-images.py`（本地 Pillow）负责压图，产物已提交，日常改版不需要重跑：
+
+```powershell
+git show <旧提交>:assets/logo.png > logo-src.png
+git show <旧提交>:assets/screenshot2.png > shot-src.png
+python scripts\optimize-images.py logo-src.png shot-src.png D:\SoftTalk\platform_images
+```
+
+- `logo.png`：168×187（显示最大 56px，约 3 倍图），32 色调色板，343 KB → 1.3 KB。
+- `favicon.png`：128×128，居中留白，2.2 KB。
+- `screenshot.webp`：975×819，质量 82，172 KB → 64 KB；截图里的文字在 2 倍放大下与原图无可辨差异。
+- `type-text.png` / `type-image.png` / `type-pdf.png`：28×28 调色板 PNG，共约 2 KB，取自客户端 `platform_images/script-*.png`，只给演示区话术行做类型角标。
+- 首页截图直接引用 `.webp`，不提供 PNG 回退（现代浏览器均支持）。若将来必须兼容老浏览器，用 `<picture>` 加一条 PNG 源，不要改成双份 `<img>`。
+- 截图 `<img>` 必须保留 `width`/`height` 与 `loading="lazy"`，避免布局抖动。
+
+## 部署
+
+仓库内没有 CI/CD 配置，GitHub Pages 的分支与目录在仓库设置里，不在代码里。流程：
+
+1. `node scripts/build-site.mjs`（生成产物）
+2. `node scripts/check-site.mjs`（必须通过）
+3. 本地预览确认
+4. 提交并推送 `main`，等待 Pages 自动重新发布
+
+## 已知事项
+
+- `.claude/worktrees/elastic-mendel-b22c35` 是历史工具留下的 git worktree（旧版网站副本），不是当前源码；`.claude/`、`.pi/` 已加入 `.gitignore`，不要提交。
+- `assets/js/demo.js` 里的客服话术、分类、文件全是演示假数据，与真实客户端数据无关；但界面结构与配色要和客户端保持一致（见「演示区＝客户端复刻」）。
+- 首页 FAQ 文案与 JSON-LD 里的 `FAQPage` 必须保持一致；改一处要同步另一处。
+- 目前没有自动化测试框架，`check-site.mjs` 就是回归测试入口；改动演示后建议按上面的验收清单在浏览器里跑一遍。

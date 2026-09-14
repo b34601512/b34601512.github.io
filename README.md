@@ -1,12 +1,35 @@
-﻿# 话术精灵SoftTalk 官网
+# 话术精灵 SoftTalk 官网
 
-这是话术精灵SoftTalk 的官网源码，部署在 GitHub Pages：
+极简纯黑风格的静态官网，部署在 GitHub Pages。
 
-- 访问地址：https://luyao2089.cc
+- 线上地址：https://luyao2089.cc
 - 源码仓库：https://github.com/b34601512/b34601512.github.io
+- 页面：首页 `index.html`、定价 `pricing.html`、联系 `contact.html`
 
-本仓库主要用于：
+## 本地预览
 
-- 展示 话术精灵SoftTalk 的功能与知识库定位；
-- 提供最新版 Windows 客户端的下载入口（统一跳转到金山文档）。
+```powershell
+cd 'D:\SoftTalk官网'
+python -m http.server 8000
+```
 
+然后打开 http://localhost:8000/ （按 `Ctrl+C` 停止）。
+
+## 修改与生成
+
+根目录的三张 HTML 是构建结果，不要直接手改；改 `src/site/` 后重新生成。
+
+```powershell
+node .\scripts\build-site.mjs   # 生成三张 HTML 与 sitemap.xml
+node .\scripts\check-site.mjs   # 自检：类名、元素 ID、资源路径、构建一致性
+```
+
+- 文案与页面结构：`src/site/pages/*.mjs`
+- 公共信息（域名、链接、联系方式、备案）：`src/site/site-data.mjs`
+- 样式：`assets/css/site.css`；首页交互演示：`assets/css/demo.css`
+- 首页演示逻辑：`assets/js/demo.js`（演示区按真实客户端主界面复刻，配色取自客户端主题文件）
+
+## 图片
+
+站点图片已压缩：`logo.png` 1.3 KB、`favicon.png` 2.2 KB、`screenshot.webp` 64 KB、话术类型角标 `type-*.png` 共约 2 KB。
+需要重新生成时使用 `scripts/optimize-images.py`（依赖本地 Pillow，站点运行不依赖）。

@@ -1,97 +1,79 @@
-// 该文件用于维护 contact.html 的页面专属元信息和主体内容，公共结构由 layout 生成。
+// contact.html 的页面专属内容。公共结构由 layout 生成，公共信息由 site-data 提供。
+import { pageUrl, siteData } from "../site-data.mjs";
+
+const url = pageUrl("contact.html");
+const title = "联系我｜话术精灵 SoftTalk";
+const share = `使用、账号、续费相关问题，可联系微信 ${siteData.authorWechat} 或邮箱 ${siteData.authorEmail}。`;
+
 export const contactPage = {
   outputFile: "contact.html",
-  brand: String.raw`<img class="brand-logo" src="assets/logo.png" alt="话术精灵logo" />话术精灵SoftTalk · 联系我们`,
-  head: String.raw`<title>联系我们｜话术精灵SoftTalk｜客服话术软件｜客户话术软件</title>
-    <meta name="description" content="话术精灵SoftTalk 客服话术软件 / 客户话术软件联系方式页面。咨询使用、账号、续费等问题，可联系作者微信 {{authorWechat}} 或作者邮箱 {{authorEmail}}。" />
-    <meta name="keywords" content="客服话术软件联系方式,客户话术软件联系方式,话术精灵联系方式,SoftTalk 联系我们,作者微信,作者邮箱,{{authorWechat}},{{authorEmail}}" />
-    <meta name="robots" content="index,follow" />
-    <link rel="canonical" href="{{siteUrl}}contact.html" />
-    <link rel="alternate" hreflang="zh-CN" href="{{siteUrl}}contact.html" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="zh_CN" />
-    <meta property="og:site_name" content="话术精灵SoftTalk" />
-    <meta property="og:title" content="联系我们｜话术精灵SoftTalk｜客服话术软件｜客户话术软件" />
-    <meta property="og:description" content="客服话术软件 / 客户话术软件联系方式页面。作者微信号：{{authorWechat}}；作者邮箱：{{authorEmail}}。" />
-    <meta property="og:url" content="{{siteUrl}}contact.html" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="联系我们｜话术精灵SoftTalk｜客服话术软件｜客户话术软件" />
-    <meta name="twitter:description" content="客服话术软件 / 客户话术软件联系方式页面。作者微信号：{{authorWechat}}；作者邮箱：{{authorEmail}}。" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  navLabel: "联系",
+  head: `<title>${title}</title>
+<meta name="description" content="${share}" />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="${url}" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="${siteData.siteName}" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:title" content="${title}" />
+<meta property="og:description" content="${share}" />
+<meta property="og:url" content="${url}" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="${title}" />
+<meta name="twitter:description" content="${share}" />
 <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "首页",
-              "item": "{{siteUrl}}"
-            },
-            {
-              "@type": "ListItem",
-              "position": 2,
-              "name": "联系我们",
-              "item": "{{siteUrl}}contact.html"
-            }
-          ]
-        },
-        {
-          "@type": "ContactPage",
-          "name": "联系我们｜话术精灵SoftTalk",
-          "url": "{{siteUrl}}contact.html",
-          "description": "话术精灵SoftTalk 联系方式页面。",
-          "inLanguage": "zh-CN",
-          "isPartOf": {
-            "@type": "WebSite",
-            "name": "话术精灵SoftTalk",
-            "url": "{{siteUrl}}"
-          }
-        }
-      ]
-    }
-    </script>`,
-  main: String.raw`<main class="download-wrap">
-        <section class="download-card">
-            <p class="hero-eyebrow">官方联系方式</p>
-            <h1>联系我们</h1>
-            <p>如需咨询使用、账号、续费等问题，可通过以下方式联系我。</p>
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "${title}",
+  "url": "${url}",
+  "inLanguage": "zh-CN",
+  "isPartOf": { "@type": "WebSite", "name": "${siteData.siteName}", "url": "${siteData.siteUrl}" }
+}
+</script>`,
+  main: `<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">联系</p>
+    <h1>联系我</h1>
+    <p class="lead">使用、账号、续费相关问题，微信或邮箱都可以，我看到就会回。</p>
+  </section>
 
-            <div class="contact-grid">
-                <article class="contact-item contact-item--copy" data-wechat="{{authorWechat}}">
-                    <h3>作者微信号</h3>
-                    <p class="contact-id">{{authorWechat}}</p>
-                    <span class="contact-copy-hint">点击复制</span>
-                </article>
-                <article class="contact-item contact-item--copy" data-wechat="{{authorEmail}}">
-                    <h3>作者邮箱</h3>
-                    <p class="contact-id">{{authorEmail}}</p>
-                    <span class="contact-copy-hint">点击复制</span>
-                </article>
-            </div>
-        </section>
-    </main>`,
-  bodyEnd: String.raw`<script>
-(function () {
-  function showToast(msg) {
-    var t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1918;color:#fff;padding:9px 22px;border-radius:999px;font-size:14px;font-weight:600;z-index:9999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.28);';
-    document.body.appendChild(t);
-    setTimeout(function () { t.remove(); }, 2000);
-  }
+  <section class="section">
+    <div class="copy-rows">
+      <button class="copy-row" type="button" data-copy="${siteData.authorWechat}">
+        <span class="copy-label">微信</span>
+        <span class="copy-value">${siteData.authorWechat}</span>
+        <span class="copy-hint">点击复制</span>
+      </button>
+      <button class="copy-row" type="button" data-copy="${siteData.authorEmail}">
+        <span class="copy-label">邮箱</span>
+        <span class="copy-value">${siteData.authorEmail}</span>
+        <span class="copy-hint">点击复制</span>
+      </button>
+    </div>
+  </section>
+</div>`,
+  bodyEnd: `<script>
+(() => {
+  const toast = (message) => {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = message;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1800);
+  };
 
-  document.querySelectorAll('.contact-item--copy').forEach(function (card) {
-    card.addEventListener('click', function () {
-      var id = card.getAttribute('data-wechat');
-      navigator.clipboard.writeText(id).then(function () {
-        showToast('已复制：' + id);
-      });
+  document.querySelectorAll(".copy-row").forEach((row) => {
+    row.addEventListener("click", async () => {
+      const value = row.dataset.copy;
+      try {
+        await navigator.clipboard.writeText(value);
+        toast("已复制 " + value);
+      } catch {
+        toast("复制失败，请手动选中");
+      }
     });
   });
-}());
+})();
 </script>`,
 };

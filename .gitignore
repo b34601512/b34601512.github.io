@@ -30,6 +30,12 @@ packages/
 *.cache
 .DS_Store
 Thumbs.db
+__pycache__/
+
+# 工具与本地工作目录（不要提交）
+.claude/
+.pi/
+.imgtest/
 
 # IDE 配置文件（可选，根据团队需要）
 .vscode/
@@ -37,4 +43,3 @@ Thumbs.db
 *.swp
 *.swo
 *~
-
