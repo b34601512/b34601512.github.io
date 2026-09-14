@@ -345,13 +345,18 @@
 
   const rowHtml = (item, key, path) => `
       <div class="app-row" role="button" tabindex="0" data-key="${key}">
-        <span class="app-row-main">
-          ${item.tag ? `<img class="app-row-icon" src="${TYPE_ICONS[item.tag]}" alt="" />` : ""}
-          <span class="app-row-title">${esc(item.title)}</span>
-          ${typeof item.count === "number" ? `<span class="app-row-count">${item.count}</span>` : ""}
+        <button class="app-row-send" type="button" data-send="${key}" title="直接发送（粘贴 + 回车）">
+          <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>
+        </button>
+        <span class="app-row-body">
+          <span class="app-row-main">
+            ${item.tag ? `<img class="app-row-icon" src="${TYPE_ICONS[item.tag]}" alt="" />` : ""}
+            <span class="app-row-title">${esc(item.title)}</span>
+            ${typeof item.count === "number" ? `<span class="app-row-count">${item.count}</span>` : ""}
+          </span>
+          <span class="app-row-text">${esc(item.text)}</span>
+          ${path ? `<span class="app-row-path">${esc(path)}</span>` : ""}
         </span>
-        <span class="app-row-text">${esc(item.text)}</span>
-        ${path ? `<span class="app-row-path">${esc(path)}</span>` : ""}
       </div>`;
 
   const searchHits = (keyword) => {
@@ -488,10 +493,15 @@
   const selectRow = (node) => {
     el.tree.querySelectorAll(".app-row--selected").forEach((row) => row.classList.remove("app-row--selected"));
     node.classList.add("app-row--selected");
-    const item = rows[Number(node.dataset.key)];
+  };
+
+  // 双击＝仅粘贴（对应客户端“双击整行”），内容先落到聊天输入框，不直接发送。
+  const pasteIntoInput = (item) => {
     if (!item) return;
     el.inputHint.hidden = true;
     el.inputText.textContent = item.text;
+    el.input.classList.add("chat-input--active");
+    el.send.classList.add("chat-send--ready");
   };
 
   const focusCategory = (index) => {
@@ -554,12 +564,18 @@
       return;
     }
     const node = event.target.closest(".app-row");
-    if (node) selectRow(node);
+    if (!node) return;
+    selectRow(node);
+    // 点左侧纸飞机＝直接发送（粘贴 + 回车），对应客户端话术行左侧箭头。
+    if (event.target.closest(".app-row-send")) sendText(rows[Number(node.dataset.key)]?.text, node);
   });
 
   el.tree.addEventListener("dblclick", (event) => {
     const node = event.target.closest(".app-row");
-    if (node) sendText(rows[Number(node.dataset.key)]?.text, node);
+    if (event.target.closest(".app-row-send")) return;
+    if (!node) return;
+    selectRow(node);
+    pasteIntoInput(rows[Number(node.dataset.key)]);
   });
 
   el.tree.addEventListener("keydown", (event) => {
@@ -567,7 +583,14 @@
     const node = event.target.closest(".app-row");
     if (!node) return;
     event.preventDefault();
-    sendText(rows[Number(node.dataset.key)]?.text, node);
+    selectRow(node);
+    pasteIntoInput(rows[Number(node.dataset.key)]);
+  });
+
+  // 聊天窗口自己的发送按钮：把输入框里的内容发出去（用户确认后再发的那一步）。
+  el.send.addEventListener("click", () => {
+    const text = el.inputText.textContent.trim();
+    if (text) sendText(text, null);
   });
 
   el.search.addEventListener("input", () => {

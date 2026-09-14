@@ -3,7 +3,7 @@ import { pageUrl, siteData } from "../site-data.mjs";
 
 const url = pageUrl("pricing.html");
 const title = "定价｜话术精灵 SoftTalk";
-const share = "本地离线知识库永久免费；云同步、团队共享、云端备份按「工号」购买，新用户首月免费体验。";
+const share = "本地离线知识库永久免费；云同步、工号协作、云附件按「工号」购买，注册团队账号赠送 1 个月会员。";
 
 const plans = [
   { term: "1 年", price: "48", note: "先试一年，决策门槛最低。" },
@@ -13,9 +13,9 @@ const plans = [
 ];
 
 const cloud = [
-  { name: "云同步", text: "多端同步知识库内容，资料不再只留在单台电脑。" },
-  { name: "团队共享", text: "多人围绕同一套知识库协作，减少版本分散和重复整理。" },
-  { name: "云端备份", text: "在本地按天备份之外，再加一层云端保护。" },
+  { name: "云同步", text: "团队话术与个人话术在多台电脑之间同步，一处修改，其他电脑自动更新。" },
+  { name: "工号协作", text: "一个账号就是一个团队：可创建多个工号，分超级管理员、可编辑、只读，团队话术与个人话术权限分开控制。" },
+  { name: "云附件", text: "话术可以带图片、PDF、表格等附件，附件存云端，多台电脑都能下载（含共享空间与下载流量）。" },
 ];
 
 export const pricingPage = {
@@ -68,7 +68,7 @@ export const pricingPage = {
   <section class="hero">
     <p class="eyebrow">定价</p>
     <h1>本地永久免费<br />云端按工号付费</h1>
-    <p class="lead">本地知识库可以长期免费用。需要云同步、团队共享、云端备份时，按「工号」购买，新用户首月免费体验。</p>
+    <p class="lead">本地知识库可以长期免费用。需要云同步、工号协作和云附件时，按「工号」购买；注册团队账号赠送 1 个月会员，之后可用礼品卡充值。</p>
     <div class="actions">
       <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载体验</a>
       <a class="btn btn--ghost" href="contact.html">咨询购买</a>
@@ -91,12 +91,11 @@ export const pricingPage = {
         )
         .join("\n      ")}
     </div>
-    <p class="note">收费单位是「工号」，有效期内可使用云同步、团队共享与云端备份。</p>
+    <p class="note">收费单位是「工号」，有效期内可使用云同步、工号协作与云附件。</p>
   </section>
 
   <section class="section">
-    <h2>云端包含</h2>
-    <div class="grid-3">
+    <h2>云端包含</h2>    <div class="grid-3">
       ${cloud
         .map(
           (item) => `<article class="feature">

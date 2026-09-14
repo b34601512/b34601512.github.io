@@ -2,24 +2,24 @@
 import { siteData } from "../site-data.mjs";
 
 const title = siteData.siteTitle;
-const share = "面向电商客服团队的 Windows 话术管理工具：话术按场景整理，双击直接发送，内容保存在本机并按天自动备份。";
+const share = "面向电商客服团队的 Windows 话术工具：常用话术按场景分类整理，双击贴进聊天输入框，点左侧箭头直接发送，内容保存在本机并按天自动备份。";
 
 const faq = [
   {
     q: "适合哪些平台？",
-    a: "天猫、京东、拼多多、抖音等电商客服场景，也适合任何高频客户咨询岗位。",
+    a: "天猫、京东、拼多多、抖音等电商客服场景。话术是贴到当前聊天窗口的输入框，能打字的窗口都能用。",
   },
   {
     q: "可以整理什么内容？",
-    a: "售前咨询、成交跟进、售后处理、安抚表达、服务规范等团队常用内容。",
+    a: "售前咨询、成交跟进、售后处理、安抚表达等团队常用话术，也可以给话术配图片、PDF、表格等附件。",
   },
   {
     q: "新客服怎么上手？",
-    a: "按目录查找和检索即可，不必先翻一遍历史聊天记录。",
+    a: "Alt+Q 搜关键词，双击贴进输入框，点左侧箭头直接发送，不用先翻一遍历史聊天记录。",
   },
   {
     q: "数据存在哪里？",
-    a: "默认保存在本机，改动后按天自动备份；需要多人协同时可开通云端功能。",
+    a: "默认保存在本机，保存和删除前自动留档并按天备份；开通云端后，团队话术会在多台电脑之间同步。",
   },
 ];
 
@@ -84,8 +84,8 @@ export const indexPage = {
     <img class="hero-logo" src="assets/logo.png" alt="" />
     <p class="eyebrow">电商客服话术工具</p>
     <h1>把客服话术<br />沉淀成<span class="hl">团队知识库</span></h1>
-    <p class="lead">话术精灵 SoftTalk 是一款 Windows 桌面工具：常用话术按场景整理，双击直接发送，内容保存在本机。</p>
-    <p class="hero-meta">适用于天猫、京东、拼多多、抖音等客服场景</p>
+    <p class="lead">话术精灵 SoftTalk 是一款 Windows 桌面工具：团队话术、个人话术、离线话术分开管理，双击把话术贴进聊天输入框，点左侧箭头直接发送，内容保存在本机。</p>
+    <p class="hero-meta">适用于天猫、京东、拼多多、抖音等客服场景，面板吸附在聊天窗口旁边，不遮挡对话</p>
     <div class="actions">
       <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载 Windows 版</a>
       <a class="btn btn--ghost" href="#demo">试用演示</a>
@@ -100,21 +100,21 @@ export const indexPage = {
         <span class="step-num">01</span>
         <div>
           <h3>整理话术</h3>
-          <p>按场景分类录入，一次整理长期受用。</p>
+          <p>按场景建一级、二级分类，已有话术表可以用 Excel 导入。</p>
         </div>
       </li>
       <li class="step">
         <span class="step-num">02</span>
         <div>
           <h3>接待时呼出</h3>
-          <p>面板悬浮在屏幕右侧，不遮挡聊天窗口。</p>
+          <p>面板吸附在聊天窗口旁边，Alt+W 显示或隐藏，Alt+R 一键磁吸。</p>
         </div>
       </li>
       <li class="step">
         <span class="step-num">03</span>
         <div>
-          <h3>双击发送</h3>
-          <p>双击话术卡片，内容自动填入并发送。</p>
+          <h3>双击贴入、点箭头发送</h3>
+          <p>双击话术贴进输入框，确认后再发；点左侧箭头则直接发送。Alt+Q 跳到搜索框。</p>
         </div>
       </li>
     </ol>
@@ -122,7 +122,7 @@ export const indexPage = {
 
   <section class="section" id="demo">
     <h2>看一眼就会用</h2>
-    <p class="section-sub">左边是客服聊天窗口，右边是话术精灵主界面：单击选中话术，双击直接发送。</p>
+    <p class="section-sub">左边是客服聊天窗口，右边是话术精灵主界面：双击话术会贴进输入框，点左侧箭头直接发送。</p>
 
     <div class="demo">
       <div class="chat">
@@ -135,7 +135,7 @@ export const indexPage = {
         </div>
         <div class="chat-foot">
           <div class="chat-input" id="demo-input">
-            <span class="chat-hint" id="demo-input-hint">双击右侧话术发送</span>
+            <span class="chat-hint" id="demo-input-hint">双击话术贴进输入框</span>
             <span id="demo-input-text"></span>
           </div>
           <button class="chat-send" id="demo-send-btn" type="button">发送</button>
@@ -180,7 +180,7 @@ export const indexPage = {
 
   <section class="section">
     <h2>真实界面</h2>
-    <p class="section-sub">下载安装后，面板悬浮在屏幕右侧，不遮挡聊天窗口。</p>
+    <p class="section-sub">下载安装后，面板吸附在聊天窗口旁边，不遮挡对话内容。</p>
     <figure class="shot">
       <img src="assets/screenshot.webp" alt="话术精灵 SoftTalk 与聊天窗口并排使用截图" width="975" height="819" loading="lazy" decoding="async" />
     </figure>
@@ -190,16 +190,16 @@ export const indexPage = {
     <h2>功能</h2>
     <div class="grid-3">
       <article class="feature">
-        <h3>场景分类</h3>
-        <p>售前、成交、售后各自成目录，查找路径更短。</p>
+        <h3>三套话术库</h3>
+        <p>团队话术、个人话术、离线话术分开管理，一级分类配色可以自己配。</p>
       </article>
       <article class="feature">
         <h3>快速检索</h3>
-        <p>输入关键词即可定位话术，也能搜本地文件。</p>
+        <p>Alt+Q 直接跳到搜索框，可按全部、当前分类或自定义范围搜索，命中后双击贴入。</p>
       </article>
       <article class="feature">
         <h3>本地备份</h3>
-        <p>内容保存在本机，改动后按天自动备份，不依赖网络。</p>
+        <p>内容存在本机，保存和删除前自动留档，按天备份话术表格与完整恢复包，保留份数可设。</p>
       </article>
     </div>
   </section>

@@ -471,11 +471,50 @@
 
 .app-row {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px 9px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px 6px 5px;
   border-bottom: 1px solid var(--w-line);
   cursor: pointer;
+}
+
+.app-row-send {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 2px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--w-cloud);
+  opacity: 0.38;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.app-row-send svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-row:hover .app-row-send,
+.app-row--selected .app-row-send {
+  opacity: 1;
+}
+
+.app-row-send:hover {
+  background: var(--w-selection);
+}
+
+.app-row-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .app-row:hover {
