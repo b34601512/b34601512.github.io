@@ -284,8 +284,12 @@
         clearSearch(surface);
         // 客户端 Esc 退出搜索后不再停在输入框：主搜索把焦点交给话术列表，
         // 吸附栏把焦点还给外部的聊天输入窗口。
-        if (surface === "panel") el.tree.querySelector(".app-row")?.focus({ preventScroll: true });
-        else el.input.focus();
+        if (surface === "panel") {
+          // 二级分类全收起时列表里没有话术行，就聚焦列表控件本身（客户端也是把焦点交给列表）。
+          (el.tree.querySelector(".app-row") ?? el.tree).focus({ preventScroll: true });
+        } else {
+          el.input.focus();
+        }
         return;
       }
       if (!digitMode(surface)) return;

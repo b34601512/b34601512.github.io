@@ -461,6 +461,10 @@
   overflow-y: auto;
 }
 
+.app-tree:focus-visible {
+  outline: none;
+}
+
 .app-lv2 + .app-lv2 {
   border-top: 1px solid var(--w-lv2-sep);
 }

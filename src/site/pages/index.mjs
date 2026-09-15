@@ -160,7 +160,7 @@ export const indexPage = {
         <div class="app-set" id="demo-set"></div>
         <div class="app-digits" id="demo-digits"></div>
         <div class="app-lv1"><div class="app-chips" id="demo-chips"></div></div>
-        <div class="app-tree" id="demo-list">${demoData.initialTreeHtml()}</div>
+        <div class="app-tree" id="demo-list" tabindex="-1">${demoData.initialTreeHtml()}</div>
         <div class="app-common" id="demo-quick"></div>
         <div class="app-search">
           <input class="app-search-input" id="demo-search" type="search" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
