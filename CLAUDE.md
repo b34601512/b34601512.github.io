@@ -113,12 +113,15 @@ D:\SoftTalk官网
 - 演示操作路径（全部可点，看到就能用）：页签切话术域、**按数字键 0–9 切套（窗口级快捷键，不用先把光标点进演示区）**、点套号整套切换、点一级分类切分类、二级分类展开收起（同一时刻只展开一个）、单击选中、**双击贴话术到输入框**、点行左侧纸飞机直接发送（粘贴 + 回车，与客户端 `list_box.py` 的 `insert_dbl`/`send` 一致）、**手机上点一下话术即贴进输入框**（触屏没有双击，否则手机用户用不了）、聊天窗口自己的发送按钮发出、常用短语直发、**搜索框回车＝直接发出当前选中（没选中就是第一条）的命中**（与客户端搜索框 Enter 一致）、命中行下面带客户端格式的来源文案。
 - **数字态只被「会改变文字」的按键打断**（客户端 `_deactivate_digit_selection_for_edit_key`：`event.text()` 非空、或 Backspace/Delete）：打字、退格、删除会退出；**方向键 / Home / End 不退出**（一按方向键序号就没了是 bug）；带 Ctrl/Alt/Meta 的按键在客户端不产生文字，所以 **Ctrl+1、Alt+1 既不发送也不退出**数字态。
 - **数字态下结果不够时静默**（客户端 `key_for_digit` 越界返回空、`event.accept()`）：不发送、不退出数字态。
+- **用完搜索命中就退出搜索并定位那条话术**（客户端 `complete_external_insert_search_use`：记搜索历史 → `_leave_search_context` 清空搜索词退出搜索态 → `locate_faos_in_main_by_ids`；吸附栏是 `bar.clear_query()` + 同样定位）。演示里**四件事都算「用了命中」**：数字键发送、回车发送、纸飞机直发、双击/触屏单击/回车空格贴入。做法是 `usePanelHit` / `useBarHit` → `locateHit`：切到命中所在话术域、套号、一级分类，只展开命中所在那一节，再选中那一行。**不要在搜索态里发完还留在结果列表**（那是我们早期做错的地方）。
+- **探针发键盘事件要发在「聚焦的元素」上**：真实浏览器把 keydown 派给聚焦元素，`document.body.dispatchEvent` 会让 `closest(".attached")` 判断出一个假 surface（曾因此让吸附栏那组断言全红，白查一轮）。另外数字选择态下数字是**搜索框自己的 keydown 处理**在管（客户端也是输入框过滤器接管），所以光标留在搜索框里按数字必须能发。
 - **键盘可达性**：二级分类标题是 `role="button"` + `tabindex="0"` + `aria-expanded`，回车/空格都能展开收起；话术行（`role="button"`）回车和空格都＝贴进输入框；范围按钮用**真 `<button>`**（曾经是 `span role=button`，键盘按了没反应）；三个输入框都带 `aria-label`；页签/套号/一级分类用 `aria-pressed` 报选中态；纸飞机等纯图标按钮带 `aria-label`。**给 role=button 的元素加键盘响应**这条要记住：native button 才会自动响应回车/空格。
 - **吸附栏输入框的焦点指示给外层 `.attached-row:focus-within`**：输入框自己是 `border:none` + `outline:none`，光靠它键盘用户看不出焦点在哪。
 - **两个低于 4.5 的对比度是客户端自己的配色，按原样复刻**：话术行标题 `#E53935`（客户端 `faq_title_colors.DEFAULT_FAQ_TITLE_FG`，3.57）、吸附栏提示语 `#7A8695`（客户端主题 `muted_text`，3.70）。演示区其余文字都 ≥ 4.5。
 - **用 Python 改写仓库里的文件时不要自己拼 `"
 "`**：`pathlib.write_text` 默认会把 `
-` 按平台再翻一遍，在 Windows 上得到 `
+` 按平台再翻一遍，在 Windows 上得到 `
+
 `（demo-data.js 曾因此每行多一个空行、体积多 4KB 还上线了）。要写 CRLF 就 `open(..., newline="")`，否则一律写 `
 ` 让 git 处理。
 - **气泡必须 `white-space: pre-wrap`**：Shift+Enter 打出的换行（以及话术里自带的多行）发出去以后还要是换行，否则 HTML 会把换行折成空格。

@@ -43,6 +43,9 @@
 
   let rows = [];
   let barRows = [];
+  // 当前搜索命中的完整信息（含来源坐标），用完命中要按客户端定位回那条话术。
+  let panelHits = [];
+  let barHits = [];
 
   const sets = () => SCOPES[state.scope].sets;
   const currentSet = () => sets()[state.set];
@@ -170,11 +173,16 @@
       scope.sets.forEach((set, setNo) => {
         // 「当前」＝只搜主界面当前选中的话术域与套号（客户端 SEARCH_RANGE_MODE_CURRENT）。
         if (state.range === "current" && (scopeKey !== state.scope || setNo !== state.set)) return;
-        set.categories.forEach((category) =>
-          category.sections.forEach((section) =>
+        set.categories.forEach((category, categoryIndex) =>
+          category.sections.forEach((section, sectionIndex) =>
             section.items.forEach((item) => {
               if (`${item.title} ${item.text}`.toLowerCase().includes(keyword)) {
-                hits.push({ item, path: hitPath(scopeKey, setNo, category.label, section.title) });
+                hits.push({
+                  item,
+                  path: hitPath(scopeKey, setNo, category.label, section.title),
+                  // 命中来自哪一套的哪个分类哪一节：用完命中要定位回这里（客户端 locate_faqs_in_main_by_ids）。
+                  at: { scope: scopeKey, set: setNo, category: categoryIndex, section: sectionIndex },
+                });
               }
             }),
           ),
@@ -198,6 +206,7 @@
 
     if (state.query) {
       const hits = searchHits(state.query);
+      panelHits = hits;
       hits.forEach((hit) => rows.push(hit.item));
       // 按过 Tab 才显示 1–9、0 临时序号（客户端 Tab 前不显示）。
       const digits = digitMode("panel");
@@ -246,8 +255,8 @@
     if (!item) return false;
     selectIn(container, selected ?? container.querySelector(".app-row"));
     sendText(item.text, selected ?? container.querySelector(".app-row"));
-    if (container === el.barList) useBarHit();
-    else recordHistory(el.search.value);
+    if (container === el.barList) useBarHit(item);
+    else usePanelHit(item);
     return true;
   };
 
@@ -260,12 +269,8 @@
     if (!item) return false;
     selectIn(container, node);
     sendText(item.text, node);
-    if (surface === "panel") {
-      recordHistory(el.search.value);
-      exitDigitMode();
-    } else {
-      useBarHit();
-    }
+    if (surface === "panel") usePanelHit(item);
+    else useBarHit(item);
     return true;
   };
 
@@ -373,6 +378,7 @@
   const renderBar = () => {
     const raw = el.barInput.value.trim();
     const hits = raw ? searchHits(raw.toLowerCase()) : [];
+    barHits = hits;
     barRows = hits.map((hit) => hit.item);
     el.barClear.hidden = raw === "";
     el.barResults.hidden = raw === "";
@@ -420,10 +426,35 @@
     if (collapsed) closeBarSearch();
   };
 
-  // 数字键直接发送第 N 条命中，用过之后在「最近搜索」里留一条并收起吸附栏结果。
-  const useBarHit = () => {
+  // 数字键直接发送第 N 条命中，用过之后在「最近搜索」里留一条、收起吸附栏结果，
+  // 并按客户端把主界面定位到刚发的那条话术（locate_faqs_in_main_by_ids）。
+  const useBarHit = (item) => {
     recordHistory(el.barInput.value);
+    const hit = barHits[barRows.indexOf(item)];
     closeBarSearch();
+    locateHit(hit);
+  };
+
+  // 客户端用完搜索命中就退出搜索并定位到那条话术（complete_external_insert_search_use）：
+  // 切到它所在的话术域、套号、一级分类，只展开它所在的二级分类，再选中那一行 ——
+  // 搜索退出后一眼能看出刚才用的是哪条，而不是留在结果列表里。
+  const locateHit = (hit) => {
+    const at = hit?.at;
+    if (!at) return;
+    state.scope = at.scope;
+    state.set = at.set;
+    state.category = at.category;
+    (currentCategory()?.sections ?? []).forEach((section, index) => {
+      section.open = index === at.section;
+    });
+    state.query = "";
+    state.digitSurface = null;
+    el.search.value = "";
+    render();
+    const node = el.tree.querySelectorAll(".app-row")[rows.indexOf(hit.item)];
+    if (!node) return;
+    selectIn(el.tree, node);
+    node.focus({ preventScroll: true });
   };
 
   /* ---------- 聊天窗口 ---------- */
@@ -553,7 +584,7 @@
       // 点左侧纸飞机＝直接发送（粘贴 + 回车），对应客户端话术行左侧箭头。
       if (event.target.closest(".app-row-send")) {
         sendText(itemAt(node)?.text, node);
-        onUse();
+        onUse(itemAt(node));
       }
     });
 
@@ -562,7 +593,7 @@
       if (!node || event.target.closest(".app-row-send")) return;
       selectIn(container, node);
       pasteIntoInput(itemAt(node));
-      onUse();
+      onUse(itemAt(node));
     });
 
     // 手机/平板没有双击：手指点一下就贴进输入框，否则触屏用户根本用不了这个演示。
@@ -572,7 +603,7 @@
       if (!node || event.target.closest(".app-row-send")) return;
       selectIn(container, node);
       pasteIntoInput(itemAt(node));
-      onUse();
+      onUse(itemAt(node));
     });
 
     container.addEventListener("keydown", (event) => {
@@ -583,7 +614,7 @@
       event.preventDefault();
       selectIn(container, node);
       pasteIntoInput(itemAt(node));
-      onUse();
+      onUse(itemAt(node));
     });
   };
 
@@ -694,12 +725,18 @@
     }
   });
 
-  // 吸附栏里用过一条结果就收起结果（客户端用完命中也是 clear_query 后回到聊天窗口）。
-
-  bindRows(el.tree, () => rows, () => {
+  // 主界面搜索里用了命中（点纸飞机 / 双击或回车贴入）＝客户端 complete_external_insert_search_use：
+  // 记一条搜索历史 → 退出搜索 → 定位到刚用过的那条话术。不在搜索态时点行只是选中，不动搜索。
+  const usePanelHit = (item) => {
+    if (!state.query) {
+      exitDigitMode();
+      return;
+    }
     recordHistory(el.search.value);
-    exitDigitMode();
-  });
+    locateHit(panelHits[rows.indexOf(item)]);
+  };
+
+  bindRows(el.tree, () => rows, usePanelHit);
   bindRows(el.barList, () => barRows, useBarHit);
 
   /* ---------- 吸附栏交互 ---------- */
