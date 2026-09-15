@@ -1391,6 +1391,9 @@
     category: 0,
     range: "all",
     query: "",
+    // 底部吸附栏在客户端里有自己的搜索状态，但和主界面共用搜索范围与搜索历史。
+    barQuery: "",
+    history: [],
     sent: 0,
     replied: 0,
     replyPending: false,
@@ -1398,6 +1401,7 @@
   };
 
   let rows = [];
+  let barRows = [];
 
   const sets = () => SCOPES[state.scope].sets;
   const currentSet = () => sets()[state.set];
@@ -1419,6 +1423,20 @@
     count: $("demo-count"),
     countNum: $("demo-count-num"),
     reset: $("demo-reset"),
+    bar: $("demo-attached"),
+    barResults: $("demo-attached-results"),
+    barTitle: $("demo-attached-title"),
+    barClose: $("demo-attached-close"),
+    barList: $("demo-attached-list"),
+    barInput: $("demo-attached-input"),
+    barClear: $("demo-attached-clear"),
+    barRange: $("demo-attached-range"),
+    barToggle: $("demo-attached-toggle"),
+    barPhrases: $("demo-attached-phrases"),
+    barQuick: $("demo-attached-quick"),
+    barHistory: $("demo-attached-history"),
+    barHistoryChips: $("demo-attached-history-chips"),
+    barHistoryClear: $("demo-attached-history-clear"),
   };
 
   /* ---------- 渲染 ---------- */
@@ -1446,17 +1464,24 @@
 
   // 搜索范围按钮：点一下在「全部 / 当前话术域 / 当前套」之间循环，真正的定位范围就锁在这一层。
   const renderRange = () => {
-    if (!el.range) return;
     const label =
       state.range === "all" ? "全部" : state.range === "scope" ? SCOPES[state.scope].label : `第 ${state.set} 套`;
-    el.range.textContent = `${label} ▾`;
-    el.range.title =
+    const title =
       state.range === "all"
         ? "搜索范围：全部话术域（点击切换）"
         : state.range === "scope"
           ? "搜索范围：当前话术域（点击切换）"
           : "搜索范围：当前套话术（点击切换）";
-    el.range.setAttribute("aria-label", el.range.title);
+    // 主界面与底部吸附栏共用同一份搜索范围口径，两处按钮始终显示同一状态。
+    if (el.range) {
+      el.range.textContent = `${label} ▾`;
+      el.range.title = title;
+      el.range.setAttribute("aria-label", title);
+    }
+    if (el.barRange) {
+      el.barRange.textContent = label;
+      el.barRange.title = title;
+    }
   };
 
   const renderChips = () => {
@@ -1473,19 +1498,25 @@
     el.chips.innerHTML = `${chips}<span class="app-chip app-chip--add" aria-hidden="true">+</span>`;
   };
 
-  const renderQuick = () => {
-    el.quick.innerHTML = `${COMMON_PHRASES.map(
+  // 主界面短语栏与底部吸附栏短语区共用同一份常用短语（客户端也是同一份规则）。
+  const quickChipsHtml = () =>
+    `${COMMON_PHRASES.map(
       (phrase) => `<button class="app-chip" type="button" data-phrase="${esc(phrase)}">${esc(phrase)}</button>`,
     ).join("")}<span class="app-chip app-chip--add" aria-hidden="true">+</span>`;
+
+  const renderQuick = () => {
+    el.quick.innerHTML = quickChipsHtml();
+    el.barQuick.innerHTML = quickChipsHtml();
   };
 
-  const rowHtml = (item, key, path) => `
+  const rowHtml = (item, key, path, shortcut = "") => `
       <div class="app-row" role="button" tabindex="0" data-key="${key}" title="双击贴进输入框，点左侧纸飞机直接发送">
         <button class="app-row-send" type="button" data-send="${key}" title="直接发送（粘贴 + 回车）">
           <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>
         </button>
         <span class="app-row-body">
           <span class="app-row-main">
+            ${shortcut ? `<span class="app-row-digit">${shortcut}</span>` : ""}
             ${item.tag ? `<img class="app-row-icon" src="${TYPE_ICONS[item.tag]}" alt="" />` : ""}
             <span class="app-row-title">${esc(item.title)}</span>
             ${typeof item.count === "number" ? `<span class="app-row-count">${item.count}</span>` : ""}
@@ -1563,6 +1594,72 @@
     renderRange();
     renderChips();
     renderTree();
+    renderBar();
+  };
+
+  /* ---------- 底部吸附栏 ---------- */
+  // 吸附栏贴在聊天窗口底边：结果向上展开盖住聊天窗，常用短语与最近搜索向下展开。
+  // 搜索词归吸附栏自己，搜索范围与「最近搜索」跟主界面合用一份（与客户端一致）。
+  const BAR_DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+  const BAR_HISTORY_MAX = 8;
+
+  const renderBarHistory = () => {
+    // 输入框里没字时才显示「最近搜索」，有搜索词就让位给结果。
+    el.barHistory.hidden = state.history.length === 0 || el.barInput.value.trim() !== "";
+    el.barHistoryChips.innerHTML = state.history
+      .map((keyword) => `<button class="app-chip" type="button" data-history="${esc(keyword)}">${esc(keyword)}</button>`)
+      .join("");
+  };
+
+  // 用过一次才记进「最近搜索」：回车、按数字发送、把命中贴进输入框都算用过。
+  const recordHistory = (keyword) => {
+    const text = String(keyword || "").trim().slice(0, 40);
+    if (!text) return;
+    state.history = [text, ...state.history.filter((item) => item !== text)].slice(0, BAR_HISTORY_MAX);
+    renderBarHistory();
+  };
+
+  const renderBar = () => {
+    const raw = el.barInput.value.trim();
+    const hits = raw ? searchHits(raw.toLowerCase()) : [];
+    barRows = hits.map((hit) => hit.item);
+    el.barClear.hidden = raw === "";
+    el.barResults.hidden = raw === "";
+    if (raw) {
+      el.barTitle.textContent = `搜索结果 · ${hits.length}`;
+      // 只有前十条带临时数字：1–9、0 对应第一到第十条（客户端 Tab 后的数字选择态）。
+      el.barList.innerHTML = hits.length
+        ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, index < 10 ? BAR_DIGITS[index] : "")).join("")
+        : `<p class="app-empty">没有找到相关话术</p>`;
+    }
+    renderBarHistory();
+  };
+
+  const closeBarSearch = () => {
+    el.barInput.value = "";
+    renderBar();
+  };
+
+  // 折叠后只剩聊天窗口右下角一个小按钮（客户端吸附栏的折叠态），按钮就长在原来右侧收起键的位置。
+  const setBarCollapsed = (collapsed) => {
+    el.bar.classList.toggle("attached--collapsed", collapsed);
+    el.barToggle.textContent = collapsed ? "‹" : "›";
+    const label = collapsed ? "展开吸附栏" : "收起吸附栏";
+    el.barToggle.title = label;
+    el.barToggle.setAttribute("aria-label", label);
+    if (collapsed) closeBarSearch();
+  };
+
+  // 数字键直接发送第 N 条命中（返回是否发了东西，没命中就不抢键）。
+  const sendBarHit = (digit) => {
+    const index = digit === "0" ? 9 : Number(digit) - 1;
+    const item = barRows[index];
+    const node = el.barList.querySelectorAll(".app-row")[index];
+    if (!item) return false;
+    selectIn(el.barList, node);
+    sendText(item.text, node);
+    useBarHit();
+    return true;
   };
 
   /* ---------- 聊天窗口 ---------- */
@@ -1659,15 +1756,60 @@
   };
 
   /* ---------- 交互 ---------- */
-  const selectRow = (node) => {
-    el.tree.querySelectorAll(".app-row--selected").forEach((row) => row.classList.remove("app-row--selected"));
-    node.classList.add("app-row--selected");
+  const selectIn = (container, node) => {
+    container.querySelectorAll(".app-row--selected").forEach((row) => row.classList.remove("app-row--selected"));
+    node?.classList.add("app-row--selected");
   };
 
   // 双击＝仅粘贴（对应客户端“双击整行”），内容先落到聊天输入框，不直接发送。
   const pasteIntoInput = (item) => {
     if (!item) return;
     fillInput(item.text);
+  };
+
+  // 话术行交互三件套：单击选中、双击只粘贴、点左侧纸飞机直接发送。
+  // 主界面列表和吸附栏结果共用同一套；用完之后各自收尾（主界面记搜索历史、吸附栏再收起结果）。
+  const bindRows = (container, getItems, onUse) => {
+    const itemAt = (node) => getItems()[Number(node.dataset.key)];
+
+    container.addEventListener("click", (event) => {
+      const node = event.target.closest(".app-row");
+      if (!node) return;
+      selectIn(container, node);
+      // 点左侧纸飞机＝直接发送（粘贴 + 回车），对应客户端话术行左侧箭头。
+      if (event.target.closest(".app-row-send")) {
+        sendText(itemAt(node)?.text, node);
+        onUse();
+      }
+    });
+
+    container.addEventListener("dblclick", (event) => {
+      const node = event.target.closest(".app-row");
+      if (!node || event.target.closest(".app-row-send")) return;
+      selectIn(container, node);
+      pasteIntoInput(itemAt(node));
+      onUse();
+    });
+
+    // 手机/平板没有双击：手指点一下就贴进输入框，否则触屏用户根本用不了这个演示。
+    container.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch") return;
+      const node = event.target.closest(".app-row");
+      if (!node || event.target.closest(".app-row-send")) return;
+      selectIn(container, node);
+      pasteIntoInput(itemAt(node));
+      onUse();
+    });
+
+    container.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      const node = event.target.closest(".app-row");
+      if (!node) return;
+      event.preventDefault();
+      selectIn(container, node);
+      pasteIntoInput(itemAt(node));
+      onUse();
+    });
   };
 
   const focusCategory = (index) => {
@@ -1694,6 +1836,7 @@
       set: 0,
       category: 0,
       query: "",
+      history: [],
       sent: 0,
       replied: 0,
       replyPending: false,
@@ -1710,6 +1853,8 @@
     );
     el.log.innerHTML = `<div class="msg msg--in"><p class="bubble">${esc(OPENING_MESSAGE)}</p></div>`;
     el.search.value = "";
+    el.barInput.value = "";
+    setBarCollapsed(false);
     clearInput();
     updateCounter();
     render();
@@ -1743,45 +1888,62 @@
 
   el.tree.addEventListener("click", (event) => {
     const head = event.target.closest(".app-lv2-head");
-    if (head) {
-      const section = currentCategory()?.sections[Number(head.dataset.section)];
-      if (section) {
-        section.open = !section.open;
-        renderTree();
-      }
+    if (!head) return;
+    const section = currentCategory()?.sections[Number(head.dataset.section)];
+    if (section) {
+      section.open = !section.open;
+      renderTree();
+    }
+  });
+
+  // 吸附栏里用过一条结果就收起结果（客户端用完命中也是 clear_query 后回到聊天窗口）。
+  const useBarHit = () => {
+    recordHistory(el.barInput.value);
+    closeBarSearch();
+  };
+
+  bindRows(el.tree, () => rows, () => recordHistory(el.search.value));
+  bindRows(el.barList, () => barRows, useBarHit);
+
+  /* ---------- 吸附栏交互 ---------- */
+  el.barInput.addEventListener("input", renderBar);
+
+  el.barInput.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeBarSearch();
       return;
     }
-    const node = event.target.closest(".app-row");
-    if (!node) return;
-    selectRow(node);
-    // 点左侧纸飞机＝直接发送（粘贴 + 回车），对应客户端话术行左侧箭头。
-    if (event.target.closest(".app-row-send")) sendText(rows[Number(node.dataset.key)]?.text, node);
-  });
-
-  el.tree.addEventListener("dblclick", (event) => {
-    const node = event.target.closest(".app-row");
-    if (event.target.closest(".app-row-send")) return;
-    if (!node) return;
-    selectRow(node);
-    pasteIntoInput(rows[Number(node.dataset.key)]);
-  });
-
-  // 手机/平板没有双击：手指点一下就贴进输入框，否则触屏用户根本用不了这个演示。
-  el.tree.addEventListener("pointerdown", (event) => {
-    if (event.pointerType !== "touch") return;
-    const node = event.target.closest(".app-row");
-    if (!node || event.target.closest(".app-row-send")) return;
-    selectRow(node);
-    pasteIntoInput(rows[Number(node.dataset.key)]);
-  });
-
-  el.tree.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter") return;
-    const node = event.target.closest(".app-row");
-    if (!node) return;
+    // 回车＝发送第一条命中（客户端吸附栏里回车也是直接发送当前结果）。
+    if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
+    if (!el.barInput.value.trim()) return;
     event.preventDefault();
-    selectRow(node);
-    pasteIntoInput(rows[Number(node.dataset.key)]);
+    if (!sendBarHit("1")) recordHistory(el.barInput.value);
+  });
+
+  el.barClear.addEventListener("click", closeBarSearch);
+  el.barClose.addEventListener("click", closeBarSearch);
+
+  el.barToggle.addEventListener("click", () =>
+    setBarCollapsed(!el.bar.classList.contains("attached--collapsed")),
+  );
+
+  el.barQuick.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-phrase]");
+    if (chip) sendText(chip.dataset.phrase, null);
+  });
+
+  // 最近搜索：点一下就重新搜（与主界面共用一份历史），清空就全清。
+  el.barHistoryChips.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-history]");
+    if (!chip) return;
+    el.barInput.value = chip.dataset.history;
+    renderBar();
+    el.barInput.focus();
+  });
+
+  el.barHistoryClear.addEventListener("click", () => {
+    state.history = [];
+    renderBarHistory();
   });
 
   // 聊天窗口自己的发送按钮：把输入框里的内容发出去（用户确认后再发的那一步）。
@@ -1829,22 +1991,35 @@
     sendText(first.text, el.tree.querySelector(".app-row"));
   });
 
-  // 范围按钮可点：全部 → 当前话术域 → 当前套，循环切换后立即重算命中。
-  el.range?.addEventListener("click", () => {
+  // 范围按钮可点：全部 → 当前话术域 → 当前套，循环切换后主界面与吸附栏都立即重算命中。
+  const cycleRange = () => {
     state.range = state.range === "all" ? "scope" : state.range === "scope" ? "set" : "all";
     renderRange();
-    if (state.query) renderTree();
-  });
+    renderTree();
+    renderBar();
+  };
 
-  // 数字键 0–9 切套（光标在演示区里、且不在打字时生效），对应客户端的套号快捷键。
+  el.range.addEventListener("click", cycleRange);
+  el.barRange.addEventListener("click", cycleRange);
+
+  // 数字键 0–9：光标在吸附栏且结果开着时＝直接发送第 N 条命中；否则＝切套（客户端套号快捷键）。
+  // 只在光标不在输入框里、且在演示区之内时生效，不抢页面其他地方的键盘。
   document.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     if (!/^Digit[0-9]$/.test(event.code)) return;
     const target = event.target;
     if (target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
-    if (!(target instanceof HTMLElement) || !target.closest(".demo")) return;
+    if (!(target instanceof HTMLElement)) return;
+    const digit = event.code.slice(5);
+    const inBar = Boolean(target.closest(".attached"));
+    if (inBar && !el.barResults.hidden) {
+      event.preventDefault();
+      sendBarHit(digit);
+      return;
+    }
+    if (inBar || !target.closest(".demo")) return;
     event.preventDefault();
-    focusSet(Number(event.code.slice(5)));
+    focusSet(Number(digit));
   });
 
   // Alt+Q：和客户端一致，任何位置按都能定位到搜索框（演示区不在视野内时先滚过去）。

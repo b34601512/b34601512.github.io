@@ -81,17 +81,50 @@ export const indexPage = {
     <p class="section-sub">左边客服聊天窗口，右边话术精灵主界面，直接上手点一点。</p>
 
     <div class="demo">
-      <div class="chat">
-        <div class="chat-head">
-          <span class="chat-avatar">晓</span>
-          <span class="chat-who"><strong>客户 晓明</strong><em>天猫咨询 · 在线</em></span>
+      <div class="chat-wrap">
+        <!-- 底部吸附搜索栏：贴在聊天窗口底边，结果向上展开、常用短语与最近搜索向下展开（对应客户端 attached_search_bar）。 -->
+        <div class="chat">
+          <div class="chat-head">
+            <span class="chat-avatar">晓</span>
+            <span class="chat-who"><strong>客户 晓明</strong><em>天猫咨询 · 在线</em></span>
+          </div>
+          <div class="chat-log" id="demo-log">
+            <div class="msg msg--in"><p class="bubble">老板，这款产品质量怎么样，是正品吗？</p></div>
+          </div>
+          <div class="chat-foot">
+            <textarea class="chat-input" id="demo-input" rows="1" placeholder="双击右侧话术贴进来，也可以直接打字，回车发送" spellcheck="false"></textarea>
+            <button class="chat-send" id="demo-send-btn" type="button">发送</button>
+          </div>
         </div>
-        <div class="chat-log" id="demo-log">
-          <div class="msg msg--in"><p class="bubble">老板，这款产品质量怎么样，是正品吗？</p></div>
-        </div>
-        <div class="chat-foot">
-          <textarea class="chat-input" id="demo-input" rows="1" placeholder="双击右侧话术贴进来，也可以直接打字，回车发送" spellcheck="false"></textarea>
-          <button class="chat-send" id="demo-send-btn" type="button">发送</button>
+
+        <div class="attached" id="demo-attached">
+          <div class="attached-results" id="demo-attached-results" hidden>
+            <div class="attached-head">
+              <span class="attached-title" id="demo-attached-title">搜索结果 · 0</span>
+              <button class="attached-close" id="demo-attached-close" type="button" title="关闭搜索结果（Esc）" aria-label="关闭搜索结果">×</button>
+            </div>
+            <p class="attached-hint">按 Tab键，再按数字直接发送话术。</p>
+            <div class="attached-list" id="demo-attached-list"></div>
+          </div>
+          <div class="attached-row">
+            <span class="attached-field">
+              <input class="attached-input" id="demo-attached-input" type="search" placeholder="按 Tab键，再按数字直接发送话术。" autocomplete="off" />
+              <button class="attached-clear" id="demo-attached-clear" type="button" title="清空搜索" aria-label="清空搜索" hidden>×</button>
+            </span>
+            <button class="attached-range" id="demo-attached-range" type="button">全部</button>
+            <button class="attached-toggle" id="demo-attached-toggle" type="button" title="收起吸附栏" aria-label="收起吸附栏">›</button>
+          </div>
+          <div class="attached-phrases" id="demo-attached-phrases">
+            <span class="attached-label">常用短语：</span>
+            <div class="attached-chips" id="demo-attached-quick"></div>
+          </div>
+          <div class="attached-history" id="demo-attached-history" hidden>
+            <div class="attached-history-head">
+              <span class="attached-label attached-label--strong">最近搜索</span>
+              <button class="attached-history-clear" id="demo-attached-history-clear" type="button">清空</button>
+            </div>
+            <div class="attached-chips" id="demo-attached-history-chips"></div>
+          </div>
         </div>
       </div>
 

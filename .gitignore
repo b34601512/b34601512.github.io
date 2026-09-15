@@ -36,6 +36,7 @@ __pycache__/
 .claude/
 .pi/
 .imgtest/
+.shots/
 
 # IDE 配置文件（可选，根据团队需要）
 .vscode/

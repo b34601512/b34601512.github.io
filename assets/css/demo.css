@@ -555,6 +555,19 @@
   gap: 5px;
 }
 
+/* 吸附栏结果行前面的临时序号：1–9、0 直接发送对应命中。 */
+.app-row-digit {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--w-chip-bg);
+  color: var(--w-chip-fg);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .app-row-icon {
   flex: 0 0 auto;
   width: 14px;
@@ -726,6 +739,252 @@
 .demo-reset:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* ---------- 底部吸附搜索栏 ---------- */
+/* 贴在聊天窗口底边：结果向上展开盖住聊天窗底部，常用短语与最近搜索向下展开。 */
+.chat-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.attached {
+  position: relative;
+  border: 1px solid var(--w-border);
+  background: var(--w-content);
+}
+
+/* 折叠态：只剩右下角一个小按钮（客户端吸附栏折叠后的样子）。 */
+.attached--collapsed {
+  align-self: flex-end;
+  border: none;
+  background: none;
+}
+
+.attached--collapsed .attached-field,
+.attached--collapsed .attached-range,
+.attached--collapsed .attached-results,
+.attached--collapsed .attached-phrases,
+.attached--collapsed .attached-history {
+  display: none;
+}
+
+.attached-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: var(--w-content);
+}
+
+.attached-field {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.attached-input {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 2px 26px 2px 6px;
+  border: none;
+  background: none;
+  color: var(--w-text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.attached-input::placeholder {
+  color: #9aa3ae;
+}
+
+.attached-input:focus {
+  outline: none;
+}
+
+/* 清除按钮压在输入框右端（客户端也是把 × 放在输入框里）。 */
+.attached-clear {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #d93025;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.attached-clear:hover {
+  background: var(--w-hover);
+}
+
+.attached-range {
+  flex: 0 0 auto;
+  min-width: 38px;
+  height: 26px;
+  padding: 0 5px;
+  border: none;
+  border-left: 1px solid var(--w-panel-border);
+  border-radius: 0;
+  background: none;
+  color: var(--w-text);
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.attached-range:hover {
+  background: var(--w-hover);
+}
+
+.attached-toggle {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--w-panel-border);
+  border-radius: 6px;
+  background: var(--w-content);
+  color: var(--w-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.attached-toggle:hover {
+  border-color: var(--w-selection-border);
+  background: var(--w-hover);
+}
+
+/* 结果区向上展开：底部与吸附栏顶边对齐，盖住聊天窗口下半截。 */
+.attached-results {
+  position: absolute;
+  right: -1px;
+  bottom: 100%;
+  left: -1px;
+  z-index: 2;
+  border: 1px solid var(--w-border);
+  border-bottom: none;
+  background: var(--w-content);
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.attached-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 0 6px;
+}
+
+.attached-title {
+  flex: 1;
+  color: #c0392b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.attached-close {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #d93025;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.attached-close:hover {
+  background: var(--w-hover);
+}
+
+.attached-hint {
+  margin: 0;
+  padding: 1px 6px 4px;
+  border-bottom: 1px solid var(--w-border);
+  color: var(--w-muted);
+  font-size: 13px;
+}
+
+.attached-list {
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.attached-phrases {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 8px 6px;
+  border-top: 1px solid var(--w-panel-border);
+  background: var(--w-base);
+}
+
+.attached-label {
+  color: var(--w-muted);
+  font-size: 11px;
+}
+
+.attached-label--strong {
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.attached-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.attached-history {
+  margin: 4px;
+  padding: 6px 10px 8px;
+  border: 1px solid var(--w-accent-border);
+  border-radius: 10px;
+  background: var(--w-content);
+}
+
+.attached-history-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.attached-history-clear {
+  margin-left: auto;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--w-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.attached-history-clear:hover {
+  background: var(--w-hover);
 }
 
 /* ---------- 响应式与动效偏好 ---------- */
