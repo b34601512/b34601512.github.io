@@ -54,3 +54,4 @@ p.js
 *.swo
 *~
 .perf*
+.live-site/

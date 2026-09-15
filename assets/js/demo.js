@@ -534,7 +534,9 @@
 
   const drainReplies = () => {
     if (state.replyPending || state.replyQueue <= 0) return;
-    const reply = CUSTOMER_REPLIES[state.replied];
+    // 话术发得再多也得有回复：六条客服用完就从头再来。（以前是发满 6 条后客户永远不再回，
+    // 多玩几下就像坏了 —— 口径是「每条发出去的都有回复」。）
+    const reply = CUSTOMER_REPLIES[state.replied % CUSTOMER_REPLIES.length];
     if (!reply) {
       state.replyQueue = 0;
       return;
