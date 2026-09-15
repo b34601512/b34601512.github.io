@@ -54,4 +54,8 @@ p.js
 *.swo
 *~
 .perf*
+# 探针输出：核对线上时会写在根目录，绝不能进仓库（会被 Pages 公开）
+.live*.out
+.reply*.out
+.p.out
 .live-site/
