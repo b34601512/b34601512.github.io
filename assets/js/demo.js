@@ -76,7 +76,6 @@
     barClear: $("demo-attached-clear"),
     barRange: $("demo-attached-range"),
     barToggle: $("demo-attached-toggle"),
-    barPhrases: $("demo-attached-phrases"),
     barQuick: $("demo-attached-quick"),
     barHistory: $("demo-attached-history"),
     barHistoryChips: $("demo-attached-history-chips"),

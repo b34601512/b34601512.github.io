@@ -1417,6 +1417,8 @@ const treeHtml = (category) => {
 const initialTreeHtml = () => treeHtml(SCOPES.team.sets[0].categories[0]).html;
 
 /* 浏览器挂到 window，Node（构建脚本）拿到 module.exports。 */
-const DEMO = { SCOPES, TYPE_ICONS, esc, rowHtml, treeHtml, initialTreeHtml };
+/* 导出给两种运行环境：浏览器挂到 window.SOFTTALK_DEMO（demo.js 取 SCOPES/esc/rowHtml/treeHtml），
+   构建脚本在 Node 里 import（index.mjs 用 initialTreeHtml 做静态预渲染）；TYPE_ICONS 只在本文件内部用。 */
+const DEMO = { SCOPES, esc, rowHtml, treeHtml, initialTreeHtml };
 if (typeof module !== "undefined" && module.exports) module.exports = DEMO;
 else globalThis.SOFTTALK_DEMO = DEMO;

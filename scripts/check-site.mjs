@@ -115,9 +115,24 @@ for (const name of definedClasses) {
 }
 
 const sitemap = await readFile("sitemap.xml", "utf8").catch(() => "");
+const sitemapLocs = matchAll(sitemap, /<loc>([^<]+)<\/loc>/g);
 for (const page of sitePages) {
   const loc = page.outputFile === "index.html" ? siteData.siteUrl : pageUrl(page.outputFile);
   if (!sitemap.includes(`<loc>${loc}</loc>`)) errors.push(`sitemap.xml 缺少 ${loc}`);
+}
+// sitemap 只能列页面清单里的地址：多列、重复、或 lastmod 不是 YYYY-MM-DD 都报错，
+// 否则错一个字符搜索引擎就当成无效条目静默丢掉。
+for (const loc of sitemapLocs) {
+  const known =
+    loc === siteData.siteUrl || sitePages.some((page) => pageUrl(page.outputFile) === loc);
+  if (!known) errors.push(`sitemap.xml 里有页面清单之外的地址：${loc}`);
+}
+if (new Set(sitemapLocs).size !== sitemapLocs.length) errors.push("sitemap.xml 里有重复的 <loc>");
+for (const value of matchAll(sitemap, /<lastmod>([^<]*)<\/lastmod>/g)) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) errors.push(`sitemap.xml 的 lastmod 不是 YYYY-MM-DD：${value}`);
+}
+if (sitemapLocs.length !== sitePages.length) {
+  errors.push(`sitemap.xml 的地址数量是 ${sitemapLocs.length}，页面清单是 ${sitePages.length}`);
 }
 
 warnings.forEach((message) => console.warn(`[warn] ${message}`));
