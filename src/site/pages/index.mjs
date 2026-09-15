@@ -146,7 +146,7 @@ export const indexPage = {
         <div class="app-common" id="demo-quick"></div>
         <div class="app-search">
           <input class="app-search-input" id="demo-search" type="search" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
-          <span class="app-range">全部 ▾</span>
+          <span class="app-range" id="demo-range" role="button" tabindex="0">全部 ▾</span>
         </div>
         <div class="app-foot">
           <span class="app-brand">话术精灵 官网: luyao2089.cc</span>
@@ -158,24 +158,6 @@ export const indexPage = {
     <div class="demo-status">
       <span class="demo-count" id="demo-count" hidden>已发送 <b id="demo-count-num">0</b> 条</span>
       <button class="demo-reset" id="demo-reset" type="button" hidden>重置演示</button>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>功能</h2>
-    <div class="grid-3">
-      <article class="feature">
-        <h3>三套话术库</h3>
-        <p>团队、个人、离线三套分开存放，一级分类配色可以自己配，已有话术表支持 Excel 导入。</p>
-      </article>
-      <article class="feature">
-        <h3>呼出与检索</h3>
-        <p>Alt+Q 跳到搜索框，可按全部、当前分类或自定义范围搜索；Alt+W 显示或隐藏面板，Alt+R 磁吸到聊天窗口旁边。</p>
-      </article>
-      <article class="feature">
-        <h3>本地备份</h3>
-        <p>保存和删除前自动留档，按天备份话术表格与完整恢复包，保留份数可设。</p>
-      </article>
     </div>
   </section>
 

@@ -1389,6 +1389,7 @@
     scope: "team",
     set: 0,
     category: 0,
+    range: "all",
     query: "",
     sent: 0,
     replied: 0,
@@ -1413,6 +1414,7 @@
     tree: $("demo-list"),
     quick: $("demo-quick"),
     search: $("demo-search"),
+    range: $("demo-range"),
     setLabel: $("demo-set"),
     count: $("demo-count"),
     countNum: $("demo-count-num"),
@@ -1442,6 +1444,21 @@
     el.setLabel.innerHTML = `<b>${esc(currentSet().name)}</b> · 第 ${state.set} 套 / 共 ${sets().length} 套`;
   };
 
+  // 搜索范围按钮：点一下在「全部 / 当前话术域 / 当前套」之间循环，真正的定位范围就锁在这一层。
+  const renderRange = () => {
+    if (!el.range) return;
+    const label =
+      state.range === "all" ? "全部" : state.range === "scope" ? SCOPES[state.scope].label : `第 ${state.set} 套`;
+    el.range.textContent = `${label} ▾`;
+    el.range.title =
+      state.range === "all"
+        ? "搜索范围：全部话术域（点击切换）"
+        : state.range === "scope"
+          ? "搜索范围：当前话术域（点击切换）"
+          : "搜索范围：当前套话术（点击切换）";
+    el.range.setAttribute("aria-label", el.range.title);
+  };
+
   const renderChips = () => {
     const chips = categories()
       .map(
@@ -1463,7 +1480,7 @@
   };
 
   const rowHtml = (item, key, path) => `
-      <div class="app-row" role="button" tabindex="0" data-key="${key}">
+      <div class="app-row" role="button" tabindex="0" data-key="${key}" title="双击贴进输入框，点左侧纸飞机直接发送">
         <button class="app-row-send" type="button" data-send="${key}" title="直接发送（粘贴 + 回车）">
           <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>
         </button>
@@ -1478,11 +1495,14 @@
         </span>
       </div>`;
 
+  // 搜索沿着「话术域 → 套号 → 一级分类 → 二级分类」走，命中结果带完整路径，一眼看出在哪一套。
+  // 搜索范围由右下角范围按钮控制：全部 / 当前话术域（页签所在域）/ 当前套（套号所在套）。
   const searchHits = (keyword) => {
     const hits = [];
-    // 搜索沿着「话术域 → 套号 → 一级分类 → 二级分类」走，命中结果带完整路径，一眼看出在哪一套。
-    Object.values(SCOPES).forEach((scope) =>
-      scope.sets.forEach((set, setNo) =>
+    Object.entries(SCOPES).forEach(([scopeKey, scope]) => {
+      if (state.range === "scope" && scopeKey !== state.scope) return;
+      scope.sets.forEach((set, setNo) => {
+        if (state.range === "set" && (scopeKey !== state.scope || setNo !== state.set)) return;
         set.categories.forEach((category) =>
           category.sections.forEach((section) =>
             section.items.forEach((item) => {
@@ -1494,9 +1514,9 @@
               }
             }),
           ),
-        ),
-      ),
-    );
+        );
+      });
+    });
     return hits;
   };
 
@@ -1540,6 +1560,7 @@
     renderTabs();
     renderDigits();
     renderSetLabel();
+    renderRange();
     renderChips();
     renderTree();
   };
@@ -1745,6 +1766,15 @@
     pasteIntoInput(rows[Number(node.dataset.key)]);
   });
 
+  // 手机/平板没有双击：手指点一下就贴进输入框，否则触屏用户根本用不了这个演示。
+  el.tree.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch") return;
+    const node = event.target.closest(".app-row");
+    if (!node || event.target.closest(".app-row-send")) return;
+    selectRow(node);
+    pasteIntoInput(rows[Number(node.dataset.key)]);
+  });
+
   el.tree.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     const node = event.target.closest(".app-row");
@@ -1783,12 +1813,38 @@
   });
 
   el.search.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    el.search.value = "";
-    state.query = "";
-    renderDigits();
-    renderChips();
-    renderTree();
+    if (event.key === "Escape") {
+      el.search.value = "";
+      state.query = "";
+      renderDigits();
+      renderChips();
+      renderTree();
+      return;
+    }
+    // 搜索框里回车＝直接发出第一条命中（与客户端搜索框 Enter 发送一致）。
+    if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
+    const first = rows[0];
+    if (!first) return;
+    event.preventDefault();
+    sendText(first.text, el.tree.querySelector(".app-row"));
+  });
+
+  // 范围按钮可点：全部 → 当前话术域 → 当前套，循环切换后立即重算命中。
+  el.range?.addEventListener("click", () => {
+    state.range = state.range === "all" ? "scope" : state.range === "scope" ? "set" : "all";
+    renderRange();
+    if (state.query) renderTree();
+  });
+
+  // 数字键 0–9 切套（光标在演示区里、且不在打字时生效），对应客户端的套号快捷键。
+  document.addEventListener("keydown", (event) => {
+    if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (!/^Digit[0-9]$/.test(event.code)) return;
+    const target = event.target;
+    if (target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+    if (!(target instanceof HTMLElement) || !target.closest(".demo")) return;
+    event.preventDefault();
+    focusSet(Number(event.code.slice(5)));
   });
 
   // Alt+Q：和客户端一致，任何位置按都能定位到搜索框（演示区不在视野内时先滚过去）。

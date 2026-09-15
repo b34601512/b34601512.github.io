@@ -666,6 +666,13 @@
   color: var(--w-muted);
   font-size: 11.5px;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app-range:hover {
+  background: var(--w-hover);
+  color: var(--w-text);
 }
 
 .app-foot {
