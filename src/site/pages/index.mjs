@@ -184,6 +184,8 @@ ${noscriptOverview()}
     </div>
   </section>
 </div>`,
-  bodyEnd: `<script src="assets/js/demo-data.js"></script>
-<script src="assets/js/demo.js"></script>`,
+  // 两个脚本用 defer：话术是构建时静态预渲染好的，首屏不依赖 JS，让浏览器先把内容画出来，
+  // 不必等 85KB 脚本解析执行完（defer 保持顺序，demo.js 仍在 demo-data.js 之后跑）。
+  bodyEnd: `<script src="assets/js/demo-data.js" defer></script>
+<script src="assets/js/demo.js" defer></script>`,
 };

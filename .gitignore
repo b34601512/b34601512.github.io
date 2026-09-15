@@ -53,3 +53,4 @@ p.js
 *.swp
 *.swo
 *~
+.perf*
