@@ -208,7 +208,7 @@ $files = @(
   '.\scripts\build-site.mjs', '.\scripts\check-site.mjs',
   '.\src\site\layout.mjs', '.\src\site\site-data.mjs',
   '.\src\site\pages\index.mjs', '.\src\site\pages\why.mjs', '.\src\site\pages\pricing.mjs', '.\src\site\pages\contact.mjs',
-  '.\assets\js\demo.js'
+  '.\assets\js\demo-data.js', '.\assets\js\demo.js'
 )
 foreach ($file in $files) { node --check $file; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }
 ```
