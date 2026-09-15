@@ -2,7 +2,7 @@
 import { pageUrl, siteData } from "../site-data.mjs";
 
 const url = pageUrl("contact.html");
-const title = "联系我｜话术精灵 SoftTalk";
+const title = "联系话术精灵 - 微信、邮箱";
 const share = `使用、账号、续费相关问题，可联系微信 ${siteData.authorWechat} 或邮箱 ${siteData.authorEmail}。`;
 
 export const contactPage = {
@@ -10,6 +10,7 @@ export const contactPage = {
   navLabel: "联系",
   head: `<title>${title}</title>
 <meta name="description" content="${share}" />
+<meta name="keywords" content="${siteData.keywords}" />
 <meta name="robots" content="index,follow" />
 <link rel="canonical" href="${url}" />
 <meta property="og:type" content="website" />
@@ -18,7 +19,8 @@ export const contactPage = {
 <meta property="og:title" content="${title}" />
 <meta property="og:description" content="${share}" />
 <meta property="og:url" content="${url}" />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content="${new URL(siteData.ogImage, siteData.siteUrl).href}" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${title}" />
 <meta name="twitter:description" content="${share}" />
 <script type="application/ld+json">

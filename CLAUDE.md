@@ -9,7 +9,8 @@
 
 三张正式页面：
 
-- `index.html`：首页。极简介绍 + 可交互演示（紧跟首屏）+ 真实界面截图 + 功能 + 常见问题。
+- `index.html`：首页。极简介绍 + 可交互演示（紧跟首屏）+ 真实界面截图 + 它解决什么问题 + 功能 + 常见问题。
+- `why.html`：问题与解法页（SEO 长尾主阵地）。店铺越多维护成本越高、客服只求快、客服为什么把团队话术复制到个人话术、0–9 十套话术模块与精准定位。
 - `pricing.html`：定价页。本地免费与云端按工号付费的价格表、云端包含的能力。
 - `contact.html`：联系页。作者微信与邮箱，点击整行复制。
 
@@ -40,12 +41,14 @@ D:\SoftTalk官网
 │  ├─ layout.mjs             公共骨架：head 基础项、导航、页脚；导航由页面清单自动生成
 │  └─ pages\
 │     ├─ index.mjs           首页 head（SEO/JSON-LD）+ 主体 + 演示脚本引用
+│     ├─ why.mjs             解决什么问题页（长尾关键词主阵地：多店铺维护、客服求快、十套模块）
 │     ├─ pricing.mjs         定价页 head + 价格表
 │     └─ contact.mjs         联系页 head + 复制脚本
 ├─ scripts\
-│  ├─ build-site.mjs         生成根目录三张 HTML 与 sitemap.xml
+│  ├─ build-site.mjs         生成根目录四张 HTML 与 sitemap.xml
 │  ├─ check-site.mjs         站点自检（见“自动检查”）
-│  └─ optimize-images.py     图片压缩（仅本地需要 Pillow，站点运行不依赖 Python）
+│  ├─ optimize-images.py     图片压缩（仅本地需要 Pillow，站点运行不依赖 Python）
+│  └─ build-og-image.py      生成分享缩略图 assets/og.png（1200×630）
 ├─ assets\
 │  ├─ css\site.css           全站唯一样式入口（变量/基础/导航/组件/区块/页脚/响应式）
 │  ├─ css\demo.css           首页交互演示样式（复刻客户端白色主题）
@@ -56,8 +59,9 @@ D:\SoftTalk官网
 │  ├─ type-text.png          28×28 话术类型角标（纯文本）
 │  ├─ type-image.png         28×28 话术类型角标（带图片）
 │  ├─ type-pdf.png           28×28 话术类型角标（带文件）
+│  ├─ og.png                 1200×630 微信/QQ 分享缩略图（96 KB）
 │  └─ beian.png              公安备案图标（16px 显示）
-├─ index.html / pricing.html / contact.html   构建产物
+├─ index.html / why.html / pricing.html / contact.html   构建产物
 ├─ sitemap.xml               构建产物，由页面清单生成
 ├─ robots.txt                抓取规则，指向 sitemap
 ├─ CNAME                     GitHub Pages 自定义域名
@@ -104,6 +108,51 @@ D:\SoftTalk官网
 - 演示区仍是假数据，只用于展示操作路径：页签切换话术域、套号/分类切换、二级分类展开收起、单击选中、双击贴话术到输入框、点行左侧纸飞机直接发送（粘贴 + 回车，与客户端 `list_box.py` 的 `insert_dbl`/`send` 一致）、聊天窗口自己的发送按钮发出、常用短语直发、搜索（全部范围，结果带路径）、客户自动回复、重置。
 - 聊天输入框是真实的 `<textarea id="demo-input">`（不是假 div）：双击话术是填入而不是锁定，访客可以直接改字、自己打字；**回车发送（微信习惯）**、Shift+Enter 换行（要加 `isComposing`/`keyCode 229` 判断，否则中文输入法选词的回车会误发），多行时自动长高（上限取 CSS `max-height`，默认 70→140px 后内部滚动）。改样式时别把它写回固定高度或去掉 `resize: none`。
 
+## SEO（关键词与元数据方案）
+
+搜索引擎带来的访客主要靠「功能词 + 问题词」，因此每个页面背不同关键词，不抢同一个词。
+
+### 关键词矩阵
+
+| 类别 | 目标关键词 | 主攻页面 |
+| --- | --- | --- |
+| 核心词 | 客服话术软件、话术软件、话术管理软件、客服话术管理软件、客服话术工具 | `index.html` |
+| 场景词 | 微信销售话术软件、微信话术软件、电商客服话术软件、淘宝客服话术软件、千牛快捷回复、客户话术软件、销售话术软件、快捷回复软件、团队话术共享 | `index.html` + `why.html` |
+| 长尾问题词 | 多个店铺话术怎么统一更新、客服话术怎么管理、话术库怎么建、客服回复慢怎么办、团队话术和个人话术的区别、话术太多找不到怎么快速定位、平台自带快捷短语的缺点 | `why.html` + 首页 FAQ |
+| 品牌词 | 话术精灵、话术精灵官网、话术精灵下载、SoftTalk 话术软件 | 全部页面（title 尾巴） |
+
+### 关键词→页面对照
+
+| 页面 | 主关键词 | title | description 要点 | H1 |
+| --- | --- | --- | --- | --- |
+| `index.html` | 客服话术软件 | `客服话术软件_微信销售话术管理工具 - 话术精灵 SoftTalk` | 团队/个人/离线话术统一管理 + 一套话术拆 10 个模块 + 双击贴入回车发送 + 本地免费 | 把客服话术沉淀成团队知识库 |
+| `why.html` | 话术管理软件（要解决什么） | `为什么需要话术管理软件_多店铺话术统一更新 - 话术精灵` | 20 个店铺要更新 20 次、客服只求快、客服复制团队话术到个人话术的真实原因、0–9 十套模块 | 为什么客服团队需要一个话术管理软件 |
+| `pricing.html` | 话术软件多少钱 | `客服话术软件多少钱_话术软件价格 - 话术精灵` | 本地永久免费 + 云端按工号 48/78/98/168 元 + 含三项云能力 + 注册赠 1 个月会员 | 本地永久免费 云端按工号付费 |
+| `contact.html` | 品牌词 | `联系话术精灵 - 微信、邮箱` | 作者微信与邮箱，使用/账号/续费都能问 | 联系我 |
+
+首页 H2 按关键词落点排：看一眼就会用（试用演示）/ 真实界面 / **它解决什么问题** / 功能 / 常见问题。
+
+### 写作规则
+
+- title ≤ 30 汉字，品牌放末尾用 ` - 话术精灵` 结尾（首页可用 `_` 分隔主关键词与场景词）；**四页 title 不得重复**。
+- description 控制在 75–85 汉字，含主关键词一次 + 一个具体事实（数字/动作/术语），不堆关键词。
+- 每页恰一个 H1；H2/H3 自然带词，不塞关键词堆。
+- 一个关键词在 title、description、H1、正文各出现一次即可，正文以真实场景叙述为主。
+- 图 alt 写内容（例：`客服话术管理软件主界面截图`），装饰性图片继续用 `alt=""`。
+- 内链：首页痛点小节 → `why.html`；`why.html` 底部 CTA → 下载页 + `pricing.html`；`pricing.html` → `why.html`；页脚与导航由 `sitePages` 自动带上新页面。
+
+### 结构化数据
+
+- `index.html`：`SoftwareApplication`（Windows、BusinessApplication、offers 价格区间、featureList）+ `FAQPage`。
+- `why.html`：`WebPage` + `BreadcrumbList`（首页 → 为什么需要话术管理软件）。
+- `pricing.html`：`Service`/`Offer` 已有价格表 JSON-LD；`contact.html`：`ContactPage`。
+- **不要伪造 `aggregateRating`（无真实评价）**，也不要写产品里没有的能力（见「已知事项」事实清单）。
+
+### 还需作者本人操作
+
+- 百度搜索资源平台 / 必应站长工具提交 `https://luyao2089.cc/sitemap.xml`（需作者账号，网站侧已备好 `robots.txt` 与 sitemap）。
+- 可选：百度统计代码；微信/QQ 分享缩略图靠已生成的 `assets/og.png`。
+
 ## 数据流
 
 构建时：
@@ -145,7 +194,7 @@ node .\scripts\check-site.mjs
 $files = @(
   '.\scripts\build-site.mjs', '.\scripts\check-site.mjs',
   '.\src\site\layout.mjs', '.\src\site\site-data.mjs',
-  '.\src\site\pages\index.mjs', '.\src\site\pages\pricing.mjs', '.\src\site\pages\contact.mjs',
+  '.\src\site\pages\index.mjs', '.\src\site\pages\why.mjs', '.\src\site\pages\pricing.mjs', '.\src\site\pages\contact.mjs',
   '.\assets\js\demo.js'
 )
 foreach ($file in $files) { node --check $file; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }
@@ -161,7 +210,9 @@ python -m http.server 8000
 
 ### 浏览器验收清单
 
-- 三张页面都能打开，导航互相跳转，当前页有下划线，图片与样式完整。
+- 四张页面都能打开，导航互相跳转，当前页有下划线，图片与样式完整。
+- SEO：每页恰一个 H1；title/description 四页互不重复且含各自主关键词；`meta keywords`、canonical、og:image（指向 `assets/og.png`）齐备；JSON-LD 能被 `JSON.parse` 解析且没有 `aggregateRating`；首页 FAQ 条数与 JSON-LD `FAQPage` 一致；`sitemap.xml` 含四个页面；内链：首页痛点区 → `why.html`、`why.html` → 首页演示/定价/下载、`pricing.html` → `why.html`。
+- `why.html`：对比表为 3 列 4 行、「话术精灵」列有绿勾、窄屏不横向溢出。
 - 首页演示：切团队/个人/离线话术（页签蓝线跟动）、点套号与一级分类切换、二级分类展开收起、搜索（结果带路径、无结果提示、Esc 退出）、单击选中（不贴话术）、双击把话术贴进聊天输入框（不直接发送、输入框获得焦点）、双击后手动改字再发送发的是改后的内容、输入框回车发送 / Shift+Enter 换行 / 多行自动长高、点话术行左侧纸飞机直接发送并出现绿色气泡与客户回复、常用短语直接发送、连发多条不会丢消息也不会重复回复、聊天窗口发送按钮能发出输入框里的内容、重置后回到初始状态且没有残留气泡。
 - 首页演示窗口在小屏（≤900px）改为上下堆叠，仍可完整操作，无横向溢出。
 - 首页截图（WebP）正常显示，无横向滚动条。
@@ -182,6 +233,7 @@ python scripts\optimize-images.py logo-src.png shot-src.png D:\SoftTalk\platform
 - `favicon.png`：128×128，居中留白，2.2 KB。
 - `screenshot.webp`：975×819，质量 82，172 KB → 64 KB；截图里的文字在 2 倍放大下与原图无可辨差异。
 - `type-text.png` / `type-image.png` / `type-pdf.png`：28×28 调色板 PNG，共约 2 KB，取自客户端 `platform_images/script-*.png`，只给演示区话术行做类型角标。
+- `og.png`：1200×630 分享缩略图（黑底 + 右上橙色光晕 + 品牌名 + 三行卖点），由 `python scripts\build-og-image.py` 生成，四张页面都通过 `og:image` 指向它；改文案后重跑一次即可。
 - 首页截图直接引用 `.webp`，不提供 PNG 回退（现代浏览器均支持）。若将来必须兼容老浏览器，用 `<picture>` 加一条 PNG 源，不要改成双份 `<img>`。
 - 截图 `<img>` 必须保留 `width`/`height` 与 `loading="lazy"`，避免布局抖动。
 
@@ -202,6 +254,13 @@ python scripts\optimize-images.py logo-src.png shot-src.png D:\SoftTalk\platform
   - 三个话术域叫「团队话术 / 个人话术 / 离线话术」（`sync_scope_constants.py`）；云端权益是云同步、工号协作、云附件（`membership_access.py`）。
   - 注册团队账号赠送 1 个月会员（`key/register_dialog_pkg/constants.py` 的 `REGISTER_GIFT_MONTHS`）。
   - 下载/更新页与使用帮助链接以客户端 `softtalk_shared/source_config.py` 的 `APP_UPDATE_URL`/`APP_USAGE_HELP_URL` 为准。
+- **话术组织模型（写 SEO/卖点文案必须用对）**：
+  - 术语是「**套话术**」和「**套号**」，编号 **0–9 共 10 套**（`phrase_set.py`：`PHRASE_SET_NUMBERS = tuple(range(10))`，`DEFAULT_PHRASE_SET_NO = 0`）；套号 0 在产品里叫「默认话术」口径（`search_result_source.py`）。宣传时说「一套话术可拆成 10 份独立模块存放」。
+  - 每个套话术有备注名（可重命名，见 `storage/sqlite_store_pkg/store_core_pkg/phrase_set_rename.py`），一级分类和话术都挂在「话术域 + 套号」下，所以套与套的内容互不堆积。
+  - 搜索目标只由「**话术域 + 套号**」组成（`search_range_engine.py` 文件头注释：「一个搜索目标只由『话术域 + 套号』组成」），界面上的「全部 / 当前 / 自定义」最终都解析成这一种目标集合——因此能把搜索锁在某一套里，比在一整套上千条里翻更快（这就是「一键精准定位话术」的依据，不要说成 AI 语义搜索）。
+  - 主界面 0–9 数字按钮兼作套号快捷键与悬停预览（`ui/main_window_pkg/lv1_group_digit_ui_state.py`）。
+  - Excel 导入支持带套号列（`excel_io/phrase_xlsx_io_pkg/import_row_normalizer.py`：「带套号列时以文件逐行套号为准」）。
+  - 不可核实项，保持作者原值、不要自行发明数字：云端价格 48 / 78 / 98 / 168 元每工号（客户端与后台无价格表，只有月亮-试用/地球 plus/太阳 pro 三档等级），以及「天猫 / 京东 / 拼多多 / 抖音」平台清单（代码里只找到企业微信兼容注释）。
 - `.claude/worktrees/elastic-mendel-b22c35` 是历史工具留下的 git worktree（旧版网站副本），不是当前源码；`.claude/`、`.pi/` 已加入 `.gitignore`，不要提交。
 - `assets/js/demo.js` 里的客服话术、分类、文件全是演示假数据，与真实客户端数据无关；但界面结构与配色要和客户端保持一致（见「演示区＝客户端复刻」）。
 - 首页 FAQ 文案与 JSON-LD 里的 `FAQPage` 必须保持一致；改一处要同步另一处。

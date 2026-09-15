@@ -2,12 +2,25 @@
 import { siteData } from "../site-data.mjs";
 
 const title = siteData.siteTitle;
-const share = "面向电商客服团队的 Windows 话术工具：常用话术按场景分类整理，双击贴进聊天输入框，点左侧箭头直接发送，内容保存在本机并按天自动备份。";
+const share =
+  "话术精灵是一款 Windows 客服话术软件：团队话术、个人话术、离线话术统一管理，一套话术可拆成 0–9 十个独立模块精准定位；双击把话术贴进聊天输入框、回车发送，内容存在本机，本地永久免费。";
 
 const faq = [
   {
     q: "适合哪些平台？",
-    a: "天猫、京东、拼多多、抖音等电商客服场景。话术是贴到当前聊天窗口的输入框，能打字的窗口都能用。",
+    a: "天猫、京东、拼多多、抖音等电商客服场景，微信、企业微信的聊天窗口也能用。话术是贴到当前聊天窗口的输入框，能打字的窗口都能用。",
+  },
+  {
+    q: "多个店铺的话术能一次改完吗？",
+    a: "可以。话术收在一个团队话术库里维护，改一次就会同步给所有工号，不用像平台自带的快捷短语那样一个店铺改一次。",
+  },
+  {
+    q: "团队话术和个人话术有什么区别？",
+    a: "团队话术由团队统一维护、所有工号共享（需开通云同步）；个人话术只有自己看得到，适合放自己的习惯用语和常用句子。",
+  },
+  {
+    q: "话术太多找不到怎么办？",
+    a: "一套话术可以拆成 0–9 共 10 个套话术分别存放，搜索范围能锁在某一套里，Alt+Q 定位搜索框后一键精准定位，比在上千条里翻快得多。",
   },
   {
     q: "可以整理什么内容？",
@@ -29,6 +42,7 @@ export const indexPage = {
   styles: ["assets/css/demo.css"],
   head: `<title>${title}</title>
 <meta name="description" content="${share}" />
+<meta name="keywords" content="${siteData.keywords}" />
 <meta name="robots" content="index,follow,max-image-preview:large" />
 <link rel="canonical" href="${siteData.siteUrl}" />
 <meta property="og:type" content="website" />
@@ -37,7 +51,8 @@ export const indexPage = {
 <meta property="og:title" content="${title}" />
 <meta property="og:description" content="${share}" />
 <meta property="og:url" content="${siteData.siteUrl}" />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content="${new URL(siteData.ogImage, siteData.siteUrl).href}" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${title}" />
 <meta name="twitter:description" content="${share}" />
 <script type="application/ld+json">
@@ -53,11 +68,25 @@ export const indexPage = {
     {
       "@type": "SoftwareApplication",
       "name": "${siteData.siteName}",
+      "alternateName": "话术精灵",
       "applicationCategory": "BusinessApplication",
       "applicationSubCategory": "客服话术软件",
       "operatingSystem": "Windows",
       "inLanguage": "zh-CN",
       "description": "${share}",
+      "featureList": [
+        "团队话术、个人话术、离线话术三套话术库",
+        "一套话术拆成 0–9 十个独立模块，一键精准定位",
+        "双击把话术贴进聊天输入框，点左侧箭头直接发送",
+        "Alt+Q 定位搜索框、Alt+W 显示隐藏、Alt+R 磁吸聊天窗口",
+        "Excel 导入话术，按天自动备份（话术表格与完整恢复包）"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CNY",
+        "description": "本地使用永久免费；云端按工号付费，1 年 48 元、2 年 78 元、3 年 98 元、100 年 168 元"
+      },
       "url": "${siteData.siteUrl}",
       "downloadUrl": "${siteData.downloadUrl}",
       "publisher": { "@type": "Person", "name": "${siteData.authorName}" }
@@ -151,8 +180,28 @@ export const indexPage = {
     <h2>真实界面</h2>
     <p class="section-sub">下载安装后，面板吸附在聊天窗口旁边，不遮挡对话内容。</p>
     <figure class="shot">
-      <img src="assets/screenshot.webp" alt="话术精灵 SoftTalk 与聊天窗口并排使用截图" width="975" height="819" loading="lazy" decoding="async" />
+      <img src="assets/screenshot.webp" alt="客服话术管理软件话术精灵的主界面与聊天窗口并排使用截图" width="975" height="819" loading="lazy" decoding="async" />
     </figure>
+  </section>
+
+  <section class="section">
+    <h2>它解决什么问题</h2>
+    <p class="section-sub">话术不是不够，是太多、太散、太难找——这几件事正在悄悄吃掉客服的响应速度。</p>
+    <div class="points">
+      <article class="point">
+        <h3>20 个店铺，改一条话术就要改 20 次</h3>
+        <p>平台自带的快捷短语按店铺、按账号存放，改一句话术得挨个登录后台改，漏一个店铺就会出现两种答复。话术精灵把话术收在一个团队话术库里，改一次，所有工号同步。</p>
+      </article>
+      <article class="point">
+        <h3>客服的痛点只有一个字：快</h3>
+        <p>团队话术上千条堆在一起，翻目录的时间比打字还长，客服干脆凭记忆手打。最新版本把一套话术拆成 0–9 十个独立模块，搜索范围可以锁在某一套里，一键精准定位，比在整套里翻快得多。</p>
+      </article>
+      <article class="point">
+        <h3>客服为什么把团队话术复制进个人话术</h3>
+        <p>不是为了改措辞，而是因为团队话术太多、不好定位：换成自己存的那一份，他知道自己放在哪。把话术拆成套、把范围缩到最小，就不用靠复制来提速了。</p>
+      </article>
+    </div>
+    <p class="section-more"><a class="text-link" href="why.html">看看我们怎么解决这三个问题 →</a></p>
   </section>
 
   <section class="section">

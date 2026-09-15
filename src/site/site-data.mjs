@@ -3,7 +3,10 @@
 export const siteData = {
   siteUrl: "https://luyao2089.cc/",
   siteName: "话术精灵 SoftTalk",
-  siteTitle: "话术精灵 SoftTalk｜客服话术软件与团队知识库",
+  siteTitle: "客服话术软件_微信销售话术管理工具 - 话术精灵 SoftTalk",
+  keywords:
+    "客服话术软件,话术软件,话术管理软件,客服话术管理软件,微信销售话术软件,客户话术软件,电商客服话术软件,快捷回复软件,团队话术共享,话术精灵",
+  ogImage: "assets/og.png",
   authorName: "黎路遥",
   authorWechat: "luyao2089",
   authorEmail: "576798643@qq.com",

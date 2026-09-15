@@ -2,8 +2,9 @@
 import { pageUrl, siteData } from "../site-data.mjs";
 
 const url = pageUrl("pricing.html");
-const title = "定价｜话术精灵 SoftTalk";
-const share = "本地离线知识库永久免费；云同步、工号协作、云附件按「工号」购买，注册团队账号赠送 1 个月会员。";
+const title = "客服话术软件多少钱_话术软件价格 - 话术精灵";
+const share =
+  "本地使用永久免费；云端按「工号」付费：1 年 48 元、2 年 78 元、3 年 98 元、100 年 168 元，含云同步、工号协作与云附件，注册团队账号赠送 1 个月会员。";
 
 const plans = [
   { term: "1 年", price: "48", note: "先试一年，决策门槛最低。" },
@@ -23,6 +24,7 @@ export const pricingPage = {
   navLabel: "定价",
   head: `<title>${title}</title>
 <meta name="description" content="${share}" />
+<meta name="keywords" content="${siteData.keywords}" />
 <meta name="robots" content="index,follow" />
 <link rel="canonical" href="${url}" />
 <meta property="og:type" content="website" />
@@ -31,7 +33,8 @@ export const pricingPage = {
 <meta property="og:title" content="${title}" />
 <meta property="og:description" content="${share}" />
 <meta property="og:url" content="${url}" />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content="${new URL(siteData.ogImage, siteData.siteUrl).href}" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${title}" />
 <meta name="twitter:description" content="${share}" />
 <script type="application/ld+json">
@@ -91,11 +94,12 @@ export const pricingPage = {
         )
         .join("\n      ")}
     </div>
-    <p class="note">收费单位是「工号」，有效期内可使用云同步、工号协作与云附件。</p>
+    <p class="note">收费单位是「工号」，有效期内可使用云同步、工号协作与云附件。为什么需要单独一个话术管理软件，可以看 <a class="text-link" href="why.html">解决什么问题</a>。</p>
   </section>
 
   <section class="section">
-    <h2>云端包含</h2>    <div class="grid-3">
+    <h2>云端包含</h2>
+    <div class="grid-3">
       ${cloud
         .map(
           (item) => `<article class="feature">

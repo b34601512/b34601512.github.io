@@ -204,6 +204,84 @@ a {
   font-size: 13.5px;
 }
 
+/* 问题/解法列表 */
+.points {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.point {
+  max-width: 52em;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.point h3 {
+  font-size: 16px;
+}
+
+.point p {
+  margin-top: 8px;
+  color: var(--fg-muted);
+  font-size: 14.5px;
+}
+
+.section-more {
+  margin-top: 20px;
+}
+
+.text-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 107, 44, 0.4);
+  transition: border-color 0.18s ease;
+}
+
+.text-link:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* 对比表 */
+.compare {
+  width: 100%;
+  margin-top: 24px;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.compare th,
+.compare td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.compare thead th {
+  color: var(--fg-dim);
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom-color: var(--line-strong);
+}
+
+.compare tbody th {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.compare td {
+  color: var(--fg-muted);
+}
+
+.compare-win {
+  color: var(--fg);
+}
+
+.compare-win::before {
+  content: "✓ ";
+  color: var(--ok);
+}
+
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
