@@ -101,14 +101,13 @@
 
   // 搜索范围按钮：点一下在「全部 / 当前话术域 / 当前套」之间循环，真正的定位范围就锁在这一层。
   const renderRange = () => {
-    const label =
-      state.range === "all" ? "全部" : state.range === "scope" ? SCOPES[state.scope].label : `第 ${state.set} 套`;
+    // 客户端只有「全部 / 当前 / 自定义」三种搜索范围（search_range_engine），
+    // 演示不弹窗勾选，所以只做前两种，标签与语义都跟客户端一致。
+    const label = state.range === "all" ? "全部" : "当前";
     const title =
       state.range === "all"
-        ? "搜索范围：全部话术域（点击切换）"
-        : state.range === "scope"
-          ? "搜索范围：当前话术域（点击切换）"
-          : "搜索范围：当前套话术（点击切换）";
+        ? "搜索范围：团队、个人和离线话术下的全部 0～9 套（点击切换）"
+        : "搜索范围：当前话术域的当前套号（点击切换）";
     // 主界面与底部吸附栏共用同一份搜索范围口径，两处按钮始终显示同一状态。
     if (el.range) {
       el.range.textContent = `${label} ▾`;
@@ -146,22 +145,27 @@
     el.barQuick.innerHTML = quickChipsHtml();
   };
 
-  // 搜索沿着「话术域 → 套号 → 一级分类 → 二级分类」走，命中结果带完整路径，一眼看出在哪一套。
+  // 命中来源文案照抄客户端 search_result_source：话术域·套号｜一级分类 > 二级分类
+  // （客户端把这段放在悬停预览气泡里，演示没有气泡，就直接跟在话术行下面）。
+  const hitPath = (scopeKey, setNo, lv1, lv2) => {
+    const scope = { team: "团队", personal: "个人", local: "离线" }[scopeKey];
+    const set = Number(setNo) === 0 ? "默认" : `第${setNo}套`;
+    return [lv1, lv2].filter(Boolean).join(" > ") ? `${scope}·${set}｜${[lv1, lv2].filter(Boolean).join(" > ")}` : `${scope}·${set}`;
+  };
+
+  // 搜索沿着「话术域 → 套号 → 一级分类 → 二级分类」走，命中结果带来源，一眼看出在哪一套。
   // 搜索范围由右下角范围按钮控制：全部 / 当前话术域（页签所在域）/ 当前套（套号所在套）。
   const searchHits = (keyword) => {
     const hits = [];
     Object.entries(SCOPES).forEach(([scopeKey, scope]) => {
-      if (state.range === "scope" && scopeKey !== state.scope) return;
       scope.sets.forEach((set, setNo) => {
-        if (state.range === "set" && (scopeKey !== state.scope || setNo !== state.set)) return;
+        // 「当前」＝只搜主界面当前选中的话术域与套号（客户端 SEARCH_RANGE_MODE_CURRENT）。
+        if (state.range === "current" && (scopeKey !== state.scope || setNo !== state.set)) return;
         set.categories.forEach((category) =>
           category.sections.forEach((section) =>
             section.items.forEach((item) => {
               if (`${item.title} ${item.text}`.toLowerCase().includes(keyword)) {
-                hits.push({
-                  item,
-                  path: `${scope.label} · ${setNo} ${set.name} › ${category.label} › ${section.title}`,
-                });
+                hits.push({ item, path: hitPath(scopeKey, setNo, category.label, section.title) });
               }
             }),
           ),
@@ -191,7 +195,7 @@
       paint(
         hits.length
           ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
-          : `<p class="app-empty">没有找到相关话术</p>`,
+          : `<p class="app-empty">没有匹配结果</p>`,
       );
       return;
     }
@@ -221,6 +225,20 @@
     const surface = state.digitSurface;
     state.digitSurface = null;
     refreshSurface(surface);
+    return true;
+  };
+
+  // 回车＝发送当前选中的那条命中；没有选中就发第一条（客户端 `_handle_enter_key`）。
+  // 主界面发送后记一条搜索历史，吸附栏再顺手收起（客户端 clear_query）。
+  const sendEnterHit = (container, items) => {
+    const selected = container.querySelector(".app-row--selected");
+    const index = selected ? Number(selected.dataset.key) : 0;
+    const item = items[index] ?? items[0];
+    if (!item) return false;
+    selectIn(container, selected ?? container.querySelector(".app-row"));
+    sendText(item.text, selected ?? container.querySelector(".app-row"));
+    if (container === el.barList) useBarHit();
+    else recordHistory(el.search.value);
     return true;
   };
 
@@ -262,7 +280,12 @@
       if (event.key === "Escape") {
         event.preventDefault();
         if (exitDigitMode()) return;
+        if (!el.search.value && surface === "panel") return;
         clearSearch(surface);
+        // 客户端 Esc 退出搜索后不再停在输入框：主搜索把焦点交给话术列表，
+        // 吸附栏把焦点还给外部的聊天输入窗口。
+        if (surface === "panel") el.tree.querySelector(".app-row")?.focus({ preventScroll: true });
+        else el.input.focus();
         return;
       }
       if (!digitMode(surface)) return;
@@ -331,7 +354,7 @@
       const digits = digitMode("bar");
       el.barList.innerHTML = hits.length
         ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
-        : `<p class="app-empty">没有找到相关话术</p>`;
+        : `<p class="app-empty">没有匹配结果</p>`;
     } else {
       // 搜索收起时连结果行一起清掉，避免隐藏区里留着上一次的序号。
       el.barList.innerHTML = "";
@@ -640,7 +663,7 @@
     if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
     if (!el.barInput.value.trim()) return;
     event.preventDefault();
-    if (!sendDigitHit("bar", "1")) recordHistory(el.barInput.value);
+    sendEnterHit(el.barList, barRows);
   });
 
   el.barClear.addEventListener("click", closeBarSearch);
@@ -702,10 +725,10 @@
   // Tab / Esc / 数字发送统一由 bindSearchKeys 处理，两个搜索框共用。
   el.search.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
-    const first = rows[0];
-    if (!first) return;
+    if (!el.search.value.trim()) return;
     event.preventDefault();
-    sendText(first.text, el.tree.querySelector(".app-row"));
+    sendEnterHit(el.tree, rows);
+    exitDigitMode();
   });
 
   bindSearchKeys(el.search, "panel");
@@ -714,7 +737,7 @@
 
   // 范围按钮可点：全部 → 当前话术域 → 当前套，循环切换后主界面与吸附栏都立即重算命中。
   const cycleRange = () => {
-    state.range = state.range === "all" ? "scope" : state.range === "scope" ? "set" : "all";
+    state.range = state.range === "all" ? "current" : "all";
     renderRange();
     renderTree();
     renderBar();
