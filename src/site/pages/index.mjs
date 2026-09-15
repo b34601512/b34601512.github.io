@@ -162,13 +162,6 @@ export const indexPage = {
   </section>
 
   <section class="section">
-    <h2>真实界面</h2>
-    <figure class="shot">
-      <img src="assets/screenshot.webp" alt="客服话术管理软件话术精灵与微信聊天窗口并排使用的真实界面截图" width="940" height="699" loading="lazy" decoding="async" />
-    </figure>
-  </section>
-
-  <section class="section">
     <h2>功能</h2>
     <div class="grid-3">
       <article class="feature">

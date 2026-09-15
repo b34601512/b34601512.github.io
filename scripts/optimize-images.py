@@ -1,16 +1,14 @@
 """生成压缩后的站点图片，平衡清晰度与加载速度。
 
 用法（在项目根目录执行）：
-    python scripts/optimize-images.py <logo源文件> <截图源文件> [<客户端platform_images目录>]
+    python scripts/optimize-images.py <logo源文件> [<客户端platform_images目录>]
 
 原始素材可以从 git 历史取回，例如：
     git show HEAD~1:assets/logo.png > logo-src.png
-    git show HEAD:assets/screenshot2.png > shot-src.png
 
 输出：
     assets/logo.png        168×187 调色板 PNG（展示最大 56px，约 3 倍图）
     assets/favicon.png     128×128 调色板 PNG
-    assets/screenshot.webp 940×699 有损 WebP（质量 82）
     assets/type-*.png      28×28 调色板 PNG（演示区话术类型角标，取自客户端 platform_images）
 
 依赖：Pillow（仅本地处理图片时使用，站点运行不依赖 Python）。
@@ -25,7 +23,6 @@ ROOT = Path(__file__).resolve().parent.parent
 LOGO_SIZE = (168, 187)
 ICON_SIZE = (128, 128)
 LOGO_COLORS = 32
-WEBP_QUALITY = 82
 TYPE_ICON_SIZE = (28, 28)
 TYPE_ICON_SOURCES = {
     "type-text.png": "script-text-only.png",
@@ -51,11 +48,6 @@ def build_logo(source: Path) -> None:
     quantize(icon).save(ROOT / "assets" / "favicon.png", optimize=True)
 
 
-def build_screenshot(source: Path) -> None:
-    shot = Image.open(source).convert("RGB")
-    shot.save(ROOT / "assets" / "screenshot.webp", quality=WEBP_QUALITY, method=6)
-
-
 def build_type_icons(platform_dir: Path) -> None:
     """把客户端的话术类型图标缩成演示区角标，保留透明边。"""
     for output_name, source_name in TYPE_ICON_SOURCES.items():
@@ -70,21 +62,19 @@ def build_type_icons(platform_dir: Path) -> None:
 
 
 def report() -> None:
-    for name in ("logo.png", "favicon.png", "screenshot.webp", *TYPE_ICON_SOURCES):
+    for name in ("logo.png", "favicon.png", *TYPE_ICON_SOURCES):
         path = ROOT / "assets" / name
         print(f"{name}: {path.stat().st_size / 1024:.1f} KB")
 
 
 def main() -> int:
-    if len(sys.argv) not in (3, 4):
+    if len(sys.argv) not in (2, 3):
         print(__doc__)
         return 1
 
-    logo_source, shot_source = (Path(arg) for arg in sys.argv[1:3])
-    build_logo(logo_source)
-    build_screenshot(shot_source)
-    if len(sys.argv) == 4:
-        build_type_icons(Path(sys.argv[3]))
+    build_logo(Path(sys.argv[1]))
+    if len(sys.argv) == 3:
+        build_type_icons(Path(sys.argv[2]))
     report()
     return 0
 

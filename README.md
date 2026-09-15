@@ -32,5 +32,5 @@ node .\scripts\check-site.mjs   # 自检：类名、元素 ID、资源路径、�
 
 ## 图片
 
-站点图片已压缩：`logo.png` 1.3 KB、`favicon.png` 2.2 KB、`screenshot.webp` 64 KB、话术类型角标 `type-*.png` 共约 2 KB、分享缩略图 `og.png` 96 KB。
+站点图片已压缩：`logo.png` 1.3 KB、`favicon.png` 2.2 KB、话术类型角标 `type-*.png` 共约 2 KB、分享缩略图 `og.png` 96 KB。
 需要重新生成时使用 `scripts/optimize-images.py`（压图）与 `scripts/build-og-image.py`（分享图，依赖本地 Pillow，站点运行不依赖）。

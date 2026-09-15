@@ -368,20 +368,6 @@ a {
   }
 }
 
-/* 截图 */
-.shot {
-  margin-top: 24px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--surface);
-}
-
-.shot img {
-  width: 100%;
-  height: auto;
-}
-
 /* 常见问题 */
 .faq-item {
   padding: 18px 0;
