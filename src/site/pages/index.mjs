@@ -106,7 +106,7 @@ export const indexPage = {
   </section>
 
   <section class="section" id="demo">
-    <h2>看一眼就会用</h2>
+    <h2>可交互界面实操试用</h2>
     <p class="section-sub">左边客服聊天窗口，右边话术精灵主界面，直接上手点一点。</p>
 
     <div class="demo">
@@ -139,6 +139,7 @@ export const indexPage = {
           <button class="app-tab" type="button" data-scope="personal">个人话术</button>
           <button class="app-tab" type="button" data-scope="local">离线话术</button>
         </div>
+        <div class="app-set" id="demo-set"></div>
         <div class="app-digits" id="demo-digits"></div>
         <div class="app-lv1"><div class="app-chips" id="demo-chips"></div></div>
         <div class="app-tree" id="demo-list"></div>
@@ -163,7 +164,7 @@ export const indexPage = {
   <section class="section">
     <h2>真实界面</h2>
     <figure class="shot">
-      <img src="assets/screenshot.webp" alt="客服话术管理软件话术精灵的主界面与聊天窗口并排使用截图" width="975" height="819" loading="lazy" decoding="async" />
+      <img src="assets/screenshot.webp" alt="客服话术管理软件话术精灵与微信聊天窗口并排使用的真实界面截图" width="940" height="699" loading="lazy" decoding="async" />
     </figure>
   </section>
 

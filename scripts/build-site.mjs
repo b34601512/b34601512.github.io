@@ -1,5 +1,6 @@
 // 从模块化源文件生成 GitHub Pages 可直接托管的静态 HTML 与 sitemap.xml。
 import { writeFile } from "node:fs/promises";
+import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
 import { pageUrl, siteData } from "../src/site/site-data.mjs";
 import { contactPage } from "../src/site/pages/contact.mjs";
@@ -10,7 +11,7 @@ import { whyPage } from "../src/site/pages/why.mjs";
 const sitePages = [indexPage, whyPage, pricingPage, contactPage];
 
 for (const page of sitePages) {
-  await writeFile(page.outputFile, renderPage(page, sitePages), "utf8");
+  await writeFile(page.outputFile, withAssetVersions(renderPage(page, sitePages)), "utf8");
   console.log(`[build-site] 生成 ${page.outputFile}`);
 }
 

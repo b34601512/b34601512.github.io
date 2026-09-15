@@ -2,6 +2,7 @@
 // 只用 Node 内置能力，运行方式：node scripts/check-site.mjs
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
 import { pageUrl, siteData } from "../src/site/site-data.mjs";
 import { contactPage } from "../src/site/pages/contact.mjs";
@@ -61,7 +62,7 @@ for (const page of sitePages) {
     continue;
   }
 
-  if (html !== renderPage(page, sitePages)) {
+  if (html !== withAssetVersions(renderPage(page, sitePages))) {
     errors.push(`${file} 与源文件生成结果不一致，请重新运行 node scripts/build-site.mjs`);
   }
 
@@ -69,13 +70,17 @@ for (const page of sitePages) {
   if (leftover) errors.push(`${file} 存在未替换的占位符：${uniq(leftover).join(" ")}`);
 
   for (const target of matchAll(html, /(?:src|href)="([^"]+)"/g)) {
-    if (target.startsWith("assets/") && !existsSync(target)) {
+    // 带内容指纹的 CSS/JS 要去掉 ?v= 查询串再判断文件是否存在。
+    if (target.startsWith("assets/") && !existsSync(target.split("?")[0])) {
       errors.push(`${file} 引用了不存在的资源：${target}`);
     }
   }
 
   const stylesheets = matchAll(html, /<link rel="stylesheet" href="([^"]+)"/g);
-  const css = (await Promise.all(stylesheets.map((href) => readFile(href, "utf8").catch(() => "")))).join("\n");
+  // 样式表引用带内容指纹（?v=哈希），读文件时去掉查询串。
+  const css = (
+    await Promise.all(stylesheets.map((href) => readFile(href.split("?")[0], "utf8").catch(() => "")))
+  ).join("\n");
   classesInCss(css).forEach((name) => definedClasses.add(name));
   usedClassesInHtml(html).forEach((name) => usedClasses.add(name));
 
@@ -89,7 +94,8 @@ for (const page of sitePages) {
   ];
 
   for (const script of scripts) {
-    const js = script.code ?? (await readFile(script.src, "utf8"));
+    // 脚本 src 可能带内容指纹（?v=哈希），读文件时要去掉查询串。
+    const js = script.code ?? (await readFile(script.src.split("?")[0], "utf8"));
     usedClassesInJs(js).forEach((name) => usedClasses.add(name));
     mentionedClassesInJs(js).forEach((name) => mentionedClasses.add(name));
 

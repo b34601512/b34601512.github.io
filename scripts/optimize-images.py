@@ -5,12 +5,12 @@
 
 原始素材可以从 git 历史取回，例如：
     git show HEAD~1:assets/logo.png > logo-src.png
-    git show HEAD~1:assets/screenshot2.png > shot-src.png
+    git show HEAD:assets/screenshot2.png > shot-src.png
 
 输出：
     assets/logo.png        168×187 调色板 PNG（展示最大 56px，约 3 倍图）
     assets/favicon.png     128×128 调色板 PNG
-    assets/screenshot.webp 975×819 有损 WebP（质量 82）
+    assets/screenshot.webp 940×699 有损 WebP（质量 82）
     assets/type-*.png      28×28 调色板 PNG（演示区话术类型角标，取自客户端 platform_images）
 
 依赖：Pillow（仅本地处理图片时使用，站点运行不依赖 Python）。
