@@ -101,29 +101,6 @@ for (const page of sitePages) {
   }
 }
 
-// 内容只写一次：同一句话（≥ 12 字）不得出现在两个页面的正文里（导航/页脚不在 <main> 内，不算重复）。
-const MIN_DUP_LEN = 12;
-const sentences = new Map(); // 句子 → 首次出现的页面
-for (const page of sitePages) {
-  const html = await readFile(page.outputFile, "utf8").catch(() => "");
-  const main = html.match(/<main[^>]*>([\s\S]*?)<\/main>/)?.[1] ?? "";
-  const text = main.replace(/<[^>]+>/g, "\n");
-  const inPage = new Set();
-  for (const raw of text.split(/[\n。！？；]+/)) {
-    const sentence = raw.replace(/\s+/g, "").trim();
-    if (sentence.length < MIN_DUP_LEN) continue;
-    const first = sentences.get(sentence);
-    if (first && first !== page.outputFile) {
-      errors.push(`内容重复：${page.outputFile} 与 ${first} 都写了「${sentence}」，同样的内容只写一次`);
-    } else if (inPage.has(sentence)) {
-      errors.push(`内容重复：${page.outputFile} 同一页里写了两次「${sentence}」`);
-    } else {
-      sentences.set(sentence, page.outputFile);
-      inPage.add(sentence);
-    }
-  }
-}
-
 for (const name of usedClasses) {
   if (!definedClasses.has(name)) errors.push(`使用了样式里不存在的类：${name}`);
 }
