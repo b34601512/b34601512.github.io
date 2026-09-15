@@ -38,6 +38,15 @@ __pycache__/
 .imgtest/
 .shots/
 
+# headless Chrome 探针的临时文件（探针脚本与抓取结果，跑完就删）
+p.html
+p.js
+.p.out
+.W-*.out
+.WW-*.out
+.L-*
+.L.*
+
 # IDE 配置文件（可选，根据团队需要）
 .vscode/
 .idea/
