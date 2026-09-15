@@ -20,6 +20,16 @@
 
   const OPENING_MESSAGE = "老板，这款产品质量怎么样，是正品吗？";
 
+  // 聊天窗平台皮肤：只换外观与标题写法（头像、标题栏、气泡色），行为完全一样。
+  // 客户端源码里没有平台白名单：吸附栏认的是「前台外部窗口」本身，所以微信、京东、拼多多、千牛、抖音都能贴。
+  const CHAT_PLATFORMS = {
+    wechat: "微信 · 在线",
+    jd: "京东咚咚 · 在线",
+    pdd: "拼多多商家版 · 在线",
+    qianniu: "千牛 · 在线",
+    douyin: "抖音电商 · 在线",
+  };
+
   /* ---------- 状态 ---------- */
   const state = {
     scope: "team",
@@ -39,6 +49,8 @@
     // 还没回复的条数：连发多条时排队回复，避免「只有第一条得到回复」。
     replyQueue: 0,
     epoch: 0,
+    // 聊天窗皮肤（页面静态预渲染时就是微信，JS 起来后保持一致）
+    platform: "wechat",
   };
 
   let rows = [];
@@ -67,6 +79,9 @@
     count: $("demo-count"),
     countNum: $("demo-count-num"),
     reset: $("demo-reset"),
+    chat: $("demo-chat"),
+    chatTabs: $("demo-chat-tabs"),
+    chatPlatform: $("demo-chat-platform"),
     bar: $("demo-attached"),
     barResults: $("demo-attached-results"),
     barTitle: $("demo-attached-title"),
@@ -647,6 +662,19 @@
     render();
   };
 
+  // 切平台皮肤：只动聊天窗的 data-platform（CSS 里换同一组变量）与标题文字，消息、输入框、吸附栏全都照旧。
+  const setChatPlatform = (name) => {
+    if (!el.chat || !CHAT_PLATFORMS[name]) return;
+    state.platform = name;
+    el.chat.dataset.platform = name;
+    if (el.chatPlatform) el.chatPlatform.textContent = CHAT_PLATFORMS[name];
+    el.chatTabs.querySelectorAll(".chat-tab").forEach((tab) => {
+      const on = tab.dataset.platform === name;
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+      tab.tabIndex = on ? 0 : -1;
+    });
+  };
+
   const reset = () => {
     Object.assign(state, {
       scope: "team",
@@ -670,6 +698,7 @@
     el.barInput.value = "";
     setBarCollapsed(false);
     clearInput();
+    setChatPlatform("wechat");
     updateCounter();
     render();
   };
@@ -901,8 +930,27 @@
 
   el.reset.addEventListener("click", reset);
 
+  // 平台标签卡：点选切换；左右方向键也切（tablist 的常规键盘操作，回车/空格由 button 自带）。
+  if (el.chatTabs) {
+    const pick = (name) => setChatPlatform(name);
+    el.chatTabs.addEventListener("click", (event) => {
+      const tab = event.target.closest(".chat-tab");
+      if (tab) pick(tab.dataset.platform);
+    });
+    el.chatTabs.addEventListener("keydown", (event) => {
+      const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const names = Object.keys(CHAT_PLATFORMS);
+      const next = names[(names.indexOf(state.platform) + step + names.length) % names.length];
+      pick(next);
+      el.chatTabs.querySelector(`.chat-tab[data-platform="${next}"]`)?.focus();
+    });
+  }
+
   /* ---------- 启动 ---------- */
   if (el.tree) {
+    setChatPlatform(state.platform);
     renderQuick();
     updateCounter();
     render();

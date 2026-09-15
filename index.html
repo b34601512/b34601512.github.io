@@ -44,7 +44,7 @@
         "团队话术、个人话术、离线话术三套话术库",
         "一套话术拆成 0–9 十个独立模块，一键精准定位",
         "双击把话术贴进聊天输入框，点左侧纸飞机直接发送",
-        "Alt+Q 一键定位搜索栏；搜索栏里按 Tab 键，再按数字直接发送话术",
+        "Alt+Q 一键定位搜索栏；搜索栏里按 Tab 键，再按数字直接发送话术；吸附搜索栏能贴到各种聊天窗口（微信、京东、拼多多、千牛、抖音…）",
         "导入 Excel（.xlsx）话术；保存时与删除前自动备份话术表格与完整恢复包（.stpkg）"
       ],
       "offers": {
@@ -62,7 +62,7 @@
 </script>
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css?v=32c2fab2" />
-<link rel="stylesheet" href="assets/css/demo.css?v=cdb42674" />
+<link rel="stylesheet" href="assets/css/demo.css?v=329467a5" />
 </head>
 <body>
 <header class="nav">
@@ -97,15 +97,25 @@
 
   <section class="section" id="demo">
     <h2>可交互界面实操试用</h2>
-    <p class="section-sub">左边客服聊天窗口，右边话术精灵主界面，直接上手点一点。</p>
+    <p class="section-sub">左边客服聊天窗口（微信、京东、拼多多、千牛、抖音都能贴），右边话术精灵主界面，直接上手点一点。</p>
 
     <div class="demo">
       <div class="chat-wrap">
+        <!-- 平台皮肤：只换聊天窗口的样子（头像、标题、配色），行为完全一样。
+             客户端源码里没有平台白名单：吸附栏认的是「前台外部窗口」本身，所以微信、京东、拼多多、千牛、抖音都能贴。 -->
+        <div class="chat-tabs" id="demo-chat-tabs" role="tablist" aria-label="切换聊天窗口外观">
+          <button class="chat-tab" type="button" role="tab" data-platform="wechat" aria-selected="true">微信</button>
+          <button class="chat-tab" type="button" role="tab" data-platform="jd" aria-selected="false" tabindex="-1">京东</button>
+          <button class="chat-tab" type="button" role="tab" data-platform="pdd" aria-selected="false" tabindex="-1">拼多多</button>
+          <button class="chat-tab" type="button" role="tab" data-platform="qianniu" aria-selected="false" tabindex="-1">千牛</button>
+          <button class="chat-tab" type="button" role="tab" data-platform="douyin" aria-selected="false" tabindex="-1">抖音</button>
+        </div>
+
         <!-- 底部吸附搜索栏：贴在聊天窗口底边，结果向上展开、常用短语与最近搜索向下展开（对应客户端 attached_search_bar）。 -->
-        <div class="chat">
+        <div class="chat" id="demo-chat" data-platform="wechat">
           <div class="chat-head">
             <span class="chat-avatar">晓</span>
-            <span class="chat-who"><strong>客户 晓明</strong><em>天猫咨询 · 在线</em></span>
+            <span class="chat-who"><strong>客户 晓明</strong><em id="demo-chat-platform">微信 · 在线</em></span>
           </div>
           <div class="chat-log" id="demo-log">
             <div class="msg msg--in"><p class="bubble">老板，这款产品质量怎么样，是正品吗？</p></div>
@@ -248,7 +258,7 @@
 </footer>
 
 <script src="assets/js/demo-data.js?v=fecee010" defer></script>
-<script src="assets/js/demo.js?v=3e31f093" defer></script>
+<script src="assets/js/demo.js?v=9d3c732a" defer></script>
 
 </body>
 </html>

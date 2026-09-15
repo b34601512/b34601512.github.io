@@ -28,13 +28,20 @@
   --w-chip-action-fg: #8e1b1b;
   --w-cloud: #4c8dff;
   --w-accent-border: #d0a030;
-  /* 微信风格客服窗口 token */
+  /* 聊天窗口 token：默认是微信皮肤，其余平台在 .chat[data-platform] 里覆盖同一组变量。
+     配色取自各平台品牌色，只做「一眼能看出是哪个平台」的示意，不追求像素级复刻。 */
   --wx-bg: #ededed;
   --wx-head: #f7f7f7;
+  --wx-head-fg: #1a1a1a;
+  --wx-sub: #8a8a8a;
   --wx-line: #e3e3e3;
   --wx-in: #ffffff;
   --wx-out: #95ec69;
   --wx-online: #07c160;
+  --wx-avatar-bg: #d7e2f2;
+  --wx-avatar-fg: #33506e;
+  --wx-focus: #95c95f;
+  --wx-focus-ring: rgba(149, 201, 95, 0.2);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -44,7 +51,112 @@
   line-height: 1.5;
 }
 
-/* ---------- 左：微信风格客服窗口 ---------- */
+/* ---------- 左：客服聊窗（默认微信皮肤，可切平台） ---------- */
+.chat-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.chat-tab {
+  padding: 5px 13px;
+  border: 1px solid #2b2b2b;
+  border-radius: 999px;
+  background: #0d0d0d;
+  color: #9a9a9a;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.chat-tab:hover {
+  border-color: #3d3d3d;
+  color: #e6e6e6;
+}
+
+/* 选中的标签卡用该平台品牌色，一眼能看出切到哪家了 */
+.chat-tab[aria-selected="true"] {
+  background: #1a1a1a;
+}
+
+.chat-tab[data-platform="wechat"][aria-selected="true"] {
+  border-color: #07c160;
+  color: #7ee2a8;
+}
+
+.chat-tab[data-platform="jd"][aria-selected="true"] {
+  border-color: #e1251b;
+  color: #ff9c93;
+}
+
+.chat-tab[data-platform="pdd"][aria-selected="true"] {
+  border-color: #e02e24;
+  color: #ff9d8a;
+}
+
+.chat-tab[data-platform="qianniu"][aria-selected="true"] {
+  border-color: #ff6a00;
+  color: #ffb066;
+}
+
+.chat-tab[data-platform="douyin"][aria-selected="true"] {
+  border-color: #fe2c55;
+  color: #ff8fa8;
+}
+
+/* 各平台皮肤：同一组变量换个值，聊天窗的行为完全不变 */
+.chat[data-platform="jd"] {
+  --wx-head: #fdeeed;
+  --wx-line: #f0d9d8;
+  --wx-bg: #f6f0ef;
+  --wx-out: #ffd9d4;
+  --wx-online: #e1251b;
+  --wx-avatar-bg: #fbdcd9;
+  --wx-avatar-fg: #a3140d;
+  --wx-focus: #e1251b;
+  --wx-focus-ring: rgba(225, 37, 27, 0.18);
+}
+
+.chat[data-platform="pdd"] {
+  --wx-head: #fdede9;
+  --wx-line: #f2d8d3;
+  --wx-bg: #f7f0ee;
+  --wx-out: #ffd8cc;
+  --wx-online: #e02e24;
+  --wx-avatar-bg: #fbd6cd;
+  --wx-avatar-fg: #a81f14;
+  --wx-focus: #e02e24;
+  --wx-focus-ring: rgba(224, 46, 36, 0.18);
+}
+
+.chat[data-platform="qianniu"] {
+  --wx-head: #fff1e5;
+  --wx-line: #f6ddc4;
+  --wx-bg: #f8f1e9;
+  --wx-out: #ffe0bd;
+  --wx-online: #ff6a00;
+  --wx-avatar-bg: #ffe1c2;
+  --wx-avatar-fg: #a34500;
+  --wx-focus: #ff6a00;
+  --wx-focus-ring: rgba(255, 106, 0, 0.18);
+}
+
+.chat[data-platform="douyin"] {
+  --wx-head: #161823;
+  --wx-head-fg: #ffffff;
+  --wx-sub: rgba(255, 255, 255, 0.72);
+  --wx-line: #2a2b3a;
+  --wx-bg: #f1f1f4;
+  --wx-out: #ffd9e0;
+  --wx-online: #fe2c55;
+  --wx-avatar-bg: #2a2b3a;
+  --wx-avatar-fg: #ffffff;
+  --wx-focus: #fe2c55;
+  --wx-focus-ring: rgba(254, 44, 85, 0.2);
+}
+
 .chat {
   display: flex;
   flex-direction: column;
@@ -70,8 +182,8 @@
   width: 30px;
   height: 30px;
   border-radius: 4px;
-  background: #d7e2f2;
-  color: #33506e;
+  background: var(--wx-avatar-bg);
+  color: var(--wx-avatar-fg);
   font-size: 13px;
   font-weight: 600;
 }
@@ -84,7 +196,7 @@
 }
 
 .chat-who strong {
-  color: #1a1a1a;
+  color: var(--wx-head-fg);
   font-size: 13px;
   font-weight: 600;
 }
@@ -93,7 +205,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #8a8a8a;
+  color: var(--wx-sub);
   font-size: 11.5px;
   font-style: normal;
 }
@@ -249,8 +361,8 @@
 }
 
 .chat-input:focus {
-  border-color: #95c95f;
-  box-shadow: 0 0 0 2px rgba(149, 201, 95, 0.2);
+  border-color: var(--wx-focus);
+  box-shadow: 0 0 0 2px var(--wx-focus-ring);
   outline: none;
 }
 
@@ -267,7 +379,7 @@
 }
 
 .chat-send--ready {
-  border-color: #78cf4d;
+  border-color: var(--wx-focus);
   background: var(--wx-out);
   color: #1a1a1a;
 }
