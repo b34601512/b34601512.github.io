@@ -152,6 +152,8 @@
   color: #1a1a1a;
   font-size: 13.5px;
   line-height: 1.55;
+  /* pre-wrap：Shift+Enter 打出的换行发出去以后还要是换行（否则会被 HTML 折成空格）。 */
+  white-space: pre-wrap;
   word-break: break-word;
 }
 

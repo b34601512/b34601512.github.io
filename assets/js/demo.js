@@ -36,6 +36,8 @@
     sent: 0,
     replied: 0,
     replyPending: false,
+    // 还没回复的条数：连发多条时排队回复，避免「只有第一条得到回复」。
+    replyQueue: 0,
     epoch: 0,
   };
 
@@ -489,11 +491,19 @@
     }, 520);
   };
 
-  // 客户回复一次只排一条：连发多条时不会掉队，也不会抢答。
+  // 客户回复排队：每条发出去的话术都有一条回复，一条接一条（有打字动画），不抢答也不漏。
   const scheduleReply = () => {
-    if (state.replyPending) return;
+    state.replyQueue += 1;
+    drainReplies();
+  };
+
+  const drainReplies = () => {
+    if (state.replyPending || state.replyQueue <= 0) return;
     const reply = CUSTOMER_REPLIES[state.replied];
-    if (!reply) return;
+    if (!reply) {
+      state.replyQueue = 0;
+      return;
+    }
     state.replyPending = true;
     const epoch = state.epoch;
     setTimeout(() => {
@@ -508,6 +518,8 @@
         addMessage(reply, "in");
         state.replied += 1;
         state.replyPending = false;
+        state.replyQueue -= 1;
+        drainReplies();
       }, 900);
     }, 350);
   };
@@ -607,6 +619,7 @@
       sent: 0,
       replied: 0,
       replyPending: false,
+      replyQueue: 0,
       epoch: state.epoch + 1,
     });
     Object.values(SCOPES).forEach((scope) =>
