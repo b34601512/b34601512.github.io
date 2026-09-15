@@ -30,6 +30,8 @@
     // 数字选择态：在哪个搜索框里按过 Tab（客户端 search_result_digit_selection）。
     digitSurface: null,
     // 底部吸附栏在客户端里有自己的搜索状态，但和主界面共用搜索范围与搜索历史。
+    // barActive：焦点进过吸附栏（客户端「最近搜索」只在面板激活时显示）。
+    barActive: false,
     history: [],
     sent: 0,
     replied: 0,
@@ -336,11 +338,20 @@
   // 搜索词归吸附栏自己，搜索范围与「最近搜索」跟主界面合用一份（与客户端一致）。
   const BAR_HISTORY_MAX = 8;
 
+  const HISTORY_DISPLAY_CHARS = 12;
+
   const renderBarHistory = () => {
-    // 输入框里没字时才显示「最近搜索」，有搜索词就让位给结果。
-    el.barHistory.hidden = state.history.length === 0 || el.barInput.value.trim() !== "";
+    // 客户端 search_history.build_search_history_visibility_plan：
+    // 有历史 + 输入框为空 + 面板激活（焦点在吸附栏里）才显示；有搜索词就让位给结果。
+    el.barHistory.hidden =
+      state.history.length === 0 || el.barInput.value.trim() !== "" || !state.barActive;
     el.barHistoryChips.innerHTML = state.history
-      .map((keyword) => `<button class="app-chip" type="button" data-history="${esc(keyword)}">${esc(keyword)}</button>`)
+      .map((keyword) => {
+        // 客户端 build_search_history_bar_payload：超过 12 字只显示前 12 字加省略号，
+        // 点下去仍然用完整关键词搜。
+        const label = keyword.length > HISTORY_DISPLAY_CHARS ? `${keyword.slice(0, HISTORY_DISPLAY_CHARS)}…` : keyword;
+        return `<button class="app-chip" type="button" data-history="${esc(keyword)}" title="${esc(keyword)}">${esc(label)}</button>`;
+      })
       .join("");
   };
 
@@ -592,6 +603,7 @@
       query: "",
       digitSurface: null,
       history: [],
+      barActive: false,
       sent: 0,
       replied: 0,
       replyPending: false,
@@ -689,6 +701,18 @@
   });
 
   // 最近搜索：点一下就重新搜（与主界面共用一份历史），清空就全清。
+  // 客户端用输入框的 FocusIn/FocusOut 控制「最近搜索」是否显示（panel_active）。
+  // 这里用吸附栏整体的焦点进出，点历史词（焦点落在按钮上）也不会先收起。
+  el.bar.addEventListener("focusin", () => {
+    state.barActive = true;
+    renderBarHistory();
+  });
+  el.bar.addEventListener("focusout", (event) => {
+    if (el.bar.contains(event.relatedTarget)) return;
+    state.barActive = false;
+    renderBarHistory();
+  });
+
   el.barHistoryChips.addEventListener("click", (event) => {
     const chip = event.target.closest("[data-history]");
     if (!chip) return;
