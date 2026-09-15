@@ -40,8 +40,12 @@
   --wx-online: #07c160;
   --wx-avatar-bg: #d7e2f2;
   --wx-avatar-fg: #33506e;
+  --wx-avatar-radius: 4px;
   --wx-focus: #95c95f;
   --wx-focus-ring: rgba(149, 201, 95, 0.2);
+  /* 标题栏顶部品牌条（商家工具常见的做法）；微信桌面版没有，所以默认 0 */
+  --wx-strip: 0;
+  --wx-send-fg: #1a1a1a;
 
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -53,10 +57,12 @@
 
 /* ---------- 左：客服聊窗（默认微信皮肤，可切平台） ---------- */
 .chat-tabs {
+  /* 跨整个演示区一行（不在聊天窗那一栏里），这样聊天窗与话术精灵主界面才能顶底平齐 */
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: -4px;
 }
 
 .chat-tab {
@@ -106,7 +112,9 @@
   color: #ff8fa8;
 }
 
-/* 各平台皮肤：同一组变量换个值，聊天窗的行为完全不变 */
+/* 各平台皮肤：同一组变量换个值，聊天窗的行为完全不变。
+   品牌色取各家官方主色（京东 #E1251B、拼多多 #E02E24、千牛/阿里 #FF6A00、抖音 #FE2C55）；
+   头像形状也按各家习惯：微信是圆角方形，商家工具（京东/拼多多/千牛/抖音）是圆形。 */
 .chat[data-platform="jd"] {
   --wx-head: #fdeeed;
   --wx-line: #f0d9d8;
@@ -115,8 +123,11 @@
   --wx-online: #e1251b;
   --wx-avatar-bg: #fbdcd9;
   --wx-avatar-fg: #a3140d;
+  --wx-avatar-radius: 50%;
   --wx-focus: #e1251b;
   --wx-focus-ring: rgba(225, 37, 27, 0.18);
+  --wx-strip: 2px;
+  --wx-send-fg: #ffffff;
 }
 
 .chat[data-platform="pdd"] {
@@ -127,8 +138,11 @@
   --wx-online: #e02e24;
   --wx-avatar-bg: #fbd6cd;
   --wx-avatar-fg: #a81f14;
+  --wx-avatar-radius: 50%;
   --wx-focus: #e02e24;
   --wx-focus-ring: rgba(224, 46, 36, 0.18);
+  --wx-strip: 2px;
+  --wx-send-fg: #ffffff;
 }
 
 .chat[data-platform="qianniu"] {
@@ -139,8 +153,11 @@
   --wx-online: #ff6a00;
   --wx-avatar-bg: #ffe1c2;
   --wx-avatar-fg: #a34500;
+  --wx-avatar-radius: 50%;
   --wx-focus: #ff6a00;
   --wx-focus-ring: rgba(255, 106, 0, 0.18);
+  --wx-strip: 2px;
+  --wx-send-fg: #ffffff;
 }
 
 .chat[data-platform="douyin"] {
@@ -153,8 +170,12 @@
   --wx-online: #fe2c55;
   --wx-avatar-bg: #2a2b3a;
   --wx-avatar-fg: #ffffff;
+  --wx-avatar-radius: 50%;
   --wx-focus: #fe2c55;
   --wx-focus-ring: rgba(254, 44, 85, 0.2);
+  /* 抖音是红+青双色，标题栏深色（青 #25F4EE 留给选中标签卡/品牌条对比） */
+  --wx-strip: 2px;
+  --wx-send-fg: #ffffff;
 }
 
 .chat {
@@ -172,6 +193,8 @@
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
+  /* 顶部品牌条：商家工具（京东/拼多多/千牛/抖音）标题栏都带品牌色，微信桌面版没有 */
+  border-top: var(--wx-strip) solid var(--wx-online);
   border-bottom: 1px solid var(--wx-line);
   background: var(--wx-head);
 }
@@ -181,7 +204,7 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  border-radius: 4px;
+  border-radius: var(--wx-avatar-radius);
   background: var(--wx-avatar-bg);
   color: var(--wx-avatar-fg);
   font-size: 13px;
@@ -379,9 +402,9 @@
 }
 
 .chat-send--ready {
-  border-color: var(--wx-focus);
-  background: var(--wx-out);
-  color: #1a1a1a;
+  border-color: var(--wx-online);
+  background: var(--wx-online);
+  color: var(--wx-send-fg);
 }
 
 /* ---------- 右：话术精灵主界面 ---------- */

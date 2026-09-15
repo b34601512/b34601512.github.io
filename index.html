@@ -62,7 +62,7 @@
 </script>
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css?v=32c2fab2" />
-<link rel="stylesheet" href="assets/css/demo.css?v=329467a5" />
+<link rel="stylesheet" href="assets/css/demo.css?v=44c11457" />
 </head>
 <body>
 <header class="nav">
@@ -100,7 +100,6 @@
     <p class="section-sub">左边客服聊天窗口（微信、京东、拼多多、千牛、抖音都能贴），右边话术精灵主界面，直接上手点一点。</p>
 
     <div class="demo">
-      <div class="chat-wrap">
         <!-- 平台皮肤：只换聊天窗口的样子（头像、标题、配色），行为完全一样。
              客户端源码里没有平台白名单：吸附栏认的是「前台外部窗口」本身，所以微信、京东、拼多多、千牛、抖音都能贴。 -->
         <div class="chat-tabs" id="demo-chat-tabs" role="tablist" aria-label="切换聊天窗口外观">
@@ -110,6 +109,7 @@
           <button class="chat-tab" type="button" role="tab" data-platform="qianniu" aria-selected="false" tabindex="-1">千牛</button>
           <button class="chat-tab" type="button" role="tab" data-platform="douyin" aria-selected="false" tabindex="-1">抖音</button>
         </div>
+      <div class="chat-wrap">
 
         <!-- 底部吸附搜索栏：贴在聊天窗口底边，结果向上展开、常用短语与最近搜索向下展开（对应客户端 attached_search_bar）。 -->
         <div class="chat" id="demo-chat" data-platform="wechat">
