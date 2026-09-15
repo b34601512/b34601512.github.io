@@ -1,0 +1,14 @@
+[perf] 本地服务 http://127.0.0.1:8455/
+[perf] GET .live-site/.live.html
+[perf] GET .live-site/.live.html
+[perf] GET .live-site/assets/css/site.css
+[perf] GET .live-site/assets/css/demo.css
+[perf] GET .live-site/assets/logo.png
+[perf] GET .live-site/assets/type-text.png
+[perf] GET .live-site/.live-probe.js
+[perf] GET .live-site/assets/beian.png
+[perf] GET .live-site/assets/js/demo-data.js
+[perf] GET .live-site/assets/js/demo.js
+[perf] GET .live-site/assets/favicon.png
+[perf] GET .live-site/assets/type-image.png
+[perf] GET .live-site/assets/type-pdf.png

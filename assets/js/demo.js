@@ -518,7 +518,9 @@
     setTimeout(() => {
       node?.classList.remove("app-row--sending");
       if (epoch !== state.epoch) return;
-      clearInput();
+      // 只清掉「还是这条话术」的输入框：用户已经在下一条了，别把他刚打的字抹掉
+      // （以前无条件 clearInput，手快的人在 520ms 内打的下一条会被清空，回车就发不出去）。
+      if (el.input.value.trim() === text.trim()) clearInput();
       addMessage(text, "out");
       state.sent += 1;
       updateCounter();
