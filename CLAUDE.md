@@ -230,6 +230,13 @@ python -m http.server 8000
 
 打开 http://localhost:8000/ 。注意 Python 3.10 的 `http.server` 不认 `.webp`，本地预览会以 `application/octet-stream` 返回，浏览器仍能正常显示；GitHub Pages 会返回正确的 `image/webp`。
 
+### 用 headless Chrome 探针复核演示行为
+
+- 演示的「发送」有 **520ms 延迟**（`sendText` 里 `setTimeout`，模拟客户端插入+回车）：断言气泡数量前至少等 600ms，否则上一条气泡会落在下一段测里，看起来像「多发了一条」。
+- 探针要像陌生人：只用真实键鼠事件（`KeyboardEvent`/`MouseEvent`/`PointerEvent`），检查可见结果（标签文字、`.bubble` 文本、`hidden`、焦点），不要读页面内部变量。
+- 一次按键引发的连锁（切套重画列表、发送延迟、客户回复延迟）都要 `await` 到位再断言。
+- 对照行为只能以客户端源码为准；探针失败先怀疑探针，再怀疑代码，最后才改代码。
+
 ### 浏览器验收清单
 
 - 四张页面都能打开，导航互相跳转，当前页有下划线，图片与样式完整。
