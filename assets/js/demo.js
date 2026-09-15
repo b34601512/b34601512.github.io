@@ -1554,21 +1554,32 @@
 
   const renderTree = () => {
     rows = [];
+    // 重建前记住焦点在第几行：切套/切分类/数字发送都是键盘操作，重建后要把焦点还回列表，
+    // 否则连续按数字切套第一次之后就失灵（焦点掉到 body）。
+    const focusIndex = [...el.tree.querySelectorAll(".app-row")].indexOf(document.activeElement);
+    const paint = (html) => {
+      el.tree.innerHTML = html;
+      if (focusIndex < 0) return;
+      const items = el.tree.querySelectorAll(".app-row");
+      items[Math.min(focusIndex, items.length - 1)]?.focus({ preventScroll: true });
+    };
 
     if (state.query) {
       const hits = searchHits(state.query);
       hits.forEach((hit) => rows.push(hit.item));
       // 按过 Tab 才显示 1–9、0 临时序号（客户端 Tab 前不显示）。
       const digits = digitMode("panel");
-      el.tree.innerHTML = hits.length
-        ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
-        : `<p class="app-empty">没有找到相关话术</p>`;
+      paint(
+        hits.length
+          ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
+          : `<p class="app-empty">没有找到相关话术</p>`,
+      );
       return;
     }
 
     const category = currentCategory();
     if (!category) {
-      el.tree.innerHTML = `<p class="app-empty">暂无话术</p>`;
+      paint(`<p class="app-empty">暂无话术</p>`);
       return;
     }
 
@@ -1587,7 +1598,7 @@
       }
       parts.push(`</div>`);
     });
-    el.tree.innerHTML = parts.join("");
+    paint(parts.join(""));
   };
 
   /* ---------- 搜索与数字选择态（主界面与吸附栏共用） ---------- */
