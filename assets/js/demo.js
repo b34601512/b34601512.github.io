@@ -525,18 +525,28 @@
     });
   };
 
+  // 客户端同一时刻只展开一个二级分类（`expanded_level2_key` 是单个键）：
+  // 切套/切话术域/切一级分类都回到「第一节展开」，点已展开的标题就全收起。
+  const resetSections = (category) => {
+    category?.sections.forEach((section, index) => {
+      section.open = index === 0;
+    });
+  };
+
   const focusCategory = (index) => {
     if (index < 0 || index >= categories().length) return;
     state.category = index;
+    resetSections(currentCategory());
     clearSearch("panel");
     render();
   };
 
-  // 点套号（0–9）＝切换整套话术；每套的一级分类不同，切套后回到第一个分类。
+  // 点套号（0–9）＝切换整套话术；每套的一级分类不同，切套后回到第一个分类与第一节。
   const focusSet = (digit) => {
     if (!sets()[digit]) return;
     state.set = digit;
     state.category = 0;
+    resetSections(currentCategory());
     clearSearch("panel");
     render();
   };
@@ -555,13 +565,7 @@
       epoch: state.epoch + 1,
     });
     Object.values(SCOPES).forEach((scope) =>
-      scope.sets.forEach((set) =>
-        set.categories.forEach((category) =>
-          category.sections.forEach((section, index) => {
-            section.open = index === 0;
-          }),
-        ),
-      ),
+      scope.sets.forEach((set) => set.categories.forEach(resetSections)),
     );
     el.log.innerHTML = `<div class="msg msg--in"><p class="bubble">${esc(OPENING_MESSAGE)}</p></div>`;
     clearSearch("panel");
@@ -578,6 +582,7 @@
     state.scope = tab.dataset.scope;
     state.set = 0;
     state.category = 0;
+    resetSections(currentCategory());
     clearSearch("panel");
     render();
   });
@@ -599,11 +604,20 @@
 
   el.tree.addEventListener("click", (event) => {
     const head = event.target.closest(".app-lv2-head");
-    if (!head) return;
-    const section = currentCategory()?.sections[Number(head.dataset.section)];
-    if (section) {
-      section.open = !section.open;
+    if (head) {
+      const sections = currentCategory()?.sections ?? [];
+      const index = Number(head.dataset.section);
+      const wasOpen = Boolean(sections[index]?.open);
+      // 点已展开的标题＝全收起（客户端 expanded_level2_key 置空），点其他标题＝只留这一个。
+      sections.forEach((item, i) => {
+        item.open = wasOpen ? false : i === index;
+      });
       renderTree();
+      return;
+    }
+    // 点列表空白处清掉选中（客户端点空白会 clear_selection）。
+    if (!event.target.closest(".app-row")) {
+      el.tree.querySelectorAll(".app-row--selected").forEach((row) => row.classList.remove("app-row--selected"));
     }
   });
 
