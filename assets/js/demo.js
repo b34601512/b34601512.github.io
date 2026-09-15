@@ -78,6 +78,7 @@
     barHistory: $("demo-attached-history"),
     barHistoryChips: $("demo-attached-history-chips"),
     barHistoryClear: $("demo-attached-history-clear"),
+    panel: document.querySelector(".demo .app"),
   };
 
   /* ---------- 渲染 ---------- */
@@ -795,11 +796,12 @@
 
   // 演示区不在视野里时先滚过去（Alt+Q 与数字切套都用）。
   const revealDemo = () => {
-    const demo = el.search.closest(".demo");
-    const box = demo.getBoundingClientRect();
-    if (box.top >= 0 && box.bottom <= window.innerHeight) return;
+    // 判断对象是「话术面板」而不是整个演示区：窄屏（≤900px）时演示区比屏幕还高，
+    // 用整个演示区判断会导致每按一次数字都滚一次屏。面板已经在视野里就绝不滚动。
+    const box = el.panel.getBoundingClientRect();
+    if (box.top < window.innerHeight && box.bottom > 0) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    demo.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    el.panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
   };
 
   // 数字键 0–9（顶部数字键与小键盘都认，对应客户端 QKeySequence）：
