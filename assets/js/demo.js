@@ -1391,8 +1391,9 @@
     category: 0,
     range: "all",
     query: "",
+    // 数字选择态：在哪个搜索框里按过 Tab（客户端 search_result_digit_selection）。
+    digitSurface: null,
     // 底部吸附栏在客户端里有自己的搜索状态，但和主界面共用搜索范围与搜索历史。
-    barQuery: "",
     history: [],
     sent: 0,
     replied: 0,
@@ -1557,8 +1558,10 @@
     if (state.query) {
       const hits = searchHits(state.query);
       hits.forEach((hit) => rows.push(hit.item));
+      // 按过 Tab 才显示 1–9、0 临时序号（客户端 Tab 前不显示）。
+      const digits = digitMode("panel");
       el.tree.innerHTML = hits.length
-        ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path)).join("")
+        ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
         : `<p class="app-empty">没有找到相关话术</p>`;
       return;
     }
@@ -1587,6 +1590,93 @@
     el.tree.innerHTML = parts.join("");
   };
 
+  /* ---------- 搜索与数字选择态（主界面与吸附栏共用） ---------- */
+  // 对应客户端 search_result_digit_selection：先在有搜索词的搜索框里按 Tab 冻结前十条结果，
+  // 显示 1–9、0 临时序号，再按数字直接发送对应话术；继续编辑或按 Esc 退出数字态。
+  const RESULT_DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+
+  const digitMode = (surface) => state.digitSurface === surface;
+
+  const refreshSurface = (surface) => (surface === "panel" ? renderTree() : renderBar());
+
+  const enterDigitMode = (surface) => {
+    state.digitSurface = surface;
+    refreshSurface(surface);
+  };
+
+  const exitDigitMode = () => {
+    if (!state.digitSurface) return false;
+    // 先落状态再重绘，否则序号会留在结果行上。
+    const surface = state.digitSurface;
+    state.digitSurface = null;
+    refreshSurface(surface);
+    return true;
+  };
+
+  const sendDigitHit = (surface, digit) => {
+    const index = digit === "0" ? 9 : Number(digit) - 1;
+    const container = surface === "panel" ? el.tree : el.barList;
+    const items = surface === "panel" ? rows : barRows;
+    const item = items[index];
+    const node = container.querySelectorAll(".app-row")[index];
+    if (!item) return false;
+    selectIn(container, node);
+    sendText(item.text, node);
+    if (surface === "panel") {
+      recordHistory(el.search.value);
+      exitDigitMode();
+    } else {
+      useBarHit();
+    }
+    return true;
+  };
+
+  // 顶部数字键与小键盘都要认（客户端 QKeySequence 两者都匹配）。
+  const readDigit = (event) => {
+    const byCode = /^(?:Digit|Numpad)([0-9])$/.exec(event.code);
+    if (byCode) return byCode[1];
+    return /^[0-9]$/.test(event.key) ? event.key : "";
+  };
+
+  // 搜索框键盘：Tab 进数字态、数字直接发送、Esc 先退数字态再清搜索（与客户端一致）。
+  const bindSearchKeys = (input, surface) => {
+    input.addEventListener("keydown", (event) => {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === "Tab") {
+        if (!input.value.trim()) return;
+        event.preventDefault();
+        enterDigitMode(surface);
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (exitDigitMode()) return;
+        clearSearch(surface);
+        return;
+      }
+      if (!digitMode(surface)) return;
+      const digit = event.ctrlKey || event.metaKey || event.altKey ? "" : readDigit(event);
+      if (digit) {
+        event.preventDefault();
+        sendDigitHit(surface, digit);
+        return;
+      }
+      // 继续打字、退格都算退出数字态。
+      exitDigitMode();
+    });
+  };
+
+  // 主搜索栏提示语跟着焦点换（客户端：未聚焦提示 Alt+Q，聚焦后提示 Tab 数字发送）。
+  const bindSearchPlaceholder = (input) => {
+    const idle = input.placeholder;
+    input.addEventListener("focus", () => {
+      input.placeholder = "按 Tab键，再按数字直接发送话术。";
+    });
+    input.addEventListener("blur", () => {
+      input.placeholder = idle;
+    });
+  };
+
   const render = () => {
     renderTabs();
     renderDigits();
@@ -1600,7 +1690,6 @@
   /* ---------- 底部吸附栏 ---------- */
   // 吸附栏贴在聊天窗口底边：结果向上展开盖住聊天窗，常用短语与最近搜索向下展开。
   // 搜索词归吸附栏自己，搜索范围与「最近搜索」跟主界面合用一份（与客户端一致）。
-  const BAR_DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
   const BAR_HISTORY_MAX = 8;
 
   const renderBarHistory = () => {
@@ -1627,17 +1716,36 @@
     el.barResults.hidden = raw === "";
     if (raw) {
       el.barTitle.textContent = `搜索结果 · ${hits.length}`;
-      // 只有前十条带临时数字：1–9、0 对应第一到第十条（客户端 Tab 后的数字选择态）。
+      // 按过 Tab 才显示临时序号：1–9、0 对应第一到第十条。
+      const digits = digitMode("bar");
       el.barList.innerHTML = hits.length
-        ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, index < 10 ? BAR_DIGITS[index] : "")).join("")
+        ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
         : `<p class="app-empty">没有找到相关话术</p>`;
+    } else {
+      // 搜索收起时连结果行一起清掉，避免隐藏区里留着上一次的序号。
+      el.barList.innerHTML = "";
     }
     renderBarHistory();
   };
 
   const closeBarSearch = () => {
     el.barInput.value = "";
+    if (digitMode("bar")) state.digitSurface = null;
     renderBar();
+  };
+
+  // 主界面搜索：清词的同时退出数字态（切套、切分类、切页签、重置都走这里）。
+  const clearSearch = (surface) => {
+    if (surface === "bar") {
+      closeBarSearch();
+      return;
+    }
+    state.query = "";
+    state.digitSurface = null;
+    el.search.value = "";
+    renderDigits();
+    renderChips();
+    renderTree();
   };
 
   // 折叠后只剩聊天窗口右下角一个小按钮（客户端吸附栏的折叠态），按钮就长在原来右侧收起键的位置。
@@ -1650,16 +1758,10 @@
     if (collapsed) closeBarSearch();
   };
 
-  // 数字键直接发送第 N 条命中（返回是否发了东西，没命中就不抢键）。
-  const sendBarHit = (digit) => {
-    const index = digit === "0" ? 9 : Number(digit) - 1;
-    const item = barRows[index];
-    const node = el.barList.querySelectorAll(".app-row")[index];
-    if (!item) return false;
-    selectIn(el.barList, node);
-    sendText(item.text, node);
-    useBarHit();
-    return true;
+  // 数字键直接发送第 N 条命中，用过之后在「最近搜索」里留一条并收起吸附栏结果。
+  const useBarHit = () => {
+    recordHistory(el.barInput.value);
+    closeBarSearch();
   };
 
   /* ---------- 聊天窗口 ---------- */
@@ -1815,8 +1917,7 @@
   const focusCategory = (index) => {
     if (index < 0 || index >= categories().length) return;
     state.category = index;
-    state.query = "";
-    el.search.value = "";
+    clearSearch("panel");
     render();
   };
 
@@ -1825,8 +1926,7 @@
     if (!sets()[digit]) return;
     state.set = digit;
     state.category = 0;
-    state.query = "";
-    el.search.value = "";
+    clearSearch("panel");
     render();
   };
 
@@ -1836,6 +1936,7 @@
       set: 0,
       category: 0,
       query: "",
+      digitSurface: null,
       history: [],
       sent: 0,
       replied: 0,
@@ -1852,7 +1953,7 @@
       ),
     );
     el.log.innerHTML = `<div class="msg msg--in"><p class="bubble">${esc(OPENING_MESSAGE)}</p></div>`;
-    el.search.value = "";
+    clearSearch("panel");
     el.barInput.value = "";
     setBarCollapsed(false);
     clearInput();
@@ -1866,8 +1967,7 @@
     state.scope = tab.dataset.scope;
     state.set = 0;
     state.category = 0;
-    state.query = "";
-    el.search.value = "";
+    clearSearch("panel");
     render();
   });
 
@@ -1897,27 +1997,25 @@
   });
 
   // 吸附栏里用过一条结果就收起结果（客户端用完命中也是 clear_query 后回到聊天窗口）。
-  const useBarHit = () => {
-    recordHistory(el.barInput.value);
-    closeBarSearch();
-  };
 
-  bindRows(el.tree, () => rows, () => recordHistory(el.search.value));
+  bindRows(el.tree, () => rows, () => {
+    recordHistory(el.search.value);
+    exitDigitMode();
+  });
   bindRows(el.barList, () => barRows, useBarHit);
 
   /* ---------- 吸附栏交互 ---------- */
-  el.barInput.addEventListener("input", renderBar);
+  el.barInput.addEventListener("input", () => {
+    if (digitMode("bar")) state.digitSurface = null;
+    renderBar();
+  });
 
+  // 回车＝发送第一条命中（客户端吸附栏里回车也是直接发送当前结果）。
   el.barInput.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeBarSearch();
-      return;
-    }
-    // 回车＝发送第一条命中（客户端吸附栏里回车也是直接发送当前结果）。
     if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
     if (!el.barInput.value.trim()) return;
     event.preventDefault();
-    if (!sendBarHit("1")) recordHistory(el.barInput.value);
+    if (!sendDigitHit("bar", "1")) recordHistory(el.barInput.value);
   });
 
   el.barClear.addEventListener("click", closeBarSearch);
@@ -1969,27 +2067,25 @@
 
   el.search.addEventListener("input", () => {
     state.query = el.search.value.trim().toLowerCase();
+    state.digitSurface = null;
     renderDigits();
     renderChips();
     renderTree();
   });
 
+  // 搜索框里回车＝直接发出第一条命中（与客户端搜索框 Enter 发送一致）；
+  // Tab / Esc / 数字发送统一由 bindSearchKeys 处理，两个搜索框共用。
   el.search.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      el.search.value = "";
-      state.query = "";
-      renderDigits();
-      renderChips();
-      renderTree();
-      return;
-    }
-    // 搜索框里回车＝直接发出第一条命中（与客户端搜索框 Enter 发送一致）。
     if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
     const first = rows[0];
     if (!first) return;
     event.preventDefault();
     sendText(first.text, el.tree.querySelector(".app-row"));
   });
+
+  bindSearchKeys(el.search, "panel");
+  bindSearchKeys(el.barInput, "bar");
+  bindSearchPlaceholder(el.search);
 
   // 范围按钮可点：全部 → 当前话术域 → 当前套，循环切换后主界面与吸附栏都立即重算命中。
   const cycleRange = () => {
@@ -2002,24 +2098,21 @@
   el.range.addEventListener("click", cycleRange);
   el.barRange.addEventListener("click", cycleRange);
 
-  // 数字键 0–9：光标在吸附栏且结果开着时＝直接发送第 N 条命中；否则＝切套（客户端套号快捷键）。
-  // 只在光标不在输入框里、且在演示区之内时生效，不抢页面其他地方的键盘。
+  // 数字键 0–9（顶部数字键与小键盘都认，对应客户端 QKeySequence）：
+  // 光标在某个搜索面且处于数字态时＝直接发送第 N 条命中；否则在演示区里＝切套。
+  // 光标在输入框里时不抢键（打字优先）。
   document.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
-    if (!/^Digit[0-9]$/.test(event.code)) return;
+    const digit = readDigit(event);
+    if (!digit) return;
     const target = event.target;
     if (target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
     if (!(target instanceof HTMLElement)) return;
-    const digit = event.code.slice(5);
-    const inBar = Boolean(target.closest(".attached"));
-    if (inBar && !el.barResults.hidden) {
-      event.preventDefault();
-      sendBarHit(digit);
-      return;
-    }
-    if (inBar || !target.closest(".demo")) return;
+    const surface = target.closest(".attached") ? "bar" : target.closest(".demo") ? "panel" : null;
+    if (!surface) return;
     event.preventDefault();
-    focusSet(Number(digit));
+    if (digitMode(surface)) sendDigitHit(surface, digit);
+    else if (surface === "panel") focusSet(Number(digit));
   });
 
   // Alt+Q：和客户端一致，任何位置按都能定位到搜索框（演示区不在视野内时先滚过去）。
