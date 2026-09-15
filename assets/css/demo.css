@@ -43,8 +43,15 @@
   --wx-avatar-radius: 4px;
   --wx-focus: #95c95f;
   --wx-focus-ring: rgba(149, 201, 95, 0.2);
-  /* 标题栏顶部品牌条（商家工具常见的做法）；微信桌面版没有，所以默认 0 */
+  /* 标题栏顶部品牌条（商家工具常见的做法）；微信桌面版没有，所以默认 0。
+     颜色默认跟平台主色，拼多多例外：它头栏是白的，紫罗兰 #615B8A 来自客户端顶部标签栏。 */
   --wx-strip: 0;
+  --wx-strip-color: var(--wx-online);
+  /* 发送键底色默认跟平台主色；京东例外：它的发送键是靛蓝 #4960F4，品牌红只在价格/标签上 */
+  --wx-send-bg: var(--wx-online);
+  /* 左侧竖条的宽与色：千牛是左侧蓝色导航栏（截图 #3D7FFF），其余平台就是普通边框 */
+  --wx-rail-w: 1px;
+  --wx-rail: var(--w-edge);
   --wx-send-fg: #1a1a1a;
 
   display: grid;
@@ -93,7 +100,7 @@
 }
 
 .chat-tab[data-platform="jd"][aria-selected="true"] {
-  border-color: #e1251b;
+  border-color: #f33b50;
   color: #ff9c93;
 }
 
@@ -103,78 +110,100 @@
 }
 
 .chat-tab[data-platform="qianniu"][aria-selected="true"] {
-  border-color: #ff6a00;
-  color: #ffb066;
+  border-color: #3d7fff;
+  color: #8fb4ff;
 }
 
 .chat-tab[data-platform="douyin"][aria-selected="true"] {
-  border-color: #fe2c55;
-  color: #ff8fa8;
+  border-color: #2f6df9;
+  color: #8fb4ff;
 }
 
 /* 各平台皮肤：同一组变量换个值，聊天窗的行为完全不变。
-   品牌色取各家官方主色（京东 #E1251B、拼多多 #E02E24、千牛/阿里 #FF6A00、抖音 #FE2C55）；
+   京东、拼多多、千牛、抖音四家都按作者提供的真实截图取样（微信 #07C160 仍是经典桌面版配色）；
+   千牛（天猫/淘宝卖家工作台）按作者提供的真实截图取样：蓝 #3D7FFF、聊天底 #F0F2F5、头栏白、提示条 #D8E4FF。
    头像形状也按各家习惯：微信是圆角方形，商家工具（京东/拼多多/千牛/抖音）是圆形。 */
 .chat[data-platform="jd"] {
-  --wx-head: #fdeeed;
-  --wx-line: #f0d9d8;
-  --wx-bg: #f6f0ef;
-  --wx-out: #ffd9d4;
-  --wx-online: #e1251b;
-  --wx-avatar-bg: #fbdcd9;
-  --wx-avatar-fg: #a3140d;
+  /* 京东（咚咚/京麦）按作者提供的真实截图取样：
+     对方气泡 #F7F7F7、自家气泡 #D9E8FF（东东的卖家消息是浅蓝）、发送键靛蓝 #4960F4、
+     价格红 #F33B50、状态标签蓝 #D6E3FD/#102D68、头栏浅灰 #F7F7F7、消息区白底。 */
+  --wx-head: #f7f7f7;
+  --wx-head-fg: #1a1a1a;
+  --wx-sub: #8a8f99;
+  --wx-line: #e8e8e8;
+  --wx-bg: #ffffff;
+  --wx-in: #f7f7f7;
+  --wx-out: #d9e8ff;
+  --wx-online: #f33b50;
+  --wx-avatar-bg: #d6e3fd;
+  --wx-avatar-fg: #102d68;
   --wx-avatar-radius: 50%;
-  --wx-focus: #e1251b;
-  --wx-focus-ring: rgba(225, 37, 27, 0.18);
-  --wx-strip: 2px;
+  --wx-focus: #4960f4;
+  --wx-focus-ring: rgba(73, 96, 244, 0.16);
+  --wx-strip: 0;
+  --wx-send-bg: #4960f4;
   --wx-send-fg: #ffffff;
 }
 
 .chat[data-platform="pdd"] {
-  --wx-head: #fdede9;
-  --wx-line: #f2d8d3;
-  --wx-bg: #f7f0ee;
-  --wx-out: #ffd8cc;
+  /* 拼多多（商家版客服）按作者提供的真实截图取样：
+     聊天底 #FFFFFF、自家气泡 #D4E9FE、买家头像玫红 #F564B3、客户端顶部标签栏紫 #615B8A、底栏警示黄 #FFF3C2。
+     客户消息在真实界面里是「无气泡的纯文字」，我们保留气泡结构，用浅灰 #F2F3F5 代表对方气泡。 */
+  --wx-head: #ffffff;
+  --wx-head-fg: #1a1a1a;
+  --wx-sub: #8a8f99;
+  --wx-line: #ececec;
+  --wx-bg: #ffffff;
+  --wx-in: #f2f3f5;
+  --wx-out: #d4e9fe;
   --wx-online: #e02e24;
-  --wx-avatar-bg: #fbd6cd;
-  --wx-avatar-fg: #a81f14;
+  --wx-avatar-bg: #f564b3;
+  --wx-avatar-fg: #ffffff;
   --wx-avatar-radius: 50%;
   --wx-focus: #e02e24;
-  --wx-focus-ring: rgba(224, 46, 36, 0.18);
+  --wx-focus-ring: rgba(224, 46, 36, 0.16);
   --wx-strip: 2px;
+  --wx-strip-color: #615b8a;
   --wx-send-fg: #ffffff;
 }
 
 .chat[data-platform="qianniu"] {
-  --wx-head: #fff1e5;
-  --wx-line: #f6ddc4;
-  --wx-bg: #f8f1e9;
-  --wx-out: #ffe0bd;
-  --wx-online: #ff6a00;
-  --wx-avatar-bg: #ffe1c2;
-  --wx-avatar-fg: #a34500;
+  --wx-head: #ffffff;
+  --wx-line: #e3e6eb;
+  --wx-bg: #f0f2f5;
+  /* 千牛的真实消息区是端屏平铺、自己没有气泡色，这里用它的提示条色 #D8E4FF 代表自家消息 */
+  --wx-out: #d8e4ff;
+  --wx-online: #3d7fff;
+  --wx-avatar-bg: #d8e4ff;
+  --wx-avatar-fg: #1b4fc7;
   --wx-avatar-radius: 50%;
-  --wx-focus: #ff6a00;
-  --wx-focus-ring: rgba(255, 106, 0, 0.18);
-  --wx-strip: 2px;
+  --wx-focus: #3d7fff;
+  --wx-focus-ring: rgba(61, 127, 255, 0.18);
+  /* 千牛没有顶部品牌条（头栏就是白的），蓝色在左侧导航栏上 */
+  --wx-strip: 0;
+  --wx-rail-w: 3px;
+  --wx-rail: #3d7fff;
   --wx-send-fg: #ffffff;
 }
 
 .chat[data-platform="douyin"] {
-  --wx-head: #161823;
-  --wx-head-fg: #ffffff;
-  --wx-sub: rgba(255, 255, 255, 0.72);
-  --wx-line: #2a2b3a;
-  --wx-bg: #f1f1f4;
-  --wx-out: #ffd9e0;
-  --wx-online: #fe2c55;
-  --wx-avatar-bg: #2a2b3a;
+  /* 抖音（飞鸽客服工作台）按作者提供的真实截图取样：
+     主调是蓝色不是粉色 —— 发送键 #2F6DF9、自家气泡 #E3EFFE、聊天底 #F5F6FA、对方头像青 #35A29B、头栏浅灰。 */
+  --wx-head: #f5f6fa;
+  --wx-head-fg: #1a1a1a;
+  --wx-sub: #8a8f99;
+  --wx-line: #e9ebf0;
+  --wx-bg: #f5f6fa;
+  --wx-out: #e3effe;
+  --wx-online: #2f6df9;
+  --wx-avatar-bg: #35a29b;
   --wx-avatar-fg: #ffffff;
   --wx-avatar-radius: 50%;
-  --wx-focus: #fe2c55;
-  --wx-focus-ring: rgba(254, 44, 85, 0.2);
-  /* 抖音是红+青双色，标题栏深色（青 #25F4EE 留给选中标签卡/品牌条对比） */
-  --wx-strip: 2px;
+  --wx-focus: #2f6df9;
+  --wx-focus-ring: rgba(47, 109, 249, 0.18);
+  --wx-strip: 0;
+  --wx-rail-w: 3px;
+  --wx-rail: #2f6df9;
   --wx-send-fg: #ffffff;
 }
 
@@ -183,6 +212,8 @@
   flex-direction: column;
   height: 620px;
   border: 1px solid var(--w-edge);
+  border-left-width: var(--wx-rail-w);
+  border-left-color: var(--wx-rail);
   border-radius: 8px;
   background: var(--wx-bg);
   overflow: hidden;
@@ -194,7 +225,7 @@
   gap: 10px;
   padding: 9px 12px;
   /* 顶部品牌条：商家工具（京东/拼多多/千牛/抖音）标题栏都带品牌色，微信桌面版没有 */
-  border-top: var(--wx-strip) solid var(--wx-online);
+  border-top: var(--wx-strip) solid var(--wx-strip-color);
   border-bottom: 1px solid var(--wx-line);
   background: var(--wx-head);
 }
@@ -402,8 +433,8 @@
 }
 
 .chat-send--ready {
-  border-color: var(--wx-online);
-  background: var(--wx-online);
+  border-color: var(--wx-send-bg);
+  background: var(--wx-send-bg);
   color: var(--wx-send-fg);
 }
 
