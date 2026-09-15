@@ -23,7 +23,7 @@ const problems = [
 
 const compare = [
   ["改一条话术", "每个店铺各改一次", "团队话术改一次，所有工号同步"],
-  ["多个客服共用", "各自维护，口径容易不一致", "工号分工，团队/个人话术分清"],
+  ["找一句话术", "一套话术，不容易定位", "30 套话术，快速定位"],
 ];
 export const whyPage = {
   outputFile: "why.html",
@@ -93,8 +93,8 @@ export const whyPage = {
   </section>
 
   <section class="section">
-    <h2>解法：拆成 0–9 十个模块</h2>
-    <p class="section-sub">一套话术可拆成 0–9 共 10 个模块分开存放，每套独立分类；搜索范围能锁在某一套里，定位比在整套里翻更快。</p>
+    <h2>解法：30 套话术，快速定位</h2>
+    <p class="section-sub">团队、个人、离线三个话术库各拆成 0–9 共 10 套话术，合计 30 套，分开存放、各自分类；搜索范围能锁在其中某一套里，不用在整套里翻。</p>
     <table class="compare">
       <thead>
         <tr><th scope="col">对比项</th><th scope="col">平台自带快捷短语</th><th scope="col">话术精灵 SoftTalk</th></tr>
