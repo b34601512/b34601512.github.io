@@ -106,7 +106,7 @@ export const indexPage = {
             <div class="msg msg--in"><p class="bubble">老板，这款产品质量怎么样，是正品吗？</p></div>
           </div>
           <div class="chat-foot">
-            <textarea class="chat-input" id="demo-input" rows="1" placeholder="双击右侧话术贴进来，也可以直接打字，回车发送" spellcheck="false"></textarea>
+            <textarea class="chat-input" id="demo-input" rows="1" aria-label="聊天输入框" placeholder="双击右侧话术贴进来，也可以直接打字，回车发送" spellcheck="false"></textarea>
             <button class="chat-send" id="demo-send-btn" type="button">发送</button>
           </div>
         </div>
@@ -122,7 +122,7 @@ export const indexPage = {
           </div>
           <div class="attached-row">
             <span class="attached-field">
-              <input class="attached-input" id="demo-attached-input" type="search" placeholder="按 Tab键，再按数字直接发送话术。" autocomplete="off" />
+              <input class="attached-input" id="demo-attached-input" type="search" aria-label="吸附栏搜索话术" placeholder="按 Tab键，再按数字直接发送话术。" autocomplete="off" />
               <button class="attached-clear" id="demo-attached-clear" type="button" title="清空搜索" aria-label="清空搜索" hidden>×</button>
             </span>
             <button class="attached-range" id="demo-attached-range" type="button">全部</button>
@@ -163,8 +163,8 @@ export const indexPage = {
         <div class="app-tree" id="demo-list" tabindex="-1">${demoData.initialTreeHtml()}</div>
         <div class="app-common" id="demo-quick"></div>
         <div class="app-search">
-          <input class="app-search-input" id="demo-search" type="search" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
-          <span class="app-range" id="demo-range" role="button" tabindex="0">全部 ▾</span>
+          <input class="app-search-input" id="demo-search" type="search" aria-label="搜索话术" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
+          <button class="app-range" id="demo-range" type="button">全部 ▾</button>
         </div>
         <div class="app-foot">
           <span class="app-brand">话术精灵 官网: luyao2089.cc</span>

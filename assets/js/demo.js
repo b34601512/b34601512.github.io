@@ -84,7 +84,9 @@
   /* ---------- 渲染 ---------- */
   const renderTabs = () => {
     el.tabs.querySelectorAll(".app-tab").forEach((tab) => {
-      tab.classList.toggle("app-tab--active", tab.dataset.scope === state.scope);
+      const active = tab.dataset.scope === state.scope;
+      tab.classList.toggle("app-tab--active", active);
+      tab.setAttribute("aria-pressed", active ? "true" : "false");
     });
   };
 
@@ -94,7 +96,7 @@
       .map((set, digit) => {
         const active = !state.query && digit === state.set;
         const label = `第 ${digit} 套 · ${set.name}`;
-        return `<button class="app-digit${active ? " app-digit--active" : ""}" type="button" data-digit="${digit}" title="${esc(label)}" aria-label="${esc(label)}">${digit}</button>`;
+        return `<button class="app-digit${active ? " app-digit--active" : ""}" type="button" data-digit="${digit}" aria-pressed="${active ? "true" : "false"}" title="${esc(label)}" aria-label="${esc(label)}">${digit}</button>`;
       })
       .join("");
   };
@@ -131,7 +133,9 @@
         (category, index) =>
           `<button class="app-chip${
             !state.query && index === state.category ? " app-chip--active" : ""
-          }" type="button" data-category="${index}"${
+          }" type="button" data-category="${index}" aria-pressed="${
+            !state.query && index === state.category ? "true" : "false"
+          }"${
             category.color ? ` style="background:${category.color}"` : ""
           }>${esc(category.label)}</button>`,
       )
@@ -572,7 +576,8 @@
     });
 
     container.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter") return;
+      // role=button 的惯例：回车和空格都算按下（回车＝贴进输入框）。
+      if (event.key !== "Enter" && event.key !== " ") return;
       const node = event.target.closest(".app-row");
       if (!node) return;
       event.preventDefault();
@@ -659,6 +664,15 @@
   el.quick.addEventListener("click", (event) => {
     const chip = event.target.closest("[data-phrase]");
     if (chip) sendText(chip.dataset.phrase, null);
+  });
+
+  // 二级分类标题是 role=button 的可聚焦元素：键盘 Enter / 空格要和点击一样能展开收起。
+  el.tree.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const head = event.target.closest(".app-lv2-head");
+    if (!head) return;
+    event.preventDefault();
+    head.click();
   });
 
   el.tree.addEventListener("click", (event) => {

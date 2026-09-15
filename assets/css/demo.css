@@ -683,6 +683,7 @@
   border-radius: 0 6px 6px 0;
   background: var(--w-content);
   color: var(--w-muted);
+  font: inherit;
   font-size: 11.5px;
   white-space: nowrap;
   cursor: pointer;
@@ -809,6 +810,13 @@
 
 .attached-input:focus {
   outline: none;
+}
+
+/* 焦点可见性：输入框本身没有边框（borde 在 .attached-field 上），所以焦点指示给到外层。
+   客户端主搜索框的聚焦色就是 --w-selection-border（#8CB8D6），这里保持一致。 */
+.attached-row:focus-within {
+  box-shadow: inset 0 0 0 1px var(--w-selection-border);
+  border-radius: 4px;
 }
 
 /* 清除按钮压在输入框右端（客户端也是把 × 放在输入框里）。 */
