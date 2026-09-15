@@ -5,21 +5,6 @@ const title = siteData.siteTitle;
 const share =
   "话术精灵是一款 Windows 客服话术软件：团队话术、个人话术、离线话术统一管理，一套话术可拆成 0–9 十个独立模块精准定位；双击把话术贴进聊天输入框、回车发送，内容存在本机，本地永久免费。";
 
-const faq = [
-  {
-    q: "适合哪些平台？",
-    a: "天猫、京东、拼多多、抖音等电商客服场景，微信、企业微信的聊天窗口也能用。话术是贴到当前聊天窗口的输入框，能打字的窗口都能用。",
-  },
-  {
-    q: "团队话术和个人话术有什么区别？",
-    a: "团队话术由团队统一维护、所有工号共享；个人话术只有自己看得到，适合放自己的习惯用语；离线话术留在本机，不参与同步。",
-  },
-  {
-    q: "换电脑或换客服，话术怎么搬过去？",
-    a: "本地数据可以用备份包整体恢复；开通云端后，登录同一账号就能把团队话术同步到新电脑上。",
-  },
-];
-
 export const indexPage = {
   outputFile: "index.html",
   navLabel: "首页",
@@ -74,20 +59,6 @@ export const indexPage = {
       "url": "${siteData.siteUrl}",
       "downloadUrl": "${siteData.downloadUrl}",
       "publisher": { "@type": "Person", "name": "${siteData.authorName}" }
-    },
-    {
-      "@type": "FAQPage",
-      "mainEntity": [
-        ${faq
-          .map(
-            (item) => `{
-          "@type": "Question",
-          "name": "${item.q}",
-          "acceptedAnswer": { "@type": "Answer", "text": "${item.a}" }
-        }`,
-          )
-          .join(",\n        ")}
-      ]
     }
   ]
 }
@@ -158,20 +129,6 @@ export const indexPage = {
     <div class="demo-status">
       <span class="demo-count" id="demo-count" hidden>已发送 <b id="demo-count-num">0</b> 条</span>
       <button class="demo-reset" id="demo-reset" type="button" hidden>重置演示</button>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>常见问题</h2>
-    <div>
-      ${faq
-        .map(
-          (item) => `<div class="faq-item">
-        <h3>${item.q}</h3>
-        <p>${item.a}</p>
-      </div>`,
-        )
-        .join("\n      ")}
     </div>
   </section>
 </div>`,
