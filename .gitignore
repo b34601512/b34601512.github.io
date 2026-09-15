@@ -39,13 +39,6 @@ __pycache__/
 .shots/
 
 # headless Chrome 探针的临时文件（探针脚本与抓取结果，跑完就删）
-p.html
-p.js
-.p.out
-.W-*.out
-.WW-*.out
-.L-*
-.L.*
 
 # IDE 配置文件（可选，根据团队需要）
 .vscode/
@@ -53,9 +46,10 @@ p.js
 *.swp
 *.swo
 *~
-.perf*
 # 探针输出：核对线上时会写在根目录，绝不能进仓库（会被 Pages 公开）
-.live*.out
-.reply*.out
-.p.out
-.live-site/
+
+# 根目录的点文件一律不提交：探针脚本（.perf-*、.live-*）、抓取输出（.live1.out、.r-a-500.out……）、
+# 线上镜像目录（.live-site/）这些都是跑完就扔的东西，曾经三次被 git add -A 顺手提交上去（Pages 会公开）。
+# 只留 .gitignore 本身；以后真要提交某个点文件，在这里加一条 !否定规则。
+.*
+!.gitignore
