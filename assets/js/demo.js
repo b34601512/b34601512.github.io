@@ -2109,21 +2109,38 @@
   el.range.addEventListener("click", cycleRange);
   el.barRange.addEventListener("click", cycleRange);
 
+  // 演示区不在视野里时先滚过去（Alt+Q 与数字切套都用）。
+  const revealDemo = () => {
+    const demo = el.search.closest(".demo");
+    const box = demo.getBoundingClientRect();
+    if (box.top >= 0 && box.bottom <= window.innerHeight) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    demo.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+  };
+
   // 数字键 0–9（顶部数字键与小键盘都认，对应客户端 QKeySequence）：
-  // 光标在某个搜索面且处于数字态时＝直接发送第 N 条命中；否则在演示区里＝切套。
-  // 光标在输入框里时不抢键（打字优先）。
+  // 客户端里它是窗口级快捷键，不要求先把光标点进列表，只要没在打字就生效。
+  // 处于数字选择态时＝直接发送第 N 条命中，否则＝切换套话术。
   document.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     const digit = readDigit(event);
     if (!digit) return;
     const target = event.target;
-    if (target instanceof HTMLElement && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
-    if (!(target instanceof HTMLElement)) return;
-    const surface = target.closest(".attached") ? "bar" : target.closest(".demo") ? "panel" : null;
-    if (!surface) return;
+    // 正在打字（聊天输入框、搜索框、可编辑区域）就让位给文字。
+    if (
+      target instanceof HTMLElement &&
+      (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
+    ) {
+      return;
+    }
     event.preventDefault();
-    if (digitMode(surface)) sendDigitHit(surface, digit);
-    else if (surface === "panel") focusSet(Number(digit));
+    const surface = target instanceof HTMLElement && target.closest(".attached") ? "bar" : "panel";
+    if (digitMode(surface)) {
+      sendDigitHit(surface, digit);
+      return;
+    }
+    focusSet(Number(digit));
+    revealDemo();
   });
 
   // Alt+Q：和客户端一致，任何位置按都能定位到搜索框（演示区不在视野内时先滚过去）。
@@ -2132,13 +2149,7 @@
     if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (event.code !== "KeyQ") return;
     event.preventDefault();
-    const demo = el.search.closest(".demo") ?? el.search;
-    const box = demo.getBoundingClientRect();
-    const offscreen = box.top < 0 || box.bottom > window.innerHeight;
-    if (offscreen) {
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      demo.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
-    }
+    revealDemo();
     el.search.focus({ preventScroll: true });
     // 焦点变化本身不够显眼，再加一次短高亮，让人确定「按下去有反应」。
     el.search.classList.remove("app-search-input--hit");
