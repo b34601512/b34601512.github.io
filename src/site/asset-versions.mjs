@@ -3,7 +3,12 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-const VERSIONED_ASSETS = ["assets/css/site.css", "assets/css/demo.css", "assets/js/demo.js"];
+const VERSIONED_ASSETS = [
+  "assets/css/site.css",
+  "assets/css/demo.css",
+  "assets/js/demo-data.js",
+  "assets/js/demo.js",
+];
 
 const versioned = new Map();
 for (const path of VERSIONED_ASSETS) {

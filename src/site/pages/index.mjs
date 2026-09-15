@@ -1,9 +1,23 @@
 // index.html 的页面专属内容。公共结构由 layout 生成，公共信息由 site-data 提供。
+import demoData from "../../../assets/js/demo-data.js";
 import { siteData } from "../site-data.mjs";
 
 const title = siteData.siteTitle;
 const share =
   "话术精灵是一款 Windows 客服话术软件：团队话术、个人话术、离线话术统一管理，一套话术可拆成 0–9 十个独立模块精准定位；双击把话术贴进聊天输入框、回车发送，内容存在本机，本地永久免费。";
+
+// 没有 JavaScript 时（爬虫、禁用 JS 的浏览器）把演示数据换成可读文字：列出三个话术域、
+// 每套话术和它的一级分类。内容和演示里是同一份数据，不是另写一套。
+function noscriptOverview() {
+  return Object.values(demoData.SCOPES)
+    .map(
+      (scope) =>
+        `      <p><strong>${scope.label}</strong>（0–9 十套）：${scope.sets
+          .map((set) => `${set.name}（${set.categories.map((category) => category.label).join("、")}）`)
+          .join("；")}</p>`,
+    )
+    .join("\n");
+}
 
 export const indexPage = {
   outputFile: "index.html",
@@ -146,7 +160,7 @@ export const indexPage = {
         <div class="app-set" id="demo-set"></div>
         <div class="app-digits" id="demo-digits"></div>
         <div class="app-lv1"><div class="app-chips" id="demo-chips"></div></div>
-        <div class="app-tree" id="demo-list"></div>
+        <div class="app-tree" id="demo-list">${demoData.initialTreeHtml()}</div>
         <div class="app-common" id="demo-quick"></div>
         <div class="app-search">
           <input class="app-search-input" id="demo-search" type="search" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
@@ -159,11 +173,17 @@ export const indexPage = {
       </div>
     </div>
 
+    <noscript>
+      <p>演示需要浏览器执行 JavaScript。下面是演示里内置的话术，装好客户端后就是这些内容。</p>
+${noscriptOverview()}
+    </noscript>
+
     <div class="demo-status">
       <span class="demo-count" id="demo-count" hidden>已发送 <b id="demo-count-num">0</b> 条</span>
       <button class="demo-reset" id="demo-reset" type="button" hidden>重置演示</button>
     </div>
   </section>
 </div>`,
-  bodyEnd: `<script src="assets/js/demo.js"></script>`,
+  bodyEnd: `<script src="assets/js/demo-data.js"></script>
+<script src="assets/js/demo.js"></script>`,
 };
