@@ -299,8 +299,14 @@
         sendDigitHit(surface, digit);
         return;
       }
-      // 继续打字、退格都算退出数字态。
-      exitDigitMode();
+      // 客户端只在「会改变文字」的按键上退出数字态：打字符、退格、删除
+      // （`_deactivate_digit_selection_for_edit_key`）。方向键、Home/End 不动文字，
+      // 数字态要保持——否则一按方向键序号就没了。
+      // 带 Ctrl/Alt/Meta 的按键在客户端不产生文字（Ctrl+1、Alt+1 都不会退出数字态）。
+      const plain = !event.ctrlKey && !event.metaKey && !event.altKey;
+      const changesText =
+        event.key === "Backspace" || event.key === "Delete" || (plain && event.key.length === 1);
+      if (changesText) exitDigitMode();
     });
   };
 
