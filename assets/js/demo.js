@@ -651,6 +651,22 @@
     renderTree();
   });
 
+  // Alt+Q：和客户端一致，任何位置按都能定位到搜索框（演示区不在视野内时先滚过去）。
+  // 用 event.code 而不是 key，中文输入法或不同键盘布局下都能命中同一个物理键。
+  document.addEventListener("keydown", (event) => {
+    if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (event.code !== "KeyQ") return;
+    event.preventDefault();
+    const demo = el.search.closest(".demo") ?? el.search;
+    const box = demo.getBoundingClientRect();
+    const offscreen = box.top < 0 || box.bottom > window.innerHeight;
+    if (offscreen) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      demo.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    }
+    el.search.focus({ preventScroll: true });
+  });
+
   el.reset.addEventListener("click", reset);
 
   /* ---------- 启动 ---------- */
