@@ -1,0 +1,201 @@
+/* ==========================================================================
+   「怎么用」页：手绘动画播放器 + 五个步骤（步骤兼作章节按钮）
+   画布里的颜色由 assets/js/guide-film.js 按网站主题决定；这里只管外框与控件。
+   ========================================================================== */
+
+.film {
+  margin: 0;
+}
+
+.film-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.film-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.film-play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.film-play:hover {
+  background: var(--accent-hover);
+}
+
+.film-icon {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.film-play[data-playing="true"] .film-icon--play,
+.film-play[data-playing="false"] .film-icon--pause {
+  display: none;
+}
+
+/* 细线进度条：整条都能点、能拖，键盘左右键每次 5 秒 */
+.film-track {
+  position: relative;
+  flex: 1;
+  height: 22px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.film-track::before,
+.film-fill {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 3px;
+  border-radius: 3px;
+  transform: translateY(-50%);
+}
+
+.film-track::before {
+  right: 0;
+  background: var(--line-strong);
+}
+
+.film-fill {
+  width: 0;
+  background: var(--accent);
+}
+
+.film-fill::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+
+.film-time {
+  flex: none;
+  min-width: 84px;
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  text-align: right;
+}
+
+.steps {
+  margin: 36px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.step {
+  border-bottom: 1px solid var(--line);
+}
+
+.step[id] {
+  scroll-margin-top: 80px;
+}
+
+.step-jump {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  align-items: start;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 2px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.step-jump:hover {
+  background: var(--row-hover);
+}
+
+.step-no {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: 1px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  font-size: 13px;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.step-body {
+  display: grid;
+  gap: 4px;
+}
+
+.step-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.step-text {
+  color: var(--fg-muted);
+  font-size: 14.5px;
+}
+
+/* 正在播放的那一步 */
+.step-jump[aria-current="true"] .step-no {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.step-jump[aria-current="true"] .step-name,
+.step-jump:hover .step-name {
+  color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .film-bar {
+    gap: 10px;
+  }
+
+  .film-time {
+    min-width: 0;
+    font-size: 11.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-play,
+  .step-jump,
+  .step-no {
+    transition: none;
+  }
+}

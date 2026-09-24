@@ -74,7 +74,7 @@ export const indexPage = {
 
   <section class="section" id="demo">
     <h2>可交互界面实操试用</h2>
-    <p class="section-sub">左边客服聊天窗口（微信、京东、拼多多、千牛、抖音都能贴），右边话术精灵主界面，直接上手点一点。</p>
+    <p class="section-sub">左边客服聊天窗口（微信、京东、拼多多、千牛、抖音都能贴），右边话术精灵主界面，直接上手点一点。不想自己点，先看 <a class="text-link" href="guide.html">45 秒动画教程</a>。</p>
 
     <div class="demo">
         <!-- 平台皮肤：只换聊天窗口的样子（头像、标题、配色），行为完全一样。

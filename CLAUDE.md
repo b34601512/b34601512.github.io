@@ -57,6 +57,8 @@ D:\SoftTalk官网
 │  ├─ js\demo-data.js        演示话术数据 + 话术行/分类树标记（浏览器与构建脚本共用一份）
 │  ├─ js\demo.js             首页演示交互（渲染 + 模拟发送，数据从 demo-data.js 取）
 │  ├─ js\theme.js            白天/黑夜切换按钮（记住选择、圆形铺开动画）
+│  ├─ js\guide-film.js       「怎么用」页的 45 秒手绘教程动画（Canvas 2D 逐帧绘制 + 播放器）
+│  ├─ css\guide.css          「怎么用」页播放器与步骤样式
 │  ├─ js\contact.js          联系页点击复制
 │  ├─ logo.png               168×187 调色板 PNG（1.3 KB）
 │  ├─ favicon.png            128×128 调色板 PNG（2.2 KB）
@@ -76,6 +78,15 @@ D:\SoftTalk官网
 页面模块写 HTML 时直接 `import { siteData }` 拼字符串，**不使用占位符替换**（旧版的 `{{downloadUrl}}` 机制已移除，不要再引入）。
 
 ## 设计规范
+
+### 「怎么用」手绘教程动画（guide.html）
+
+- 45 秒自动播放，五段对应五个步骤：分类 → 双击贴入 → 纸飞机直发 → Alt+Q 搜索 + Tab 数字发送 → 吸附搜索栏；前后各有片头片尾。页面下方的五个文字步骤就是章节按钮（`data-chapter` = `SCENES` 段号），点哪步跳到哪段。改剧本时两边一起改。
+- 手绘做法参考 [alesha-pro/tools 的 hand-drawn-canvas-animation](https://github.com/alesha-pro/tools/tree/main/skills/hand-drawn-canvas-animation)（MIT），只自写了本片用到的部分（约 15KB）：线条沿长度游走、两遍描线、二拍曝光（每秒 12 张）、描边轻 boil、排线代替平涂、随机数全带种子。
+- 所有状态都是时间 T 的纯函数（窗口、气泡、光标、键帽），拖到哪一秒都能画出同一帧；笔迹按 id + boil 变体缓存，同一张画不会每帧变样。
+- 黑夜是黑板粉笔、白天是纸上墨线，跟着网站主题实时切换；纸纹只按画布尺寸与主题生成一次。
+- 只在进入视野（≥35%）且标签页可见时播放；访客自己按了暂停就不再自动续播。`prefers-reduced-motion` 时不自动播，停在 16.8 秒那一帧。**headless Chrome 默认报 reduce**，探针要先 `Emulation.setEmulatedMedia` 设成 `no-preference`，否则会以为动画没播。
+- 文案必须和客户端一致（双击只贴不发、纸飞机＝贴入 + 回车、Tab 后数字直接发送、吸附栏不用切回主界面），与首页演示同一套事实。
 
 ### 白天 / 黑夜主题
 
