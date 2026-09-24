@@ -69,8 +69,9 @@ export const indexPage = {
     <div class="actions">
       <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载 Windows 版</a>
       <a class="btn btn--ghost" href="#demo">试用演示</a>
-      <a class="btn btn--ghost" href="${siteData.tutorialUrl}" target="_blank" rel="noopener">使用教程</a>
+      <a class="btn btn--ghost" href="guide.html">45 秒教程</a>
     </div>
+    <p class="note">适用 ${siteData.platform} · 本地永久免费</p>
   </section>
 
   <section class="section" id="demo">

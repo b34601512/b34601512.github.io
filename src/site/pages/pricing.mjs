@@ -8,11 +8,17 @@ const share =
   "本地使用永久免费；云端按「工号」付费：1 年 48 元、2 年 78 元、3 年 98 元、100 年 168 元，含云同步、工号协作与云附件，注册团队账号赠送 1 个月会员。";
 
 const plans = [
-  { term: "1 年", price: "48", note: "先试一年，决策门槛最低。" },
-  { term: "2 年", price: "78", note: "确认长期使用，省去频繁续费。" },
-  { term: "3 年", price: "98", note: "稳定团队长期部署，价格更平滑。" },
-  { term: "100 年", price: "168", note: "一次开通，不再续费。", pick: true },
+  { term: "1 年", years: 1, price: "48" },
+  { term: "2 年", years: 2, price: "78" },
+  { term: "3 年", years: 3, price: "98" },
+  { term: "100 年", years: 100, price: "168", pick: true },
 ];
+
+// 小字只放算得出来的事实：折合每月多少钱，由价格和年限现算，改价时不会对不上。
+function monthlyNote(plan) {
+  const text = String(Number((Number(plan.price) / (plan.years * 12)).toFixed(2)));
+  return plan.years >= 100 ? `一次开通不再续费，折合每月约 ${text} 元。` : `折合每月约 ${text} 元。`;
+}
 
 const cloud = [
   { name: "云同步", text: "团队话术与个人话术在多台电脑之间同步，一处修改，其他电脑自动更新。" },
@@ -69,7 +75,7 @@ export const pricingPage = {
           ${plan.pick ? '<span class="plan-flag">推荐</span>' : ""}
         </div>
         <p class="plan-price">${plan.price}<span> 元 / 工号</span></p>
-        <p class="plan-note">${plan.note}</p>
+        <p class="plan-note">${monthlyNote(plan)}</p>
       </article>`,
         )
         .join("\n      ")}

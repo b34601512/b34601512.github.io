@@ -95,6 +95,7 @@ export const guidePage = {
         .join("\n      ")}
     </ol>
     <p class="section-more"><a class="text-link" href="index.html#demo">看完去首页演示里自己点一遍 →</a></p>
+    <p class="note">设置、导入导出、云同步等更多功能，见 <a class="text-link" href="${siteData.tutorialUrl}" target="_blank" rel="noopener">使用帮助文档</a>。</p>
   </section>
 </div>`,
   bodyEnd: `<script src="assets/js/guide-film.js" defer></script>`,

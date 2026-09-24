@@ -32,6 +32,8 @@
 
 根目录三张 HTML 与 `sitemap.xml` 都是构建产物，**不要手改**；改 `src/site/` 后运行构建脚本。
 
+`404.html` 也是构建产物（`src/site/pages/not-found.mjs`，登记在 `pages.mjs` 的 `extraPages`：生成、自检，但不进导航和 sitemap）。GitHub Pages 会在任意错误地址下原样返回它，所以它的 head 必须保留 `<base href="/">`，否则在 `/a/b/` 这类路径下相对资源全部失效。
+
 ## 模块结构
 
 ```text

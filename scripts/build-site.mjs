@@ -3,7 +3,7 @@ import { execSync } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
-import { sitePages } from "../src/site/pages.mjs";
+import { extraPages, sitePages } from "../src/site/pages.mjs";
 import { pageUrl, siteData } from "../src/site/site-data.mjs";
 
 const orderedEntries = [];
@@ -13,6 +13,11 @@ for (const [index, page] of sitePages.entries()) {
   await writeFile(page.outputFile, rendered, "utf8");
   console.log(`[build-site] 生成 ${page.outputFile}`);
   orderedEntries.push({ page, index, rendered });
+}
+
+for (const page of extraPages) {
+  await writeFile(page.outputFile, withAssetVersions(renderPage(page, sitePages)), "utf8");
+  console.log(`[build-site] 生成 ${page.outputFile}`);
 }
 
 // sitemap.xml 由页面清单生成，避免手写清单与页面不同步。

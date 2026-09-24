@@ -11,6 +11,8 @@ export const siteData = {
   authorWechat: "luyao2089",
   authorEmail: "576798643@qq.com",
   downloadUrl: "https://www.kdocs.cn/l/cvnglmckRGBu",
+  // PySide6（Qt 6）不支持 Windows 10 以前的系统，安装包只有 64 位。
+  platform: "Windows 10 / 11（64 位）",
   tutorialUrl: "https://www.kdocs.cn/l/crEfTnE6toV0",
   copyright: "© 2025–2026 黎路遥 · 话术精灵 SoftTalk",
   icp: {

@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
-import { sitePages } from "../src/site/pages.mjs";
+import { extraPages, sitePages } from "../src/site/pages.mjs";
 import { pageUrl, siteData } from "../src/site/site-data.mjs";
 
 const errors = [];
@@ -49,7 +49,7 @@ const definedClasses = new Set();
 const usedClasses = new Set();
 const mentionedClasses = new Set();
 
-for (const page of sitePages) {
+for (const page of [...sitePages, ...extraPages]) {
   const file = page.outputFile;
   const html = await readFile(file, "utf8").catch(() => null);
 
