@@ -475,14 +475,6 @@
   color: var(--w-text);
 }
 
-.app-sprite {
-  position: absolute;
-  top: -13px;
-  left: -11px;
-  width: 34px;
-  height: auto;
-}
-
 .app-bar {
   display: flex;
   align-items: center;

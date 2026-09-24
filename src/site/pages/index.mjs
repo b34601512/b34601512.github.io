@@ -45,6 +45,7 @@ export const indexPage = {
           "一套话术拆成 0–9 十个独立模块，一键精准定位",
           "双击把话术贴进聊天输入框，点左侧纸飞机直接发送",
           "Alt+Q 一键定位搜索栏；搜索栏里按 Tab 键，再按数字直接发送话术；吸附搜索栏能贴到各种聊天窗口（微信、京东、拼多多、千牛、抖音…）",
+          "一条话术最多 10 段文字、9 张图片、9 个附件",
           "导入 Excel（.xlsx）话术；保存时与删除前自动备份话术表格与完整恢复包（.stpkg）",
         ],
         offers: {
@@ -135,7 +136,6 @@ export const indexPage = {
       </div>
 
       <div class="app">
-        <img class="app-sprite" src="assets/logo.png" alt="" />
         <div class="app-bar">
           <span class="app-tag">演示</span>
           <span class="app-wins">
