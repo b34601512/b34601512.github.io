@@ -69,7 +69,7 @@ try { if (localStorage.getItem("softtalk-theme") === "light") document.documentE
 </script>
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css?v=90e8985a" />
-<link rel="stylesheet" href="assets/css/demo.css?v=aa3693d2" />
+<link rel="stylesheet" href="assets/css/demo.css?v=fc2e68e8" />
 <script src="assets/js/theme.js?v=0a308ca1" defer></script>
 </head>
 <body>
@@ -134,6 +134,7 @@ try { if (localStorage.getItem("softtalk-theme") === "light") document.documentE
           <div class="chat-log" id="demo-log">
             <div class="msg msg--in"><p class="bubble">老板，这款产品质量怎么样，是正品吗？</p></div>
           </div>
+          <div class="chat-media" id="demo-input-media" hidden></div>
           <div class="chat-foot">
             <textarea class="chat-input" id="demo-input" rows="1" aria-label="聊天输入框" placeholder="双击右侧话术贴进来，也可以直接打字，回车发送" spellcheck="false"></textarea>
             <button class="chat-send" id="demo-send-btn" type="button">发送</button>
@@ -222,6 +223,21 @@ try { if (localStorage.getItem("softtalk-theme") === "light") document.documentE
         <span class="app-row-text">您好，稍等一下哦，马上为您服务~</span>
         
       </span>
+    </div>
+    <div class="app-row" role="button" tabindex="0" data-key="2" title="双击贴进输入框，点左侧纸飞机直接发送">
+      <button class="app-row-send" type="button" data-send="2" aria-label="直接发送这条话术" title="直接发送（粘贴 + 回车）">
+        <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>
+      </button>
+      <span class="app-row-body">
+        <span class="app-row-main">
+          
+          <img class="app-row-icon" src="assets/type-pdf.png" alt="" />
+          <span class="app-row-title">店铺介绍</span>
+          
+        </span>
+        <span class="app-row-text">亲，欢迎光临~先给您看看我们家的热销款：[图片][图片]有任何问题随时找我，我一直在线哦~[文件]新品目录.pdf</span>
+        
+      </span>
     </div></div><div class="app-lv2">
       <div class="app-lv2-head" role="button" tabindex="0" data-section="1" aria-expanded="false" title="点一下展开或收起这一组">
         <span class="app-lv2-arrow" aria-hidden="true">▶</span>
@@ -270,8 +286,8 @@ try { if (localStorage.getItem("softtalk-theme") === "light") document.documentE
   </div>
 </footer>
 
-<script src="assets/js/demo-data.js?v=fecee010" defer></script>
-<script src="assets/js/demo.js?v=9d3c732a" defer></script>
+<script src="assets/js/demo-data.js?v=74039b44" defer></script>
+<script src="assets/js/demo.js?v=0b2e137a" defer></script>
 
 </body>
 </html>

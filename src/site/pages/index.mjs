@@ -99,6 +99,7 @@ export const indexPage = {
           <div class="chat-log" id="demo-log">
             <div class="msg msg--in"><p class="bubble">老板，这款产品质量怎么样，是正品吗？</p></div>
           </div>
+          <div class="chat-media" id="demo-input-media" hidden></div>
           <div class="chat-foot">
             <textarea class="chat-input" id="demo-input" rows="1" aria-label="聊天输入框" placeholder="双击右侧话术贴进来，也可以直接打字，回车发送" spellcheck="false"></textarea>
             <button class="chat-send" id="demo-send-btn" type="button">发送</button>

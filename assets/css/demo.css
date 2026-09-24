@@ -373,6 +373,80 @@
   border-left-color: var(--wx-out);
 }
 
+/* 发出去的图片与文件：各占一条消息，不带气泡尖角（聊天软件里图片、文件也是单独的卡片） */
+.msg-pic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 132px;
+  height: 96px;
+  margin: 0;
+  border: 1px solid #d6dbe1;
+  border-radius: 6px;
+  background: #e8ecf1;
+}
+
+.msg-pic-art {
+  width: 40px;
+  height: 30px;
+  fill: none;
+  stroke: #8a96a5;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.msg-pic-name {
+  color: #5f6b7a;
+  font-size: 11.5px;
+}
+
+.msg-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(220px, 78%);
+  padding: 10px 12px;
+  border: 1px solid #e2e2e2;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.msg-file-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.msg-file-name {
+  overflow: hidden;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg-file-size {
+  color: #9a9a9a;
+  font-size: 11.5px;
+}
+
+.msg-file-icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 40px;
+  border-radius: 3px;
+  background: #e5484d;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 40px;
+  text-align: center;
+}
+
 .typing {
   display: inline-flex;
   gap: 4px;
@@ -406,6 +480,52 @@
   50% {
     opacity: 1;
   }
+}
+
+/* 双击贴进输入框、还没发出去的图片与附件 */
+.chat-media {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 0;
+  border-top: 1px solid var(--wx-line);
+  background: var(--wx-head);
+}
+
+.chat-media[hidden] {
+  display: none;
+}
+
+.chat-media:not([hidden]) + .chat-foot {
+  border-top: none;
+}
+
+.chat-media-item {
+  padding: 2px 8px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  background: var(--wx-in);
+  color: #555555;
+  font-size: 12px;
+}
+
+.chat-media-clear {
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #9a9a9a;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chat-media-clear:hover {
+  background: #e6e6e6;
+  color: #333333;
 }
 
 .chat-foot {

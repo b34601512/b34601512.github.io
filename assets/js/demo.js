@@ -5,7 +5,10 @@
 
   const $ = (id) => document.getElementById(id);
   // 演示数据与话术行标记来自 demo-data.js：同一份也用来预渲染首页静态 HTML（爬虫读得到）。
-  const { SCOPES, esc, rowHtml, treeHtml } = globalThis.SOFTTALK_DEMO;
+  const { SCOPES, esc, rowHtml, treeHtml, segmentsOf, filesOf, isRich } = globalThis.SOFTTALK_DEMO;
+
+  // 客户端逐段发送的间隔（phrase_sequence.SEND_INTERVAL_MS）。
+  const SEND_INTERVAL_MS = 500;
 
   const COMMON_PHRASES = ["你好～", "稍等一下~", "好的", "感谢您", "已收到", "马上处理"];
 
@@ -51,6 +54,8 @@
     epoch: 0,
     // 聊天窗皮肤（页面静态预渲染时就是微信，JS 起来后保持一致）
     platform: "wechat",
+    // 双击贴进输入框、还没发出去的图片与附件：{ images: [名称], files: [{ name, size }] } 或 null。
+    staged: null,
   };
 
   let rows = [];
@@ -67,6 +72,7 @@
   const el = {
     log: $("demo-log"),
     input: $("demo-input"),
+    media: $("demo-input-media"),
     send: $("demo-send-btn"),
     tabs: $("demo-tabs"),
     digits: $("demo-digits"),
@@ -268,7 +274,7 @@
     const item = items[index] ?? items[0];
     if (!item) return false;
     selectIn(container, selected ?? container.querySelector(".app-row"));
-    sendText(item.text, selected ?? container.querySelector(".app-row"));
+    sendItem(item, selected ?? container.querySelector(".app-row"));
     if (container === el.barList) useBarHit(item);
     else usePanelHit(item);
     return true;
@@ -282,7 +288,7 @@
     const node = container.querySelectorAll(".app-row")[index];
     if (!item) return false;
     selectIn(container, node);
-    sendText(item.text, node);
+    sendItem(item, node);
     if (surface === "panel") usePanelHit(item);
     else useBarHit(item);
     return true;
@@ -485,6 +491,59 @@
     scrollLog();
   };
 
+  // 发出去的图片与文件各占一条消息（聊天软件收到图文混排的粘贴内容也是这样拆开显示）。
+  const PICTURE_ART = `<svg class="msg-pic-art" viewBox="0 0 48 36" aria-hidden="true"><rect x="1" y="1" width="46" height="34" rx="3" /><circle cx="15" cy="12" r="4" /><path d="M4 32 17 19l8 8 7-6 12 11" /></svg>`;
+
+  const addOutRow = (html) => {
+    const row = document.createElement("div");
+    row.className = "msg msg--out msg--new";
+    row.innerHTML = html;
+    el.log.append(row);
+    scrollLog();
+  };
+
+  const postBlock = (block) => {
+    if (block.text !== undefined) addMessage(block.text, "out");
+    else if (block.image !== undefined)
+      addOutRow(`<figure class="msg-pic">${PICTURE_ART}<figcaption class="msg-pic-name">${esc(block.image)}</figcaption></figure>`);
+    else
+      addOutRow(`<div class="msg-file"><span class="msg-file-body"><strong class="msg-file-name">${esc(block.file.name)}</strong><span class="msg-file-size">${esc(block.file.size)}</span></span><span class="msg-file-icon">PDF</span></div>`);
+  };
+
+  // 按步发出：每一步是同一条消息里的内容，步与步之间隔 SEND_INTERVAL_MS；全部发完才算发出一条话术。
+  const postSteps = (steps, node, firstDelay) => {
+    const epoch = state.epoch;
+    node?.classList.add("app-row--sending");
+    steps.forEach((step, index) => {
+      setTimeout(() => {
+        if (epoch !== state.epoch) return;
+        step.forEach(postBlock);
+        if (index < steps.length - 1) return;
+        node?.classList.remove("app-row--sending");
+        state.sent += 1;
+        updateCounter();
+        scheduleReply();
+      }, firstDelay + index * SEND_INTERVAL_MS);
+    });
+  };
+
+  const renderStaged = () => {
+    const staged = state.staged;
+    el.media.hidden = !staged;
+    el.media.innerHTML = staged
+      ? [
+          ...staged.images.map((name) => `<span class="chat-media-item">[图片] ${esc(name)}</span>`),
+          ...staged.files.map((file) => `<span class="chat-media-item">[文件] ${esc(file.name)}</span>`),
+          `<button class="chat-media-clear" type="button" aria-label="移除输入框里的图片和文件" title="移除图片和文件">×</button>`,
+        ].join("")
+      : "";
+    refreshSendReady();
+  };
+
+  const refreshSendReady = () => {
+    el.send.classList.toggle("chat-send--ready", el.input.value.trim() !== "" || Boolean(state.staged));
+  };
+
   const showTyping = () => {
     const row = document.createElement("div");
     row.id = "demo-typing";
@@ -505,7 +564,7 @@
   const clearInput = () => {
     el.input.value = "";
     resizeInput();
-    el.send.classList.remove("chat-send--ready");
+    refreshSendReady();
   };
 
   // 输入框是多行编辑框：随内容长高，上限取 CSS 的 max-height，避免改样式时两处不同步。
@@ -541,6 +600,40 @@
       updateCounter();
       scheduleReply();
     }, 520);
+  };
+
+  // 点纸飞机发送一条话术：纯文字照旧；带图片或附件的按客户端 build_execution_plan 逐段发出，
+  // 每段是「文字 + 段内图片」一条消息，普通附件放在所有图文之后一次投递。
+  const sendItem = (item, node) => {
+    if (!item) return;
+    if (!isRich(item)) {
+      sendText(item.text, node);
+      return;
+    }
+    const steps = segmentsOf(item).map((segment) => [
+      ...(segment.text ? [{ text: segment.text }] : []),
+      ...(segment.images ?? []).map((image) => ({ image })),
+    ]);
+    if (filesOf(item).length) steps.push(filesOf(item).map((file) => ({ file })));
+    postSteps(steps, node, 520);
+  };
+
+  // 聊天窗口自己的发送（回车或发送按钮）：输入框里的文字连同贴进来的图片、附件一起发出。
+  const sendInput = () => {
+    const text = el.input.value.trim();
+    const staged = state.staged;
+    if (!staged) {
+      if (text) sendText(text, null);
+      return;
+    }
+    state.staged = null;
+    renderStaged();
+    clearInput();
+    postSteps(
+      [[...(text ? [{ text }] : []), ...staged.images.map((image) => ({ image })), ...staged.files.map((file) => ({ file }))]],
+      null,
+      0,
+    );
   };
 
   // 客户回复排队：每条发出去的话术都有一条回复，一条接一条（有打字动画），不抢答也不漏。
@@ -584,10 +677,14 @@
     node?.classList.add("app-row--selected");
   };
 
-  // 双击＝仅粘贴（对应客户端“双击整行”），内容先落到聊天输入框，不直接发送。
+  // 双击＝仅粘贴（对应客户端“双击整行”），整条内容（文字、图片、附件）落到聊天输入框，不直接发送。
   const pasteIntoInput = (item) => {
     if (!item) return;
-    fillInput(item.text);
+    fillInput(segmentsOf(item).map((segment) => segment.text).filter(Boolean).join("\n"));
+    state.staged = isRich(item)
+      ? { images: segmentsOf(item).flatMap((segment) => segment.images ?? []), files: filesOf(item) }
+      : null;
+    renderStaged();
   };
 
   // 话术行交互三件套：单击选中、双击只粘贴、点左侧纸飞机直接发送。
@@ -601,7 +698,7 @@
       selectIn(container, node);
       // 点左侧纸飞机＝直接发送（粘贴 + 回车），对应客户端话术行左侧箭头。
       if (event.target.closest(".app-row-send")) {
-        sendText(itemAt(node)?.text, node);
+        sendItem(itemAt(node), node);
         onUse(itemAt(node));
       }
     });
@@ -689,7 +786,9 @@
       replyPending: false,
       replyQueue: 0,
       epoch: state.epoch + 1,
+      staged: null,
     });
+    renderStaged();
     Object.values(SCOPES).forEach((scope) =>
       scope.sets.forEach((set) => set.categories.forEach(resetSections)),
     );
@@ -824,14 +923,18 @@
   });
 
   // 聊天窗口自己的发送按钮：把输入框里的内容发出去（用户确认后再发的那一步）。
-  el.send.addEventListener("click", () => {
-    const text = el.input.value.trim();
-    if (text) sendText(text, null);
+  el.send.addEventListener("click", sendInput);
+
+  el.media.addEventListener("click", (event) => {
+    if (!event.target.closest(".chat-media-clear")) return;
+    state.staged = null;
+    renderStaged();
+    el.input.focus({ preventScroll: true });
   });
 
   el.input.addEventListener("input", () => {
     resizeInput();
-    el.send.classList.toggle("chat-send--ready", el.input.value.trim() !== "");
+    refreshSendReady();
   });
 
   // 输入框支持直接打字：回车发送（微信习惯），Shift+Enter 换行。
@@ -840,8 +943,7 @@
     if (event.key !== "Enter" || event.shiftKey) return;
     if (event.isComposing || event.keyCode === 229) return;
     event.preventDefault();
-    const text = el.input.value.trim();
-    if (text) sendText(text, null);
+    sendInput();
   });
 
   el.search.addEventListener("input", () => {

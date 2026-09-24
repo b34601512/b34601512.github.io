@@ -29,12 +29,19 @@ const SCOPES = {
                 items: [
                   { title: "欢迎问候", text: "亲，您好！欢迎光临，有什么可以帮到您的吗？", tag: "text" },
                   { title: "忙时提醒", text: "您好，稍等一下哦，马上为您服务~", tag: "text" },
+                  {
+                    title: "店铺介绍",
+                    text: "亲，欢迎光临~先给您看看我们家的热销款：",
+                    images: ["热销款 1", "热销款 2"],
+                    more: [{ text: "有任何问题随时找我，我一直在线哦~" }],
+                    files: [{ name: "新品目录.pdf", size: "860 KB" }],
+                  },
                 ],
               },
               {
                 title: "产品咨询",
                 items: [
-                  { title: "正品承诺", text: "我们家的产品都是正品保障，假一赔十，请放心~", tag: "image" },
+                  { title: "正品承诺", text: "我们家的产品都是正品保障，假一赔十，请放心~", images: ["品牌授权书"] },
                   { title: "质量说明", text: "所有产品经过严格质检才会发货，品质有保障哦~" },
                 ],
               },
@@ -42,7 +49,7 @@ const SCOPES = {
                 title: "价格问题",
                 items: [
                   { title: "议价回复", text: "亲，已经是全网最优惠的价格啦，品质一流~" },
-                  { title: "优惠活动", text: "现在参加满减活动，优惠力度很大，下单稳赚~", tag: "image" },
+                  { title: "优惠活动", text: "现在参加满减活动，优惠力度很大，下单稳赚~", images: ["满减活动海报"] },
                 ],
               },
             ],
@@ -74,14 +81,14 @@ const SCOPES = {
                 open: true,
                 items: [
                   { title: "道歉先行", text: "非常抱歉给您带来了不好的体验！我马上帮您解决！" },
-                  { title: "核实情况", text: "麻烦您把问题照片发过来，我帮您确认一下~", tag: "image" },
+                  { title: "核实情况", text: "麻烦您照着这张示例拍一下问题照片发过来，我帮您确认~", images: ["拍照示例"] },
                 ],
               },
               {
                 title: "退款退货",
                 items: [
                   { title: "申请退款", text: "已为您申请退款，预计 1-3 个工作日到账~" },
-                  { title: "退货说明", text: "请将商品原包装完好地寄回，运费由我们承担~", tag: "pdf" },
+                  { title: "退货说明", text: "请将商品原包装完好地寄回，运费由我们承担~", files: [{ name: "退货流程说明.pdf", size: "236 KB" }] },
                 ],
               },
             ],
@@ -337,7 +344,12 @@ const SCOPES = {
                 title: "不会用",
                 open: true,
                 items: [
-                  { title: "安装指导", text: "我发您一份图文步骤，照着做 3 分钟就能装好~", tag: "pdf" },
+                  {
+                    title: "安装指导",
+                    text: "我发您一份图文步骤，照着做 3 分钟就能装好~",
+                    images: ["安装第 1 步", "安装第 2 步", "安装第 3 步"],
+                    files: [{ name: "安装说明书.pdf", size: "1.2 MB" }],
+                  },
                   { title: "保养建议", text: "日常用软布擦拭即可，避免暴晒和长时间浸泡~" },
                 ],
               },
@@ -585,9 +597,9 @@ const SCOPES = {
                 title: "产品资料",
                 open: true,
                 items: [
-                  { title: "产品使用手册", text: "含安装、清洁与保养说明，可直接发给客户查阅~", tag: "pdf", count: 6 },
-                  { title: "尺码对照表", text: "按身高体重对应尺码，回复咨询时先发这张表~", tag: "pdf", count: 4 },
-                  { title: "产品详情图", text: "主图、细节图与实拍图合集，需要时直接发送~", tag: "image", count: 2 },
+                  { title: "产品使用手册", text: "含安装、清洁与保养说明，可直接发给客户查阅~", files: [{ name: "产品使用手册.pdf", size: "2.4 MB" }], count: 6 },
+                  { title: "尺码对照表", text: "按身高体重对应尺码，回复咨询时先发这张表~", files: [{ name: "尺码对照表.pdf", size: "96 KB" }], count: 4 },
+                  { title: "产品详情图", text: "主图、细节图与实拍图合集，需要时直接发送~", images: ["主图", "细节图", "实拍图"], count: 2 },
                 ],
               },
             ],
@@ -972,7 +984,7 @@ const SCOPES = {
                 items: [
                   { title: "发货时间", text: "当天 16 点前付款当天发货，之后的顺延到次日发出~" },
                   { title: "是否包邮", text: "全场满 59 元包邮，偏远地区需补少量运费哦~" },
-                  { title: "发票说明", text: "支持开具电子发票，下单备注单位名称即可~", tag: "pdf" },
+                  { title: "发票说明", text: "支持开具电子发票，下单备注单位名称即可~", files: [{ name: "电子发票开具说明.pdf", size: "180 KB" }] },
                 ],
               },
               {
@@ -1370,6 +1382,23 @@ const esc = (value) =>
     (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch],
   );
 
+/* 一条话术的内容（对应客户端 answer-v3 有序正文）：
+   text + images 是第 1 段（段内文字后跟图片），more 是后续各段，files 是普通附件。
+   客户端纸飞机发送时逐段发出、普通附件放在最后一起投递（phrase_sequence.build_execution_plan）。 */
+const segmentsOf = (item) => [{ text: item.text, images: item.images ?? [] }, ...(item.more ?? [])];
+const filesOf = (item) => item.files ?? [];
+const isRich = (item) => Boolean(item.images?.length || item.more?.length || item.files?.length);
+
+// 类型角标由内容推出来，不另存一份：有附件显示文件角标，有图片显示图片角标。
+const typeTag = (item) =>
+  filesOf(item).length ? "pdf" : segmentsOf(item).some((segment) => segment.images?.length) ? "image" : item.tag;
+
+// 列表里的预览文字照客户端 derive_preview：图片写成 [图片]，文件写成 [文件]文件名。
+const previewText = (item) =>
+  segmentsOf(item)
+    .map((segment) => segment.text + "[图片]".repeat(segment.images?.length ?? 0))
+    .join("") + filesOf(item).map((file) => `[文件]${file.name}`).join("");
+
 /* 话术行标记：首页首屏静态 HTML 与运行时渲染共用（数字序号只有数字选择态才传）。 */
 const rowHtml = (item, key, path, shortcut = "") => `
     <div class="app-row" role="button" tabindex="0" data-key="${key}" title="双击贴进输入框，点左侧纸飞机直接发送">
@@ -1379,11 +1408,11 @@ const rowHtml = (item, key, path, shortcut = "") => `
       <span class="app-row-body">
         <span class="app-row-main">
           ${shortcut ? `<span class="app-row-digit">${shortcut}</span>` : ""}
-          ${item.tag ? `<img class="app-row-icon" src="${TYPE_ICONS[item.tag]}" alt="" />` : ""}
+          ${typeTag(item) ? `<img class="app-row-icon" src="${TYPE_ICONS[typeTag(item)]}" alt="" />` : ""}
           <span class="app-row-title">${esc(item.title)}</span>
           ${typeof item.count === "number" ? `<span class="app-row-count">${item.count}</span>` : ""}
         </span>
-        <span class="app-row-text">${esc(item.text)}</span>
+        <span class="app-row-text">${esc(previewText(item))}</span>
         ${path ? `<span class="app-row-path">${esc(path)}</span>` : ""}
       </span>
     </div>`;
@@ -1417,8 +1446,8 @@ const treeHtml = (category) => {
 const initialTreeHtml = () => treeHtml(SCOPES.team.sets[0].categories[0]).html;
 
 /* 浏览器挂到 window，Node（构建脚本）拿到 module.exports。 */
-/* 导出给两种运行环境：浏览器挂到 window.SOFTTALK_DEMO（demo.js 取 SCOPES/esc/rowHtml/treeHtml），
+/* 导出给两种运行环境：浏览器挂到 window.SOFTTALK_DEMO（demo.js 取 SCOPES/esc/rowHtml/treeHtml 与内容读取函数），
    构建脚本在 Node 里 import（index.mjs 用 initialTreeHtml 做静态预渲染）；TYPE_ICONS 只在本文件内部用。 */
-const DEMO = { SCOPES, esc, rowHtml, treeHtml, initialTreeHtml };
+const DEMO = { SCOPES, esc, rowHtml, treeHtml, initialTreeHtml, segmentsOf, filesOf, isRich };
 if (typeof module !== "undefined" && module.exports) module.exports = DEMO;
 else globalThis.SOFTTALK_DEMO = DEMO;
