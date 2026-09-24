@@ -38,7 +38,9 @@
 D:\SoftTalk官网
 ├─ src\site\
 │  ├─ site-data.mjs          全站唯一数据源：域名、产品名、下载/教程链接、联系方式、版权、备案
-│  ├─ layout.mjs             公共骨架：head 基础项、导航、页脚；导航由页面清单自动生成
+│  ├─ pages.mjs              页面清单（导航与 sitemap 顺序），构建与自检共用
+│  ├─ seo.mjs                每页 head 的 SEO/分享元数据与 JSON-LD（对象经 JSON.stringify 输出，不手拼 JSON）
+│  ├─ layout.mjs             公共骨架：head 基础项、首屏主题脚本、导航（含主题切换按钮）、页脚
 │  └─ pages\
 │     ├─ index.mjs           首页 head（SEO/JSON-LD）+ 主体 + 演示脚本引用
 │     ├─ why.mjs             解决什么问题页（短页：三条问题 + 十套模块解法 + 对比表）
@@ -54,6 +56,8 @@ D:\SoftTalk官网
 │  ├─ css\demo.css           首页交互演示样式（复刻客户端白色主题）
 │  ├─ js\demo-data.js        演示话术数据 + 话术行/分类树标记（浏览器与构建脚本共用一份）
 │  ├─ js\demo.js             首页演示交互（渲染 + 模拟发送，数据从 demo-data.js 取）
+│  ├─ js\theme.js            白天/黑夜切换按钮（记住选择、圆形铺开动画）
+│  ├─ js\contact.js          联系页点击复制
 │  ├─ logo.png               168×187 调色板 PNG（1.3 KB）
 │  ├─ favicon.png            128×128 调色板 PNG（2.2 KB）
 │  ├─ type-text.png          28×28 话术类型角标（纯文本）
@@ -73,7 +77,15 @@ D:\SoftTalk官网
 
 ## 设计规范
 
-设计变量集中在 `assets/css/site.css` 顶部，改色只改这里：
+### 白天 / 黑夜主题
+
+- 默认黑夜；导航右侧圆形按钮切换，选择存在 `localStorage` 的 `softtalk-theme`（只有点过才会记住白天）。
+- `<html data-theme="dark">` 是静态默认值；`layout.mjs` 在 head 里用一行内联脚本在首屏绘制前改成 `light`，避免闪黑。`theme.js`（defer）只管按钮、文案和 `theme-color`。
+- 两套颜色都只在 `site.css` 顶部的 `[data-theme="dark"]` / `[data-theme="light"]` 变量里定义，组件里不写死颜色；新增颜色要两套都给值。白天的橙压深为 `#c2410c`，保证小字 4.5:1。
+- 演示区只有平台标签卡（在网站背景上）跟着主题变；聊天窗与话术精灵主界面是客户端复刻，两种主题下保持原样。
+- 支持 View Transitions 的浏览器从按钮位置圆形铺开新主题；`prefers-reduced-motion` 或不支持时直接切换。
+
+下表是黑夜主题的值（白天的值见 `site.css`）：
 
 | 变量 | 值 | 用途 |
 | --- | --- | --- |
@@ -89,7 +101,7 @@ D:\SoftTalk官网
 
 约定：
 
-- 主按钮是「橙底黑字」（`.btn--primary`），次级按钮是细描边（`.btn--ghost`，hover 变橙描边橙字）。
+- 主按钮是「橙底 + `--on-accent` 字」（`.btn--primary`，黑夜黑字、白天白字），次级按钮是细描边（`.btn--ghost`，hover 变橙描边橙字）。
 - 首页首屏下方直接是可交互演示（主界面 + 聊天窗口 + 底部吸附栏），之后就是页脚（不再有「三步用起来」、截图、功能卡与常见问题）。加内容优先往演示区里做，不要再往首屏下塞过渡性小节或复述型文案。
 - 区块用 `.section`（顶部 1px 细线 + 上下留白）分隔，内容包在 `.wrap` 里；区块标题上方有一道橙色短线（`.section h2::before`）。
 - 正文以白/浅灰为主，橙色只做强调：小标签、标题关键词、选中态、按钮；不要用它铺大面积色块。

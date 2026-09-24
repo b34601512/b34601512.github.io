@@ -10,6 +10,8 @@ const VERSIONED_ASSETS = [
   "assets/css/demo.css",
   "assets/js/demo-data.js",
   "assets/js/demo.js",
+  "assets/js/theme.js",
+  "assets/js/contact.js",
 ];
 
 const versioned = new Map();

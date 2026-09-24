@@ -63,6 +63,7 @@
 }
 
 /* ---------- 左：客服聊窗（默认微信皮肤，可切平台） ---------- */
+/* 标签卡在网站背景上，跟着网站主题走；下面的聊天窗与主界面是客户端复刻，两种主题都保持原样。 */
 .chat-tabs {
   /* 跨整个演示区一行（不在聊天窗那一栏里），这样聊天窗与话术精灵主界面才能顶底平齐 */
   grid-column: 1 / -1;
@@ -70,14 +71,37 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: -4px;
+  --tab-bg: #0d0d0d;
+  --tab-fg: #9a9a9a;
+  --tab-line: #2b2b2b;
+  --tab-hover-line: #3d3d3d;
+  --tab-hover-fg: #e6e6e6;
+  --tab-on-bg: #1a1a1a;
+  --tab-wechat: #7ee2a8;
+  --tab-jd: #ff9c93;
+  --tab-pdd: #ff9d8a;
+  --tab-blue: #8fb4ff;
+}
+
+[data-theme="light"] .chat-tabs {
+  --tab-bg: #fff;
+  --tab-fg: #5f5953;
+  --tab-line: #e0dad2;
+  --tab-hover-line: #c4bcb2;
+  --tab-hover-fg: #1a1714;
+  --tab-on-bg: #fff;
+  --tab-wechat: #067d3f;
+  --tab-jd: #c8202f;
+  --tab-pdd: #b8241b;
+  --tab-blue: #1d4fd8;
 }
 
 .chat-tab {
   padding: 5px 13px;
-  border: 1px solid #2b2b2b;
+  border: 1px solid var(--tab-line);
   border-radius: 999px;
-  background: #0d0d0d;
-  color: #9a9a9a;
+  background: var(--tab-bg);
+  color: var(--tab-fg);
   font: inherit;
   font-size: 12.5px;
   cursor: pointer;
@@ -85,38 +109,38 @@
 }
 
 .chat-tab:hover {
-  border-color: #3d3d3d;
-  color: #e6e6e6;
+  border-color: var(--tab-hover-line);
+  color: var(--tab-hover-fg);
 }
 
 /* 选中的标签卡用该平台品牌色，一眼能看出切到哪家了 */
 .chat-tab[aria-selected="true"] {
-  background: #1a1a1a;
+  background: var(--tab-on-bg);
 }
 
 .chat-tab[data-platform="wechat"][aria-selected="true"] {
   border-color: #07c160;
-  color: #7ee2a8;
+  color: var(--tab-wechat);
 }
 
 .chat-tab[data-platform="jd"][aria-selected="true"] {
   border-color: #f33b50;
-  color: #ff9c93;
+  color: var(--tab-jd);
 }
 
 .chat-tab[data-platform="pdd"][aria-selected="true"] {
   border-color: #e02e24;
-  color: #ff9d8a;
+  color: var(--tab-pdd);
 }
 
 .chat-tab[data-platform="qianniu"][aria-selected="true"] {
   border-color: #3d7fff;
-  color: #8fb4ff;
+  color: var(--tab-blue);
 }
 
 .chat-tab[data-platform="douyin"][aria-selected="true"] {
   border-color: #2f6df9;
-  color: #8fb4ff;
+  color: var(--tab-blue);
 }
 
 /* 各平台皮肤：同一组变量换个值，聊天窗的行为完全不变。

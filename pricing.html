@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="color-scheme" content="dark" />
+<meta name="color-scheme" content="dark light" />
 <meta name="theme-color" content="#000000" />
 <meta name="author" content="黎路遥" />
+<script>
+try { if (localStorage.getItem("softtalk-theme") === "light") document.documentElement.dataset.theme = "light"; } catch {}
+</script>
 <title>客服话术软件多少钱_话术软件价格 - 话术精灵</title>
 <meta name="description" content="本地使用永久免费；云端按「工号」付费：1 年 48 元、2 年 78 元、3 年 98 元、100 年 168 元，含云同步、工号协作与云附件，注册团队账号赠送 1 个月会员。" />
 <meta name="keywords" content="客服话术软件,话术软件,话术管理软件,客服话术管理软件,微信销售话术软件,客户话术软件,电商客服话术软件,快捷回复软件,团队话术共享,话术精灵" />
@@ -28,8 +31,18 @@
     {
       "@type": "BreadcrumbList",
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://luyao2089.cc/" },
-        { "@type": "ListItem", "position": 2, "name": "定价", "item": "https://luyao2089.cc/pricing.html" }
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://luyao2089.cc/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "定价",
+          "item": "https://luyao2089.cc/pricing.html"
+        }
       ]
     },
     {
@@ -52,7 +65,8 @@
 }
 </script>
 <link rel="icon" href="assets/favicon.png" />
-<link rel="stylesheet" href="assets/css/site.css?v=32c2fab2" />
+<link rel="stylesheet" href="assets/css/site.css?v=94304f81" />
+<script src="assets/js/theme.js?v=0a308ca1" defer></script>
 </head>
 <body>
 <header class="nav">
@@ -68,6 +82,10 @@
       <a class="nav-link" href="contact.html">联系</a>
       <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">下载</a>
     </nav>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到白天模式" title="切换到白天模式">
+      <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.55 1.55M17.15 17.15l1.55 1.55M5.3 18.7l1.55-1.55M17.15 6.85l1.55-1.55" /></svg>
+      <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>
+    </button>
   </div>
 </header>
 

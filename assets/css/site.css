@@ -1,11 +1,21 @@
 /* ==========================================================================
-   话术精灵 SoftTalk · 全站样式（纯黑极简）
-   顺序：变量 → 基础 → 导航 → 通用组件 → 区块 → 页脚 → 响应式
+   话术精灵 SoftTalk · 全站样式（极简，黑夜 / 白天两套配色）
+   顺序：变量 → 基础 → 导航 → 主题切换 → 通用组件 → 区块 → 页脚 → 响应式
    页面只引用这一个入口；首页交互演示额外引用 assets/css/demo.css。
+   颜色只在下面两组变量里定义，组件里不写死颜色。
    ========================================================================== */
 
 /* ---------- 变量 ---------- */
 :root {
+  --width: 1000px;
+  --pad: 24px;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* 黑夜（默认）：纯黑底 + 品牌橙 */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #000;
   --fg: #f5f5f5;
   --fg-muted: #b8b8b8;
@@ -13,11 +23,32 @@
   --line: #262626;
   --line-strong: #3f3f3f;
   --accent: #ff6b2c;
+  --accent-hover: #ff8347;
   --accent-soft: rgba(255, 107, 44, 0.1);
+  --accent-line: rgba(255, 107, 44, 0.4);
+  --on-accent: #000;
   --ok: #3ddc84;
-  --width: 1000px;
-  --pad: 24px;
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --nav-bg: rgba(0, 0, 0, 0.72);
+  --row-hover: #0b0b0b;
+}
+
+/* 白天：暖白纸面 + 墨色文字；橙色压深一档，小字也能达到 4.5:1 对比度 */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #faf8f5;
+  --fg: #1a1714;
+  --fg-muted: #4f4943;
+  --fg-dim: #6e675f;
+  --line: #e8e3dc;
+  --line-strong: #d2cbc2;
+  --accent: #c2410c;
+  --accent-hover: #a8380a;
+  --accent-soft: rgba(194, 65, 12, 0.08);
+  --accent-line: rgba(194, 65, 12, 0.35);
+  --on-accent: #fff;
+  --ok: #15803d;
+  --nav-bg: rgba(250, 248, 245, 0.78);
+  --row-hover: #f3efe9;
 }
 
 /* ---------- 基础 ---------- */
@@ -28,7 +59,7 @@
 }
 
 html {
-  color-scheme: dark;
+  background: var(--bg);
   scroll-behavior: smooth;
 }
 
@@ -66,7 +97,7 @@ a {
 
 ::selection {
   background: var(--accent);
-  color: #000;
+  color: var(--on-accent);
 }
 
 :focus-visible {
@@ -85,7 +116,7 @@ a {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(0, 0, 0, 0.72);
+  background: var(--nav-bg);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--line);
 }
@@ -121,6 +152,7 @@ a {
   display: flex;
   align-items: center;
   gap: 26px;
+  margin-left: auto;
 }
 
 .nav-link {
@@ -140,6 +172,60 @@ a {
   text-decoration-color: var(--accent);
   text-decoration-thickness: 2px;
   text-underline-offset: 7px;
+}
+
+/* ---------- 主题切换 ---------- */
+.theme-toggle {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* 两个图标叠在一起：当前该出现的那个转进来，另一个转出去 */
+.theme-icon {
+  grid-area: 1 / 1;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 0.3s ease, transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.theme-icon--moon,
+[data-theme="light"] .theme-icon--sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+[data-theme="light"] .theme-icon--moon {
+  opacity: 1;
+  transform: none;
+}
+
+/* 圆形铺开时新旧两层都不要默认的交叉淡化，只靠 theme.js 里的裁切动画 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 /* ---------- 通用组件 ---------- */
@@ -165,11 +251,11 @@ a {
 
 .btn--primary {
   background: var(--accent);
-  color: #000;
+  color: var(--on-accent);
 }
 
 .btn--primary:hover {
-  background: #ff8347;
+  background: var(--accent-hover);
 }
 
 .btn--ghost {
@@ -231,7 +317,7 @@ a {
 .text-link {
   color: var(--accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(255, 107, 44, 0.4);
+  border-bottom: 1px solid var(--accent-line);
   transition: border-color 0.18s ease;
 }
 
@@ -411,7 +497,7 @@ a {
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--accent);
-  color: #000;
+  color: var(--on-accent);
   font-size: 11px;
   font-weight: 600;
 }
@@ -461,7 +547,7 @@ a {
 }
 
 .copy-row:hover {
-  background: #0b0b0b;
+  background: var(--row-hover);
 }
 
 .copy-label {
@@ -493,7 +579,7 @@ a {
   padding: 10px 18px;
   border-radius: 999px;
   background: var(--accent);
-  color: #000;
+  color: var(--on-accent);
   font-size: 13.5px;
   font-weight: 600;
   animation: rise 0.2s ease both;
@@ -558,6 +644,12 @@ a {
 
   .nav-inner {
     height: 56px;
+    gap: 12px;
+  }
+
+  .theme-toggle {
+    width: 30px;
+    height: 30px;
   }
 
   .brand span {
@@ -599,7 +691,9 @@ a {
   .nav-link,
   .btn,
   .copy-row,
-  .footer-link {
+  .footer-link,
+  .theme-toggle,
+  .theme-icon {
     transition: none;
   }
 }

@@ -1,4 +1,5 @@
 // why.html 的页面专属内容：用最短篇幅说清「为什么需要话术管理软件」，承接长尾关键词。
+import { breadcrumb, ogImageUrl, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";
 
 const url = pageUrl("why.html");
@@ -28,44 +29,24 @@ const compare = [
 export const whyPage = {
   outputFile: "why.html",
   navLabel: "解决什么问题",
-  head: `<title>${title}</title>
-<meta name="description" content="${share}" />
-<meta name="keywords" content="${siteData.keywords}" />
-<meta name="robots" content="index,follow" />
-<link rel="canonical" href="${url}" />
-<meta property="og:type" content="article" />
-<meta property="og:site_name" content="${siteData.siteName}" />
-<meta property="og:locale" content="zh_CN" />
-<meta property="og:title" content="${title}" />
-<meta property="og:description" content="${share}" />
-<meta property="og:url" content="${url}" />
-<meta property="og:image" content="${new URL(siteData.ogImage, siteData.siteUrl).href}" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="${title}" />
-<meta name="twitter:description" content="${share}" />
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebPage",
-      "name": "${title}",
-      "url": "${url}",
-      "inLanguage": "zh-CN",
-      "description": "${share}",
-      "isPartOf": { "@type": "WebSite", "name": "${siteData.siteName}", "url": "${siteData.siteUrl}" },
-      "primaryImageOfPage": { "@type": "ImageObject", "url": "${new URL(siteData.ogImage, siteData.siteUrl).href}" }
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "首页", "item": "${siteData.siteUrl}" },
-        { "@type": "ListItem", "position": 2, "name": "解决什么问题", "item": "${url}" }
-      ]
-    }
-  ]
-}
-</script>`,
+  head: seoHead({
+    title,
+    description: share,
+    url,
+    ogType: "article",
+    jsonLd: [
+      {
+        "@type": "WebPage",
+        name: title,
+        url,
+        inLanguage: "zh-CN",
+        description: share,
+        isPartOf: { "@type": "WebSite", name: siteData.siteName, url: siteData.siteUrl },
+        primaryImageOfPage: { "@type": "ImageObject", url: ogImageUrl },
+      },
+      breadcrumb("解决什么问题", url),
+    ],
+  }),
   main: `<div class="wrap">
   <section class="hero">
     <p class="eyebrow">解决什么问题</p>

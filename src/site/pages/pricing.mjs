@@ -1,4 +1,5 @@
 // pricing.html 的页面专属内容。公共结构由 layout 生成，公共信息由 site-data 提供。
+import { breadcrumb, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";
 
 const url = pageUrl("pricing.html");
@@ -22,51 +23,30 @@ const cloud = [
 export const pricingPage = {
   outputFile: "pricing.html",
   navLabel: "定价",
-  head: `<title>${title}</title>
-<meta name="description" content="${share}" />
-<meta name="keywords" content="${siteData.keywords}" />
-<meta name="robots" content="index,follow" />
-<link rel="canonical" href="${url}" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="${siteData.siteName}" />
-<meta property="og:locale" content="zh_CN" />
-<meta property="og:title" content="${title}" />
-<meta property="og:description" content="${share}" />
-<meta property="og:url" content="${url}" />
-<meta property="og:image" content="${new URL(siteData.ogImage, siteData.siteUrl).href}" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="${title}" />
-<meta name="twitter:description" content="${share}" />
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "首页", "item": "${siteData.siteUrl}" },
-        { "@type": "ListItem", "position": 2, "name": "定价", "item": "${url}" }
-      ]
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "${siteData.siteName}",
-      "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "客服话术软件",
-      "operatingSystem": "Windows",
-      "inLanguage": "zh-CN",
-      "url": "${siteData.siteUrl}",
-      "offers": {
-        "@type": "AggregateOffer",
-        "priceCurrency": "CNY",
-        "lowPrice": "48",
-        "highPrice": "168",
-        "offerCount": "4"
-      }
-    }
-  ]
-}
-</script>`,
+  head: seoHead({
+    title,
+    description: share,
+    url,
+    jsonLd: [
+      breadcrumb("定价", url),
+      {
+        "@type": "SoftwareApplication",
+        name: siteData.siteName,
+        applicationCategory: "BusinessApplication",
+        applicationSubCategory: "客服话术软件",
+        operatingSystem: "Windows",
+        inLanguage: "zh-CN",
+        url: siteData.siteUrl,
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "CNY",
+          lowPrice: plans[0].price,
+          highPrice: plans.at(-1).price,
+          offerCount: String(plans.length),
+        },
+      },
+    ],
+  }),
   main: `<div class="wrap">
   <section class="hero">
     <p class="eyebrow">定价</p>

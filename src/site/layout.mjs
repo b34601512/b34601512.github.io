@@ -3,19 +3,27 @@ import { siteData } from "./site-data.mjs";
 
 const DOWNLOAD_LINK = { label: "下载", href: siteData.downloadUrl, external: true };
 
+// 首屏绘制前就定下主题，否则选了白天模式的访客每次打开都会先闪一下黑。
+// 默认黑夜；只有访客自己点过切换才会记住白天。键名与 theme.js 共用。
+const THEME_BOOT = `<script>
+try { if (localStorage.getItem("softtalk-theme") === "light") document.documentElement.dataset.theme = "light"; } catch {}
+</script>`;
+
 // 页面定义需要提供：outputFile、navLabel、head、main、可选 styles 与 bodyEnd。
 export function renderPage(page, sitePages) {
   return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="color-scheme" content="dark" />
+<meta name="color-scheme" content="dark light" />
 <meta name="theme-color" content="#000000" />
 <meta name="author" content="${siteData.authorName}" />
+${THEME_BOOT}
 ${page.head.trim()}
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css" />${renderPageStyles(page)}
+<script src="assets/js/theme.js" defer></script>
 </head>
 <body>
 ${renderNav(page, sitePages)}
@@ -54,9 +62,16 @@ function renderNav(page, sitePages) {
     <nav class="nav-links" aria-label="站点导航">
       ${links}
     </nav>
+    ${THEME_TOGGLE}
   </div>
 </header>`;
 }
+
+// 黑夜模式显示太阳（点了去白天），白天模式显示月亮；文案由 theme.js 按当前主题改写。
+const THEME_TOGGLE = `<button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到白天模式" title="切换到白天模式">
+      <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.55 1.55M17.15 17.15l1.55 1.55M5.3 18.7l1.55-1.55M17.15 6.85l1.55-1.55" /></svg>
+      <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>
+    </button>`;
 
 function renderNavLink(link) {
   const attributes = [

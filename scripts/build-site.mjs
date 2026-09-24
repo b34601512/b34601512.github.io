@@ -3,13 +3,9 @@ import { execSync } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
+import { sitePages } from "../src/site/pages.mjs";
 import { pageUrl, siteData } from "../src/site/site-data.mjs";
-import { contactPage } from "../src/site/pages/contact.mjs";
-import { indexPage } from "../src/site/pages/index.mjs";
-import { pricingPage } from "../src/site/pages/pricing.mjs";
-import { whyPage } from "../src/site/pages/why.mjs";
 
-const sitePages = [indexPage, whyPage, pricingPage, contactPage];
 const orderedEntries = [];
 
 for (const [index, page] of sitePages.entries()) {

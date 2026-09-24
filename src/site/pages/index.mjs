@@ -1,5 +1,6 @@
 // index.html 的页面专属内容。公共结构由 layout 生成，公共信息由 site-data 提供。
 import demoData from "../../../assets/js/demo-data.js";
+import { seoHead } from "../seo.mjs";
 import { siteData } from "../site-data.mjs";
 
 const title = siteData.siteTitle;
@@ -23,60 +24,41 @@ export const indexPage = {
   outputFile: "index.html",
   navLabel: "首页",
   styles: ["assets/css/demo.css"],
-  head: `<title>${title}</title>
-<meta name="description" content="${share}" />
-<meta name="keywords" content="${siteData.keywords}" />
-<meta name="robots" content="index,follow,max-image-preview:large" />
-<link rel="canonical" href="${siteData.siteUrl}" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="${siteData.siteName}" />
-<meta property="og:locale" content="zh_CN" />
-<meta property="og:title" content="${title}" />
-<meta property="og:description" content="${share}" />
-<meta property="og:url" content="${siteData.siteUrl}" />
-<meta property="og:image" content="${new URL(siteData.ogImage, siteData.siteUrl).href}" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="${title}" />
-<meta name="twitter:description" content="${share}" />
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "name": "${siteData.siteName}",
-      "url": "${siteData.siteUrl}",
-      "inLanguage": "zh-CN"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "${siteData.siteName}",
-      "alternateName": "话术精灵",
-      "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "客服话术软件",
-      "operatingSystem": "Windows",
-      "inLanguage": "zh-CN",
-      "description": "${share}",
-      "featureList": [
-        "团队话术、个人话术、离线话术三套话术库",
-        "一套话术拆成 0–9 十个独立模块，一键精准定位",
-        "双击把话术贴进聊天输入框，点左侧纸飞机直接发送",
-        "Alt+Q 一键定位搜索栏；搜索栏里按 Tab 键，再按数字直接发送话术；吸附搜索栏能贴到各种聊天窗口（微信、京东、拼多多、千牛、抖音…）",
-        "导入 Excel（.xlsx）话术；保存时与删除前自动备份话术表格与完整恢复包（.stpkg）"
-      ],
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "CNY",
-        "description": "本地使用永久免费；云端按工号付费，1 年 48 元、2 年 78 元、3 年 98 元、100 年 168 元"
+  head: seoHead({
+    title,
+    description: share,
+    url: siteData.siteUrl,
+    robots: "index,follow,max-image-preview:large",
+    jsonLd: [
+      { "@type": "WebSite", name: siteData.siteName, url: siteData.siteUrl, inLanguage: "zh-CN" },
+      {
+        "@type": "SoftwareApplication",
+        name: siteData.siteName,
+        alternateName: "话术精灵",
+        applicationCategory: "BusinessApplication",
+        applicationSubCategory: "客服话术软件",
+        operatingSystem: "Windows",
+        inLanguage: "zh-CN",
+        description: share,
+        featureList: [
+          "团队话术、个人话术、离线话术三套话术库",
+          "一套话术拆成 0–9 十个独立模块，一键精准定位",
+          "双击把话术贴进聊天输入框，点左侧纸飞机直接发送",
+          "Alt+Q 一键定位搜索栏；搜索栏里按 Tab 键，再按数字直接发送话术；吸附搜索栏能贴到各种聊天窗口（微信、京东、拼多多、千牛、抖音…）",
+          "导入 Excel（.xlsx）话术；保存时与删除前自动备份话术表格与完整恢复包（.stpkg）",
+        ],
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "CNY",
+          description: "本地使用永久免费；云端按工号付费，1 年 48 元、2 年 78 元、3 年 98 元、100 年 168 元",
+        },
+        url: siteData.siteUrl,
+        downloadUrl: siteData.downloadUrl,
+        publisher: { "@type": "Person", name: siteData.authorName },
       },
-      "url": "${siteData.siteUrl}",
-      "downloadUrl": "${siteData.downloadUrl}",
-      "publisher": { "@type": "Person", "name": "${siteData.authorName}" }
-    }
-  ]
-}
-</script>`,
+    ],
+  }),
   main: `<div class="wrap">
   <section class="hero">
     <img class="hero-logo" src="assets/logo.png" alt="" />
