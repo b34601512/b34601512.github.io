@@ -1,7 +1,8 @@
 """生成压缩后的站点图片，平衡清晰度与加载速度。
 
 用法（在项目根目录执行）：
-    python scripts/optimize-images.py <logo源文件> [<客户端platform_images目录>]
+    python scripts/optimize-images.py logo <logo源文件>
+    python scripts/optimize-images.py type-icons <客户端仓库目录，例如 D:\\SoftTalk>
 
 原始素材可以从 git 历史取回，例如：
     git show HEAD~1:assets/logo.png > logo-src.png
@@ -9,9 +10,10 @@
 输出：
     assets/logo.png        168×187 调色板 PNG（展示最大 56px，约 3 倍图）
     assets/favicon.png     128×128 调色板 PNG
-    assets/type-*.png      28×28 调色板 PNG（演示区话术类型角标，取自客户端 platform_images）
+    assets/type-*.png      28×28 PNG（演示区话术类型角标，显示 14px 的 2 倍图；
+                           用客户端 hand_icons_pkg 现画，和客户端列表里的角标是同一套笔迹）
 
-依赖：Pillow（仅本地处理图片时使用，站点运行不依赖 Python）。
+依赖：Pillow；type-icons 还需要 PySide6（仅本地处理图片时使用，站点运行不依赖 Python）。
 """
 
 from pathlib import Path
@@ -23,11 +25,12 @@ ROOT = Path(__file__).resolve().parent.parent
 LOGO_SIZE = (168, 187)
 ICON_SIZE = (128, 128)
 LOGO_COLORS = 32
-TYPE_ICON_SIZE = (28, 28)
-TYPE_ICON_SOURCES = {
-    "type-text.png": "script-text-only.png",
-    "type-image.png": "script-with-image.png",
-    "type-pdf.png": "script-with-pdf.png",
+TYPE_ICON_CSS_PX = 14
+TYPE_ICON_SCALE = 2
+TYPE_ICON_NAMES = {
+    "type-text.png": "text",
+    "type-image.png": "image",
+    "type-pdf.png": "pdf",
 }
 
 
@@ -48,34 +51,43 @@ def build_logo(source: Path) -> None:
     quantize(icon).save(ROOT / "assets" / "favicon.png", optimize=True)
 
 
-def build_type_icons(platform_dir: Path) -> None:
-    """把客户端的话术类型图标缩成演示区角标，保留透明边。"""
-    for output_name, source_name in TYPE_ICON_SOURCES.items():
-        source = platform_dir / source_name
-        if not source.exists():
-            raise FileNotFoundError(f"缺少客户端图标：{source}")
-        icon = Image.open(source).convert("RGBA")
-        icon.thumbnail(TYPE_ICON_SIZE, Image.LANCZOS)
-        canvas = Image.new("RGBA", TYPE_ICON_SIZE, (0, 0, 0, 0))
-        canvas.paste(icon, ((TYPE_ICON_SIZE[0] - icon.width) // 2, (TYPE_ICON_SIZE[1] - icon.height) // 2), icon)
-        quantize(canvas, colors=64).save(ROOT / "assets" / output_name, optimize=True)
+def build_type_icons(client_root: Path) -> None:
+    """用客户端的手绘图标代码按演示区显示尺寸现画角标；笔触粗细按 14px×2 的物理像素自动调整。"""
+    package = client_root / "softtalk_knowledge_client" / "ui" / "hand_icons_pkg"
+    if not package.is_dir():
+        raise FileNotFoundError(f"没找到客户端手绘图标代码：{package}")
+    sys.path.insert(0, str(client_root))
+    from PySide6.QtCore import QBuffer, QIODevice
+    from PySide6.QtGui import QGuiApplication
+
+    app = QGuiApplication.instance() or QGuiApplication([sys.argv[0], "-platform", "offscreen"])
+    from softtalk_knowledge_client.ui.hand_icons_pkg import render_hand_icon_pixmap
+
+    for output_name, icon_name in TYPE_ICON_NAMES.items():
+        pixmap = render_hand_icon_pixmap(icon_name, TYPE_ICON_CSS_PX, float(TYPE_ICON_SCALE))
+        buffer = QBuffer()
+        buffer.open(QIODevice.WriteOnly)
+        pixmap.toImage().save(buffer, "PNG")
+        (ROOT / "assets" / output_name).write_bytes(bytes(buffer.data()))
+    del app
 
 
-def report() -> None:
-    for name in ("logo.png", "favicon.png", *TYPE_ICON_SOURCES):
+def report(names) -> None:
+    for name in names:
         path = ROOT / "assets" / name
         print(f"{name}: {path.stat().st_size / 1024:.1f} KB")
 
 
 def main() -> int:
-    if len(sys.argv) not in (2, 3):
+    if len(sys.argv) != 3 or sys.argv[1] not in ("logo", "type-icons"):
         print(__doc__)
         return 1
-
-    build_logo(Path(sys.argv[1]))
-    if len(sys.argv) == 3:
+    if sys.argv[1] == "logo":
+        build_logo(Path(sys.argv[2]))
+        report(("logo.png", "favicon.png"))
+    else:
         build_type_icons(Path(sys.argv[2]))
-    report()
+        report(TYPE_ICON_NAMES)
     return 0
 
 

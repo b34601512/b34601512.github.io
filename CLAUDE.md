@@ -128,7 +128,7 @@ D:\SoftTalk官网
 
 - 配色唯一来源：`D:\SoftTalk\softtalk_shared\knowledge_main_visual_theme.py`（白色主题），映射到 `demo.css` 里的 `--w-*` 变量。
 - 结构对应：标题栏（磁吸/置顶/最小化）→ 团队话术/个人话术/离线话术页签（云域页签底部蓝线 `--w-cloud`）→ 0-9 套号 → 一级分类标签（浅底胶囊 + 选中暗红下划线）→ 二级分类（`--w-lv2-bg` 蓝底行）→ 话术行（题红字 `--w-title-fg` + 灰答案）→ 常用短语 → 搜索行（`Alt+Q 定位搜索栏` + 范围按钮）→ 底栏官网文案 + 小精灵；聊天窗口下方是底部吸附搜索栏。
-- 一级分类色板取自 `softtalk_knowledge_client/lv1_color_presets.py` 的浅色组；话术类型角标取自客户端 `platform_images/script-*.png`。
+- 一级分类色板取自 `softtalk_knowledge_client/lv1_color_presets.py` 的浅色组；话术类型角标用客户端 `softtalk_knowledge_client/ui/hand_icons_pkg`（手绘风格，代码现画）导出，与客户端列表里的角标同一套笔迹（客户端已没有 `script-*.png` 图片文件）。
 - 左侧聊天窗口按微信风格（`--wx-*` 变量）：灰底、白色收到的气泡、绿色 `#95ec69` 发出的气泡。
 - **底部吸附搜索栏**（对应客户端 `ui/attached_search_bar_pkg`）：贴在聊天窗口底边上，宽 = 聊天窗宽。结构自上而下：结果区（向上展开、盖住聊天窗口下半截：`搜索结果 · N` + `按 Tab键，再按数字直接发送话术。` + × 关闭）→ 搜索行（输入框 + 框内 × 清除 + 范围按钮 + `›` 收起）→ 常用短语（标签 + 短语条，与主界面同一份短语）→ `最近搜索`（橙框、`清空`、chip 条）。
 - 吸附栏简化（相对客户端，属有意）：客户端主界面与吸附栏的短语条都有「+」新增按钮（`LIGHT_CHIP_ADD_ACTION_TEXT = "+"`），演示是只读的所以没有；客户端主界面搜索框下面也有搜索历史面板，演示只在吸附栏里显示历史；演示的搜索历史只留最近 8 条（客户端存 50 条、显示两行）。
@@ -327,12 +327,13 @@ python -m http.server 8000
 
 ```powershell
 git show <旧提交>:assets/logo.png > logo-src.png
-python scripts\optimize-images.py logo-src.png D:\SoftTalk\platform_images
+python scripts\optimize-images.py logo logo-src.png
+python scripts\optimize-images.py type-icons D:\SoftTalk
 ```
 
 - `logo.png`：168×187（显示最大 56px，约 3 倍图），32 色调色板，343 KB → 1.3 KB。
 - `favicon.png`：128×128，居中留白，2.2 KB。
-- `type-text.png` / `type-image.png` / `type-pdf.png`：28×28 调色板 PNG，共约 2 KB，取自客户端 `platform_images/script-*.png`，只给演示区话术行做类型角标。
+- `type-text.png` / `type-image.png` / `type-pdf.png`：28×28 PNG（显示 14px 的 2 倍图），共约 4 KB，由 `type-icons` 子命令调用客户端 `hand_icons_pkg` 现画导出（需要本地 PySide6），只给演示区话术行做类型角标。客户端改了角标画法后重跑一次即可。
 - `og.png`：1200×630 分享缩略图（黑底 + 右上橙色光晕 + 品牌名 + 三行卖点），由 `python scripts\build-og-image.py` 生成，四张页面都通过 `og:image` 指向它；改文案后重跑一次即可。
 
 ## 缓存与产物指纹
