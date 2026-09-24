@@ -3,21 +3,21 @@ import { siteData } from "./site-data.mjs";
 
 const DOWNLOAD_LINK = { label: "下载", href: siteData.downloadUrl, external: true };
 
-// 首屏绘制前就定下主题，否则选了白天模式的访客每次打开都会先闪一下黑。
-// 默认黑夜；只有访客自己点过切换才会记住白天。键名与 theme.js 共用。
+// 首屏绘制前就定下主题，否则白天模式的访客每次打开都会先闪一下黑。
+// 访客点过切换就按他的选择；没点过就跟随系统设置；系统没明确要深色（或读不到）就是白天。键名与 theme.js 共用。
 const THEME_BOOT = `<script>
-try { if (localStorage.getItem("softtalk-theme") === "light") document.documentElement.dataset.theme = "light"; } catch {}
+try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
 </script>`;
 
 // 页面定义需要提供：outputFile、navLabel、head、main、可选 styles 与 bodyEnd。
 export function renderPage(page, sitePages) {
   return `<!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark light" />
-<meta name="theme-color" content="#000000" />
+<meta name="theme-color" content="#faf8f5" />
 <meta name="author" content="${siteData.authorName}" />
 ${THEME_BOOT}
 ${page.head.trim()}

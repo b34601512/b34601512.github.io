@@ -92,8 +92,8 @@ D:\SoftTalk官网
 
 ### 白天 / 黑夜主题
 
-- 默认黑夜；导航右侧圆形按钮切换，选择存在 `localStorage` 的 `softtalk-theme`（只有点过才会记住白天）。
-- `<html data-theme="dark">` 是静态默认值；`layout.mjs` 在 head 里用一行内联脚本在首屏绘制前改成 `light`，避免闪黑。`theme.js`（defer）只管按钮、文案和 `theme-color`。
+- 默认**跟随系统**（`prefers-color-scheme`）：系统明确是深色才用黑夜，其余情况（浅色、没设置、读不到、没开 JS）一律白天。导航右侧圆形按钮手动切换，选择存在 `localStorage` 的 `softtalk-theme`；手动选过以后就不再跟系统。没选过时页面开着也会跟着系统实时切换（`theme.js` 监听 `matchMedia` 的 change）。
+- `<html data-theme="light">` 是静态默认值；`layout.mjs` 在 head 里用一行内联脚本在首屏绘制前按「手动选择 → 系统深色」改成 `dark`，避免闪白。`theme.js`（defer）只管按钮、文案、`theme-color` 和系统变化。
 - 两套颜色都只在 `site.css` 顶部的 `[data-theme="dark"]` / `[data-theme="light"]` 变量里定义，组件里不写死颜色；新增颜色要两套都给值。白天的橙压深为 `#c2410c`，保证小字 4.5:1。
 - 演示区只有平台标签卡（在网站背景上）跟着主题变；聊天窗与话术精灵主界面是客户端复刻，两种主题下保持原样。
 - 支持 View Transitions 的浏览器从按钮位置圆形铺开新主题；`prefers-reduced-motion` 或不支持时直接切换。

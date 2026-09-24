@@ -12,7 +12,7 @@
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
-/* 黑夜（默认）：纯黑底 + 品牌橙 */
+/* 黑夜：纯黑底 + 品牌橙（系统是深色、或访客手动选了黑夜时用） */
 :root,
 [data-theme="dark"] {
   color-scheme: dark;

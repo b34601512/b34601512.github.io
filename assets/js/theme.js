@@ -8,7 +8,7 @@
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   if (!button) return;
 
-  const current = () => (root.dataset.theme === "light" ? "light" : "dark");
+  const current = () => (root.dataset.theme === "dark" ? "dark" : "light");
 
   function render(theme) {
     const label = theme === "dark" ? "切换到白天模式" : "切换到黑夜模式";
@@ -46,6 +46,19 @@
     const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (document.startViewTransition && !calm) reveal(next);
     else apply(next);
+  });
+
+  // 访客没手动选过时，页面开着也跟着系统切换（比如 Windows 定时切深色）。
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+    let chosen = null;
+    try {
+      chosen = localStorage.getItem(STORAGE_KEY);
+    } catch {
+      // 读不到就当没选过。
+    }
+    if (chosen) return;
+    root.dataset.theme = event.matches ? "dark" : "light";
+    render(current());
   });
 
   render(current());

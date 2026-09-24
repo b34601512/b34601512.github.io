@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark light" />
-<meta name="theme-color" content="#000000" />
+<meta name="theme-color" content="#faf8f5" />
 <meta name="author" content="黎路遥" />
 <script>
-try { if (localStorage.getItem("softtalk-theme") === "light") document.documentElement.dataset.theme = "light"; } catch {}
+try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
 </script>
 <title>话术精灵怎么用_客服话术软件动画教程 - 话术精灵</title>
 <meta name="description" content="45 秒手绘动画教你用话术精灵：团队、个人、离线话术分类，双击贴进聊天输入框，点纸飞机直接发送，Alt+Q 搜索后按 Tab 再按数字发送，吸附搜索栏贴在聊天窗口下面。" />
@@ -97,9 +97,9 @@ try { if (localStorage.getItem("softtalk-theme") === "light") document.documentE
 }
 </script>
 <link rel="icon" href="assets/favicon.png" />
-<link rel="stylesheet" href="assets/css/site.css?v=90e8985a" />
+<link rel="stylesheet" href="assets/css/site.css?v=648bb318" />
 <link rel="stylesheet" href="assets/css/guide.css?v=2a139743" />
-<script src="assets/js/theme.js?v=0a308ca1" defer></script>
+<script src="assets/js/theme.js?v=292ea05c" defer></script>
 </head>
 <body>
 <header class="nav">

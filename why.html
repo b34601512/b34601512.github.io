@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark light" />
-<meta name="theme-color" content="#000000" />
+<meta name="theme-color" content="#faf8f5" />
 <meta name="author" content="黎路遥" />
 <script>
-try { if (localStorage.getItem("softtalk-theme") === "light") document.documentElement.dataset.theme = "light"; } catch {}
+try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
 </script>
 <title>为什么需要话术管理软件_多店铺话术统一更新 - 话术精灵</title>
 <meta name="description" content="平台自带的快捷短语按店铺存放，20 个店铺就要改 20 次；客服真正要的是快。话术精灵把一套话术拆成 0–9 十个独立模块，一键精准定位。" />
@@ -65,8 +65,8 @@ try { if (localStorage.getItem("softtalk-theme") === "light") document.documentE
 }
 </script>
 <link rel="icon" href="assets/favicon.png" />
-<link rel="stylesheet" href="assets/css/site.css?v=90e8985a" />
-<script src="assets/js/theme.js?v=0a308ca1" defer></script>
+<link rel="stylesheet" href="assets/css/site.css?v=648bb318" />
+<script src="assets/js/theme.js?v=292ea05c" defer></script>
 </head>
 <body>
 <header class="nav">

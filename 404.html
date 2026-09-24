@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="dark light" />
-<meta name="theme-color" content="#000000" />
+<meta name="theme-color" content="#faf8f5" />
 <meta name="author" content="黎路遥" />
 <script>
-try { if (localStorage.getItem("softtalk-theme") === "light") document.documentElement.dataset.theme = "light"; } catch {}
+try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
 </script>
 <base href="/" />
 <title>页面不存在 - 话术精灵</title>
 <meta name="robots" content="noindex" />
 <link rel="icon" href="assets/favicon.png" />
-<link rel="stylesheet" href="assets/css/site.css?v=90e8985a" />
-<script src="assets/js/theme.js?v=0a308ca1" defer></script>
+<link rel="stylesheet" href="assets/css/site.css?v=648bb318" />
+<script src="assets/js/theme.js?v=292ea05c" defer></script>
 </head>
 <body>
 <header class="nav">
