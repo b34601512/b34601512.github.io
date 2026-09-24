@@ -162,7 +162,7 @@ export const indexPage = {
         </div>
         <div class="app-foot">
           <span class="app-brand">话术精灵 官网: luyao2089.cc</span>
-          <img class="app-settings" src="assets/logo.png" alt="" />
+          <img class="app-settings" src="assets/logo-small.png" alt="" />
         </div>
       </div>
     </div>

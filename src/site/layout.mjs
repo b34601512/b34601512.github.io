@@ -56,7 +56,7 @@ function renderNav(page, sitePages) {
   return `<header class="nav">
   <div class="nav-inner">
     <a class="brand" href="index.html">
-      <img class="brand-logo" src="assets/logo.png" alt="" />
+      <img class="brand-logo" src="assets/logo-small.png" alt="" />
       <span>${siteData.siteName}</span>
     </a>
     <nav class="nav-links" aria-label="站点导航">

@@ -51,7 +51,7 @@ D:\SoftTalk官网
 ├─ scripts\
 │  ├─ build-site.mjs         生成根目录四张 HTML 与 sitemap.xml
 │  ├─ check-site.mjs         站点自检（见“自动检查”）
-│  ├─ optimize-images.py     图片压缩（仅本地需要 Pillow，站点运行不依赖 Python）
+│  ├─ optimize-images.py     用客户端手绘绘制代码导出 logo/favicon/类型角标（仅本地需要 PySide6）
 │  └─ build-og-image.py      生成分享缩略图 assets/og.png（1200×630）
 ├─ assets\
 │  ├─ css\site.css           全站唯一样式入口（变量/基础/导航/组件/区块/页脚/响应式）
@@ -62,8 +62,9 @@ D:\SoftTalk官网
 │  ├─ js\guide-film.js       「怎么用」页的 45 秒手绘教程动画（Canvas 2D 逐帧绘制 + 播放器）
 │  ├─ css\guide.css          「怎么用」页播放器与步骤样式
 │  ├─ js\contact.js          联系页点击复制
-│  ├─ logo.png               168×187 调色板 PNG（1.3 KB）
-│  ├─ favicon.png            128×128 调色板 PNG（2.2 KB）
+│  ├─ logo.png               112×126 手绘小精灵（首屏 56px，8.5 KB）
+│  ├─ logo-small.png         52×58 手绘小精灵（导航 24px、演示区底栏 26px，2.6 KB）
+│  ├─ favicon.png            64×64 手绘小精灵（2.8 KB）
 │  ├─ type-text.png          28×28 话术类型角标（纯文本）
 │  ├─ type-image.png         28×28 话术类型角标（带图片）
 │  ├─ type-pdf.png           28×28 话术类型角标（带文件）
@@ -323,16 +324,18 @@ python -m http.server 8000
 
 ## 图片管线
 
-`scripts/optimize-images.py`（本地 Pillow）负责压图，产物已提交，日常改版不需要重跑：
+站点上的小精灵和话术类型角标都由客户端的手绘绘制代码导出（客户端 `sprite_art_pkg` / `hand_icons_pkg`，和客户端里同一套笔迹），产物已提交，客户端改了画法后重跑即可：
 
 ```powershell
-git show <旧提交>:assets/logo.png > logo-src.png
-python scripts\optimize-images.py logo logo-src.png
+python scripts\optimize-images.py brand D:\SoftTalk
 python scripts\optimize-images.py type-icons D:\SoftTalk
+python scripts\build-og-image.py
 ```
 
-- `logo.png`：168×187（显示最大 56px，约 3 倍图），32 色调色板，343 KB → 1.3 KB。
-- `favicon.png`：128×128，居中留白，2.2 KB。
+- **每张图按「显示尺寸 × 2」单独出图，不要一张大图给所有地方用**：手绘画师按「每个设计单位占几个物理像素」决定线条粗细和要不要画排线，大图让浏览器缩到 24px 会细成灰边。所以导航与演示区底栏用 `logo-small.png`，首屏用 `logo.png`。
+- `logo.png`：112×126（首屏 56px），待机姿态、透明底、不画地面阴影，8.5 KB；分享图也用它。
+- `logo-small.png`：52×58（导航 24px、演示区底栏 26px），小尺寸只描一道加粗主线，2.6 KB。
+- `favicon.png`：64×64（标签页 32px），2.8 KB。
 - `type-text.png` / `type-image.png` / `type-pdf.png`：28×28 PNG（显示 14px 的 2 倍图），共约 4 KB，由 `type-icons` 子命令调用客户端 `hand_icons_pkg` 现画导出（需要本地 PySide6），只给演示区话术行做类型角标。客户端改了角标画法后重跑一次即可。
 - `og.png`：1200×630 分享缩略图（黑底 + 右上橙色光晕 + 品牌名 + 三行卖点），由 `python scripts\build-og-image.py` 生成，四张页面都通过 `og:image` 指向它；改文案后重跑一次即可。
 
