@@ -5,7 +5,7 @@ import { siteData } from "../site-data.mjs";
 
 const title = siteData.siteTitle;
 const share =
-  "话术精灵是一款 Windows 客服话术软件：团队话术、个人话术、离线话术统一管理，一套话术可拆成 0–9 十个独立模块精准定位；双击把话术贴进聊天输入框、回车发送，内容存在本机，本地永久免费。";
+  "话术精灵是一款 Windows 客服话术软件：团队话术、个人话术、离线话术统一管理，一套话术可拆成 0–9 十个独立模块精准定位；双击把话术贴进聊天输入框、回车发送；话术优先存在本机、永久免费，需要多台电脑共享时再开云同步。";
 
 // 没有 JavaScript 时（爬虫、禁用 JS 的浏览器）把演示数据换成可读文字：列出三个话术域、
 // 每套话术和它的一级分类。内容和演示里是同一份数据，不是另写一套。
@@ -65,7 +65,7 @@ export const indexPage = {
     <img class="hero-logo" src="assets/logo.png" alt="" />
     <p class="eyebrow">电商客服话术工具</p>
     <h1>把客服话术<br />沉淀成<span class="hl">团队知识库</span></h1>
-    <p class="lead">话术精灵 SoftTalk 是一款 Windows 桌面工具：团队话术、个人话术、离线话术分开管理，双击把话术贴进聊天输入框，点左侧纸飞机直接发送，内容保存在本机。</p>
+    <p class="lead">话术精灵 SoftTalk 是一款 Windows 桌面工具：团队话术、个人话术、离线话术分开管理，双击把话术贴进聊天输入框，点左侧纸飞机直接发送。话术优先存在本机，需要多台电脑共享时再开云同步。</p>
     <div class="actions">
       <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载 Windows 版</a>
       <a class="btn btn--ghost" href="#demo">试用演示</a>
