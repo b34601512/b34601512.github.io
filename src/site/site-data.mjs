@@ -15,10 +15,12 @@ export const siteData = {
   platform: "Windows 10 / 11（64 位）",
   tutorialUrl: "https://www.kdocs.cn/l/crEfTnE6toV0",
   copyright: "© 2025–2026 黎路遥 · 话术精灵 SoftTalk",
-  icp: {
-    text: "粤ICP备2025481646号-2",
-    url: "https://beian.miit.gov.cn/",
-  },
+  // 工信部 ICP 备案：2026-10-18 撤下。站点托管在 GitHub Pages（境外），本域名与
+  // 页脚原写的「-2」子号在工信部备案系统均查无记录（主体号只有 -1），
+  // 挂着不存在的备案号属于虚假标注，风险高于不标，故整条撤掉。
+  // 恢复条件：域名在国内接入商完成备案后，把 text/url 填回来即可（页脚自动出现）。
+  icp: null,
+  // 公安联网备案：保留。与 ICP 不同，它不是域名前置条件，且未核实到「已注销」的证据。
   police: {
     text: "粤公网安备44030002012053号",
     url: "https://beian.mps.gov.cn/#/query/webSearch?code=44030002012053",

@@ -84,16 +84,25 @@ function renderNavLink(link) {
   return `<a ${attributes.join(" ")}>${link.label}</a>`;
 }
 
+function renderFooterRecords() {
+  // 备案条目可选：某个字段置 null 就不渲染那一条，不留下空链接或空 <p>。
+  const links = [];
+  if (siteData.icp) {
+    links.push(`<a class="footer-link" href="${siteData.icp.url}" target="_blank" rel="noopener">${siteData.icp.text}</a>`);
+  }
+  if (siteData.police) {
+    links.push(`<a class="footer-link" href="${siteData.police.url}" target="_blank" rel="noopener">
+        <img class="footer-icon" src="${siteData.police.icon}" alt="" />${siteData.police.text}
+      </a>`);
+  }
+  return links.length ? `<p class="footer-records">${links.join("\n      ")}</p>` : "";
+}
+
 function renderFooter() {
   return `<footer class="footer">
   <div class="footer-inner">
     <p>${siteData.copyright}</p>
-    <p class="footer-records">
-      <a class="footer-link" href="${siteData.icp.url}" target="_blank" rel="noopener">${siteData.icp.text}</a>
-      <a class="footer-link" href="${siteData.police.url}" target="_blank" rel="noopener">
-        <img class="footer-icon" src="${siteData.police.icon}" alt="" />${siteData.police.text}
-      </a>
-    </p>
+    ${renderFooterRecords()}
   </div>
 </footer>
 `;
