@@ -1181,6 +1181,10 @@
   transform: translateY(-50%);
 }
 
+.attached-clear[hidden] {
+  display: none;
+}
+
 .attached-clear:hover {
   background: var(--w-hover);
 }
