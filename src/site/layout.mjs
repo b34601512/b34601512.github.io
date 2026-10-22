@@ -99,10 +99,12 @@ function renderFooterRecords() {
 }
 
 function renderFooter() {
+  // 备案段为空时连换行一起省掉，不在页脚留空行。
+  const records = renderFooterRecords();
+  const recordsLine = records ? `\n    ${records}` : "";
   return `<footer class="footer">
   <div class="footer-inner">
-    <p>${siteData.copyright}</p>
-    ${renderFooterRecords()}
+    <p>${siteData.copyright}</p>${recordsLine}
   </div>
 </footer>
 `;

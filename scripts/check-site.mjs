@@ -106,6 +106,16 @@ for (const page of [...sitePages, ...extraPages]) {
 for (const name of usedClasses) {
   if (!definedClasses.has(name)) errors.push(`使用了样式里不存在的类：${name}`);
 }
+
+// 源模块里拼的类名（如页脚可选渲染 renderFooterRecords）也要算“可能用到”，
+// 否则字段临时置 null 时会把仍会复用的样式误报成死代码。
+const sourceModules = await Promise.all(
+  ["src/site/layout.mjs", "src/site/site-data.mjs"].map((file) => readFile(file, "utf8").catch(() => "")),
+);
+for (const source of sourceModules) {
+  mentionedClassesInJs(source).forEach((name) => mentionedClasses.add(name));
+}
+
 for (const name of definedClasses) {
   if (!usedClasses.has(name) && !mentionedClasses.has(name)) warnings.push(`样式里的类没有被使用：${name}`);
 }

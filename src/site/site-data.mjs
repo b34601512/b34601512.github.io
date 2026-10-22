@@ -20,12 +20,12 @@ export const siteData = {
   // 挂着不存在的备案号属于虚假标注，风险高于不标，故整条撤掉。
   // 恢复条件：域名在国内接入商完成备案后，把 text/url 填回来即可（页脚自动出现）。
   icp: null,
-  // 公安联网备案：保留。与 ICP 不同，它不是域名前置条件，且未核实到「已注销」的证据。
-  police: {
-    text: "粤公网安备44030002012053号",
-    url: "https://beian.mps.gov.cn/#/query/webSearch?code=44030002012053",
-    icon: "assets/beian.png",
-  },
+  // 公安联网备案：2026-10-18 撤下（老板批准）。
+  // 理由：本备案号挂在深圳的服务器侧（api.kefuhaohaoshuohua.cn 在 120.76.159.42，
+  // 440300 为深圳区划代码），而本站是 GitHub Pages 境外托管、未在该号名下登记，
+  // 挂它属于错标。不影响服务器侧备案本身（那个千万不能丢）。
+  // 恢复条件：若将来官网完成公安联网备案，把 text/url/icon 填回来即可（页脚自动出现）。
+  police: null,
 };
 
 // 把页面文件名解析成绝对地址，供 canonical、og:url 和 sitemap 共用。
