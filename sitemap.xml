@@ -31,9 +31,33 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://luyao2089.cc/blog/index.html</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://luyao2089.cc/contact.html</loc>
     <lastmod>2026-10-22</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://luyao2089.cc/blog/taobao-response-time-metrics/index.html</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://luyao2089.cc/blog/softtalk-name-confusion/index.html</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://luyao2089.cc/blog/phrase-library-0-9-setup/index.html</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 </urlset>
