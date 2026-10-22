@@ -1444,12 +1444,16 @@ const treeHtml = (category) => {
   return { html: parts.join(""), items };
 };
 
-/* 首页首屏预渲染用的那一套：客户端默认就是团队话术第 0 套的第一个一级分类。 */
-const initialTreeHtml = () => treeHtml(SCOPES.team.sets[0].categories[0]).html;
+/* 打开页面时（和重置后）选中的一级分类：团队话术第 0 套的「发货」，和开场客户问的发货问题对上。
+   demo.js 的初始状态与这里的静态预渲染都读这一个常量，两边才会逐字一致。 */
+const DEFAULT_CATEGORY = SCOPES.team.sets[0].categories.findIndex((category) => category.label === "发货");
+
+/* 首页首屏预渲染用的那一套：团队话术第 0 套的默认一级分类。 */
+const initialTreeHtml = () => treeHtml(SCOPES.team.sets[0].categories[DEFAULT_CATEGORY]).html;
 
 /* 浏览器挂到 window，Node（构建脚本）拿到 module.exports。 */
-/* 导出给两种运行环境：浏览器挂到 window.SOFTTALK_DEMO（demo.js 取 SCOPES/esc/rowHtml/treeHtml 与内容读取函数），
+/* 导出给两种运行环境：浏览器挂到 window.SOFTTALK_DEMO（demo.js 取 SCOPES/DEFAULT_CATEGORY/esc/rowHtml/treeHtml 与内容读取函数），
    构建脚本在 Node 里 import（index.mjs 用 initialTreeHtml 做静态预渲染）；TYPE_ICONS 只在本文件内部用。 */
-const DEMO = { SCOPES, esc, rowHtml, treeHtml, initialTreeHtml, segmentsOf, filesOf, isRich };
+const DEMO = { SCOPES, DEFAULT_CATEGORY, esc, rowHtml, treeHtml, initialTreeHtml, segmentsOf, filesOf, isRich };
 if (typeof module !== "undefined" && module.exports) module.exports = DEMO;
 else globalThis.SOFTTALK_DEMO = DEMO;

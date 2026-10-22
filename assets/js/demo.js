@@ -5,7 +5,7 @@
 
   const $ = (id) => document.getElementById(id);
   // 演示数据与话术行标记来自 demo-data.js：同一份也用来预渲染首页静态 HTML（爬虫读得到）。
-  const { SCOPES, esc, rowHtml, treeHtml, segmentsOf, filesOf, isRich } = globalThis.SOFTTALK_DEMO;
+  const { SCOPES, DEFAULT_CATEGORY, esc, rowHtml, treeHtml, segmentsOf, filesOf, isRich } = globalThis.SOFTTALK_DEMO;
 
   // 客户端逐段发送的间隔（phrase_sequence.SEND_INTERVAL_MS）。
   const SEND_INTERVAL_MS = 500;
@@ -21,7 +21,7 @@
     "好评已给！感谢你们的耐心服务，下次还来～",
   ];
 
-  const OPENING_MESSAGE = "老板，这款产品质量怎么样，是正品吗？";
+  const OPENING_MESSAGE = "今天拍的，什么时候发货？";
 
   // 聊天窗平台标签：五家共用同一套中性皮肤，只换标题里的平台名，行为完全一样。
   // 客户端源码里没有平台白名单：吸附栏认的是「前台外部窗口」本身，所以微信、京东、拼多多、千牛、抖音都能贴。
@@ -37,7 +37,8 @@
   const state = {
     scope: "team",
     set: 0,
-    category: 0,
+    // 打开页面时选中「发货」，和开场那条客户问题对上（与静态预渲染共用 DEFAULT_CATEGORY）。
+    category: DEFAULT_CATEGORY,
     range: "all",
     query: "",
     // 数字选择态：在哪个搜索框里按过 Tab（客户端 search_result_digit_selection）。
@@ -78,7 +79,6 @@
     digits: $("demo-digits"),
     chips: $("demo-chips"),
     tree: $("demo-list"),
-    quick: $("demo-quick"),
     search: $("demo-search"),
     range: $("demo-range"),
     setLabel: $("demo-set"),
@@ -165,14 +165,13 @@
     el.chips.innerHTML = `${chips}<span class="app-chip app-chip--add" aria-hidden="true">+</span>`;
   };
 
-  // 主界面短语栏与底部吸附栏短语区共用同一份常用短语（客户端也是同一份规则）。
+  // 常用短语只在底部吸附栏里显示：客户端主界面那一行只有一个 ⊕（写在静态 HTML 里）。
   const quickChipsHtml = () =>
     `${COMMON_PHRASES.map(
       (phrase) => `<button class="app-chip" type="button" data-phrase="${esc(phrase)}">${esc(phrase)}</button>`,
     ).join("")}<span class="app-chip app-chip--add" aria-hidden="true">+</span>`;
 
   const renderQuick = () => {
-    el.quick.innerHTML = quickChipsHtml();
     el.barQuick.innerHTML = quickChipsHtml();
   };
 
@@ -791,7 +790,7 @@
     Object.assign(state, {
       scope: "team",
       set: 0,
-      category: 0,
+      category: DEFAULT_CATEGORY,
       query: "",
       digitSurface: null,
       history: [],
@@ -836,11 +835,6 @@
   el.chips.addEventListener("click", (event) => {
     const chip = event.target.closest(".app-chip");
     if (chip?.dataset.category !== undefined) focusCategory(Number(chip.dataset.category));
-  });
-
-  el.quick.addEventListener("click", (event) => {
-    const chip = event.target.closest("[data-phrase]");
-    if (chip) sendText(chip.dataset.phrase, null);
   });
 
   // 二级分类标题是 role=button 的可聚焦元素：键盘 Enter / 空格要和点击一样能展开收起。

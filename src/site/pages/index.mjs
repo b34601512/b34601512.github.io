@@ -97,7 +97,7 @@ export const indexPage = {
             <span class="chat-who"><strong>客户 晓明</strong><em id="demo-chat-platform">微信 · 在线</em></span>
           </div>
           <div class="chat-log" id="demo-log">
-            <div class="msg msg--in"><p class="bubble">老板，这款产品质量怎么样，是正品吗？</p></div>
+            <div class="msg msg--in"><p class="bubble">今天拍的，什么时候发货？</p></div>
           </div>
           <div class="chat-media" id="demo-input-media" hidden></div>
           <div class="chat-foot">
@@ -155,7 +155,7 @@ export const indexPage = {
         <div class="app-digits" id="demo-digits"></div>
         <div class="app-lv1"><div class="app-chips" id="demo-chips"></div></div>
         <div class="app-tree" id="demo-list" tabindex="-1">${demoData.initialTreeHtml()}</div>
-        <div class="app-common" id="demo-quick"></div>
+        <div class="app-common"><span class="app-chip app-chip--add" aria-hidden="true">+</span></div>
         <div class="app-search">
           <input class="app-search-input" id="demo-search" type="search" aria-label="搜索话术" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
           <button class="app-range" id="demo-range" type="button">全部 ▾</button>
