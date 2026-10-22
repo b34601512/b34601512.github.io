@@ -10,8 +10,7 @@ const TYPE_ICONS = {
   pdf: "assets/type-pdf.png",
 };
 
-/* ---------- 演示数据：3 个话术域 × 0–9 十套话术，共 30 套（和客户端一致） ----------
-   一级分类配色只用客户端色板 lv1_color_presets.py 里的浅色预设，不自己造色。 */
+/* ---------- 演示数据：3 个话术域 × 0–9 十套话术，共 30 套（和客户端一致） ---------- */
 const SCOPES = {
   team: {
     label: "团队话术",
@@ -21,7 +20,6 @@ const SCOPES = {
         categories: [
           {
             label: "售前",
-            color: "#DDEFFB",
             sections: [
               {
                 title: "欢迎话术",
@@ -56,7 +54,6 @@ const SCOPES = {
           },
           {
             label: "催付",
-            color: "#FFF1D6",
             sections: [
               {
                 title: "订单跟进",
@@ -74,7 +71,6 @@ const SCOPES = {
           },
           {
             label: "售后",
-            color: "#DDF7EA",
             sections: [
               {
                 title: "问题处理",
@@ -95,7 +91,6 @@ const SCOPES = {
           },
           {
             label: "发货",
-            color: "#E6E9FF",
             sections: [
               {
                 title: "发货时效",
@@ -116,7 +111,6 @@ const SCOPES = {
           },
           {
             label: "退换",
-            color: "#FFE6E1",
             sections: [
               {
                 title: "退换流程",
@@ -137,7 +131,6 @@ const SCOPES = {
           },
           {
             label: "好评",
-            color: "#FFF7DC",
             sections: [
               {
                 title: "好评引导",
@@ -157,7 +150,6 @@ const SCOPES = {
         categories: [
           {
             label: "产品咨询",
-            color: "#E6E9FF",
             sections: [
               {
                 title: "规格与适配",
@@ -178,7 +170,6 @@ const SCOPES = {
           },
           {
             label: "库存与价格",
-            color: "#FFF7DC",
             sections: [
               {
                 title: "现货情况",
@@ -197,7 +188,6 @@ const SCOPES = {
         categories: [
           {
             label: "活动规则",
-            color: "#FFE6E1",
             sections: [
               {
                 title: "玩法说明",
@@ -218,7 +208,6 @@ const SCOPES = {
           },
           {
             label: "权益提醒",
-            color: "#F1F8D8",
             sections: [
               {
                 title: "别漏优惠",
@@ -237,7 +226,6 @@ const SCOPES = {
         categories: [
           {
             label: "未付款",
-            color: "#FFF1D6",
             sections: [
               {
                 title: "温和催付",
@@ -258,7 +246,6 @@ const SCOPES = {
           },
           {
             label: "支付问题",
-            color: "#F9D7D2",
             sections: [
               {
                 title: "付不了款",
@@ -277,7 +264,6 @@ const SCOPES = {
         categories: [
           {
             label: "发货时效",
-            color: "#E3FBF7",
             sections: [
               {
                 title: "什么时候发",
@@ -298,7 +284,6 @@ const SCOPES = {
           },
           {
             label: "快递异常",
-            color: "#E7EAEE",
             sections: [
               {
                 title: "物流不动了",
@@ -317,7 +302,6 @@ const SCOPES = {
         categories: [
           {
             label: "质量问题",
-            color: "#F9D7D2",
             sections: [
               {
                 title: "先解决再谈责任",
@@ -338,7 +322,6 @@ const SCOPES = {
           },
           {
             label: "使用指导",
-            color: "#DDF7EA",
             sections: [
               {
                 title: "不会用",
@@ -362,7 +345,6 @@ const SCOPES = {
         categories: [
           {
             label: "退货流程",
-            color: "#FBE3EB",
             sections: [
               {
                 title: "怎么退",
@@ -383,7 +365,6 @@ const SCOPES = {
           },
           {
             label: "换货补发",
-            color: "#EEE6FA",
             sections: [
               {
                 title: "换成想要的",
@@ -402,7 +383,6 @@ const SCOPES = {
         categories: [
           {
             label: "差评挽回",
-            color: "#E9D3DC",
             sections: [
               {
                 title: "先接住情绪",
@@ -423,7 +403,6 @@ const SCOPES = {
           },
           {
             label: "中评引导",
-            color: "#F5E6F4",
             sections: [
               {
                 title: "还能更好",
@@ -442,7 +421,6 @@ const SCOPES = {
         categories: [
           {
             label: "发票",
-            color: "#F2EEE6",
             sections: [
               {
                 title: "开票口径",
@@ -463,7 +441,6 @@ const SCOPES = {
           },
           {
             label: "优惠券",
-            color: "#FFF7DC",
             sections: [
               {
                 title: "券的问题",
@@ -482,7 +459,6 @@ const SCOPES = {
         categories: [
           {
             label: "复购推荐",
-            color: "#DDF7EA",
             sections: [
               {
                 title: "回来看看",
@@ -503,7 +479,6 @@ const SCOPES = {
           },
           {
             label: "会员权益",
-            color: "#F2E8FF",
             sections: [
               {
                 title: "老客专属",
@@ -527,7 +502,6 @@ const SCOPES = {
         categories: [
           {
             label: "常用",
-            color: "#DDEFFB",
             sections: [
               {
                 title: "我的常用",
@@ -549,7 +523,6 @@ const SCOPES = {
           },
           {
             label: "投诉",
-            color: "#F9D7D2",
             sections: [
               {
                 title: "投诉安抚",
@@ -570,7 +543,6 @@ const SCOPES = {
           },
           {
             label: "VIP",
-            color: "#F2E8FF",
             sections: [
               {
                 title: "VIP 接待",
@@ -591,7 +563,6 @@ const SCOPES = {
           },
           {
             label: "资料",
-            color: "#F2EEE6",
             sections: [
               {
                 title: "产品资料",
@@ -611,7 +582,6 @@ const SCOPES = {
         categories: [
           {
             label: "口语短句",
-            color: "#E6E9FF",
             sections: [
               {
                 title: "日常应答",
@@ -632,7 +602,6 @@ const SCOPES = {
           },
           {
             label: "结束语",
-            color: "#F1F8D8",
             sections: [
               {
                 title: "收尾",
@@ -651,7 +620,6 @@ const SCOPES = {
         categories: [
           {
             label: "我的安抚",
-            color: "#F9D7D2",
             sections: [
               {
                 title: "先说抱歉",
@@ -672,7 +640,6 @@ const SCOPES = {
           },
           {
             label: "进度回复",
-            color: "#E7EAEE",
             sections: [
               {
                 title: "跟到底",
@@ -691,7 +658,6 @@ const SCOPES = {
         categories: [
           {
             label: "轻柔提醒",
-            color: "#FFF1D6",
             sections: [
               {
                 title: "不催急",
@@ -712,7 +678,6 @@ const SCOPES = {
           },
           {
             label: "优惠提醒",
-            color: "#FFF7DC",
             sections: [
               {
                 title: "别错过",
@@ -731,7 +696,6 @@ const SCOPES = {
         categories: [
           {
             label: "活动介绍",
-            color: "#FFE6E1",
             sections: [
               {
                 title: "讲清楚",
@@ -752,7 +716,6 @@ const SCOPES = {
           },
           {
             label: "下单引导",
-            color: "#FBE3EB",
             sections: [
               {
                 title: "促成",
@@ -771,7 +734,6 @@ const SCOPES = {
         categories: [
           {
             label: "查询回复",
-            color: "#E3FBF7",
             sections: [
               {
                 title: "查得到",
@@ -792,7 +754,6 @@ const SCOPES = {
           },
           {
             label: "异常处理",
-            color: "#E7EAEE",
             sections: [
               {
                 title: "我帮您催",
@@ -811,7 +772,6 @@ const SCOPES = {
         categories: [
           {
             label: "情绪安抚",
-            color: "#FBE3EB",
             sections: [
               {
                 title: "先共情",
@@ -832,7 +792,6 @@ const SCOPES = {
           },
           {
             label: "补偿口径",
-            color: "#E9D3DC",
             sections: [
               {
                 title: "怎么补",
@@ -851,7 +810,6 @@ const SCOPES = {
         categories: [
           {
             label: "熟客问候",
-            color: "#DDF7EA",
             sections: [
               {
                 title: "认得您",
@@ -872,7 +830,6 @@ const SCOPES = {
           },
           {
             label: "复购提醒",
-            color: "#F1F8D8",
             sections: [
               {
                 title: "该补货了",
@@ -891,7 +848,6 @@ const SCOPES = {
         categories: [
           {
             label: "系统异常",
-            color: "#E7EAEE",
             sections: [
               {
                 title: "顶一下",
@@ -912,7 +868,6 @@ const SCOPES = {
           },
           {
             label: "交接班",
-            color: "#F2EEE6",
             sections: [
               {
                 title: "无缝交接",
@@ -931,7 +886,6 @@ const SCOPES = {
         categories: [
           {
             label: "待补充",
-            color: "#F5F3EF",
             sections: [
               {
                 title: "还没定",
@@ -952,7 +906,6 @@ const SCOPES = {
           },
           {
             label: "草稿",
-            color: "#F2EEE6",
             sections: [
               {
                 title: "改一改再用",
@@ -976,7 +929,6 @@ const SCOPES = {
         categories: [
           {
             label: "常见问题",
-            color: "#DDEFFB",
             sections: [
               {
                 title: "快捷问答",
@@ -998,7 +950,6 @@ const SCOPES = {
           },
           {
             label: "售后政策",
-            color: "#DDF7EA",
             sections: [
               {
                 title: "退换规则",
@@ -1017,7 +968,6 @@ const SCOPES = {
         categories: [
           {
             label: "纯文本常用",
-            color: "#E7EAEE",
             sections: [
               {
                 title: "不联网也能发",
@@ -1038,7 +988,6 @@ const SCOPES = {
           },
           {
             label: "联系不上",
-            color: "#F2EEE6",
             sections: [
               {
                 title: "先应一下",
@@ -1057,7 +1006,6 @@ const SCOPES = {
         categories: [
           {
             label: "咨询答复",
-            color: "#E6E9FF",
             sections: [
               {
                 title: "标准口径",
@@ -1078,7 +1026,6 @@ const SCOPES = {
           },
           {
             label: "报价口径",
-            color: "#FFF7DC",
             sections: [
               {
                 title: "不松口",
@@ -1097,7 +1044,6 @@ const SCOPES = {
         categories: [
           {
             label: "售后答复",
-            color: "#F9D7D2",
             sections: [
               {
                 title: "别承诺过头",
@@ -1118,7 +1064,6 @@ const SCOPES = {
           },
           {
             label: "运费口径",
-            color: "#DDF7EA",
             sections: [
               {
                 title: "谁出运费",
@@ -1137,7 +1082,6 @@ const SCOPES = {
         categories: [
           {
             label: "活动应答",
-            color: "#FFE6E1",
             sections: [
               {
                 title: "活动期间",
@@ -1158,7 +1102,6 @@ const SCOPES = {
           },
           {
             label: "延迟说明",
-            color: "#FFF1D6",
             sections: [
               {
                 title: "先打预防针",
@@ -1177,7 +1120,6 @@ const SCOPES = {
         categories: [
           {
             label: "交接说明",
-            color: "#F2EEE6",
             sections: [
               {
                 title: "班次交接",
@@ -1198,7 +1140,6 @@ const SCOPES = {
           },
           {
             label: "夜间回复",
-            color: "#E7EAEE",
             sections: [
               {
                 title: "非工作时间",
@@ -1217,7 +1158,6 @@ const SCOPES = {
         categories: [
           {
             label: "支付问题",
-            color: "#FBE3EB",
             sections: [
               {
                 title: "钱的事",
@@ -1238,7 +1178,6 @@ const SCOPES = {
           },
           {
             label: "地址修改",
-            color: "#E6E9FF",
             sections: [
               {
                 title: "改地址",
@@ -1257,7 +1196,6 @@ const SCOPES = {
         categories: [
           {
             label: "禁语提醒",
-            color: "#F9D7D2",
             sections: [
               {
                 title: "别踩线",
@@ -1278,7 +1216,6 @@ const SCOPES = {
           },
           {
             label: "客诉升级",
-            color: "#E9D3DC",
             sections: [
               {
                 title: "处理不了就上报",
@@ -1297,7 +1234,6 @@ const SCOPES = {
         categories: [
           {
             label: "特殊时期",
-            color: "#F5F3EF",
             sections: [
               {
                 title: "时效变化",
@@ -1318,7 +1254,6 @@ const SCOPES = {
           },
           {
             label: "补偿上限",
-            color: "#FFF7DC",
             sections: [
               {
                 title: "能补多少",
@@ -1337,7 +1272,6 @@ const SCOPES = {
         categories: [
           {
             label: "备用文案",
-            color: "#F2E8FF",
             sections: [
               {
                 title: "老版本",
@@ -1358,7 +1292,6 @@ const SCOPES = {
           },
           {
             label: "归档",
-            color: "#E7EAEE",
             sections: [
               {
                 title: "已停用",

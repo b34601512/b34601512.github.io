@@ -139,7 +139,7 @@
   ];
 
   // ---------- 舞台 ----------
-  const PLANE = `<svg class="gf-app-row-send" viewBox="0 0 14 14" data-hov><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>`;
+  const PLANE = `<span class="gf-app-row-send" data-hov><svg viewBox="0 0 14 14"><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg></span>`;
   // 同首页演示的行：[临时序号] [纸飞机] [行号.] 标题；行号只在分类列表里有，搜索结果不带。
   const rowHtml = (row, i, num = "") => `<div class="gf-app-row" data-ref="row${i}" data-hov>
     <span class="gf-app-row-digit" hidden>${(i + 1) % 10}</span>
@@ -198,6 +198,7 @@
     <div class="gf-app-lv1" data-ref="chips"></div>
     <div class="gf-app-tree" data-ref="tree"></div>
     <div class="gf-app-search">
+      <svg class="gf-app-search-glass" viewBox="0 0 12 12" aria-hidden="true"><circle cx="5" cy="5" r="3.6" /><path d="M7.7 7.7 10.8 10.8" /></svg>
       <span class="gf-app-search-input" data-ref="search"></span>
       <span class="gf-app-range">全部 ▾</span>
     </div>

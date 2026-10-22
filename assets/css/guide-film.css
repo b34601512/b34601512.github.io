@@ -66,6 +66,7 @@
   --p-chip-line: #d6cabb;
   --p-lv2-line: #645145;
   --p-hover: #fdf3e7;
+  --p-badge: #fff3e7;
   --p-sending: #fff5e6;
   --p-rust: #a54626;
   --p-hot: #c2410c;
@@ -361,7 +362,8 @@
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  padding: 0 2px;
+  margin: 0 -8px;
+  padding: 0 10px;
   border-bottom: 1px solid var(--p-base);
 }
 
@@ -484,9 +486,17 @@
   flex: 0 0 18px;
   width: 18px;
   height: 18px;
-  padding: 2px;
-  border-radius: 4px;
+  padding: 3px;
+  border: 1px solid var(--p-ink);
+  border-radius: 5px;
+  background: var(--p-badge);
   color: var(--p-rust);
+}
+
+.gf-app-row-send svg {
+  display: block;
+  width: 10px;
+  height: 10px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -637,17 +647,29 @@
 
 .gf-app-search {
   display: flex;
+  align-items: center;
   margin-top: 7px;
   border: 1px solid var(--p-base);
   border-radius: 6px;
   background: var(--p-paper);
 }
 
+.gf-app-search-glass {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  color: #948b85;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
 .gf-app-search-input {
   flex: 1;
   height: 26px;
-  padding: 3px 8px;
-  border-radius: 6px 0 0 6px;
+  padding: 3px 8px 3px 6px;
   color: var(--p-ink);
   font-size: 12.5px;
   line-height: 18px;

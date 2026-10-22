@@ -157,6 +157,7 @@ export const indexPage = {
         <div class="app-tree" id="demo-list" tabindex="-1">${demoData.initialTreeHtml()}</div>
         <div class="app-common"><span class="app-chip app-chip--add" aria-hidden="true">+</span></div>
         <div class="app-search">
+          <svg class="app-search-glass" viewBox="0 0 12 12" aria-hidden="true"><circle cx="5" cy="5" r="3.6" /><path d="M7.7 7.7 10.8 10.8" /></svg>
           <input class="app-search-input" id="demo-search" type="search" aria-label="搜索话术" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
           <button class="app-range" id="demo-range" type="button">全部 ▾</button>
         </div>

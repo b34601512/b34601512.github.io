@@ -39,6 +39,7 @@
   --p-chip-line: #d6cabb;
   --p-lv2-line: #645145;
   --p-hover: #fdf3e7;
+  --p-badge: #fff3e7;
   --p-sending: #fff5e6;
   --p-rust: #a54626;
   --p-hot: #c2410c;
@@ -505,12 +506,14 @@
 }
 
 /* 页签：选中的那张是外框同色的奶油底 + 深墨描边、没有底边，和下面的面板连成一片
-   深墨描边统一 2px：Chrome 会把 1.5px 边框向下取整成 1px，截图里的描边明显比 1px 粗。 */
+   深墨描边统一 2px：Chrome 会把 1.5px 边框向下取整成 1px，截图里的描边明显比 1px 粗。
+   底线横穿整个面板：左右各伸出 .app 的 8px 内边距，页签本身的位置不变。 */
 .app-tabs {
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  padding: 0 2px;
+  margin: 0 -8px;
+  padding: 0 10px;
   border-bottom: 1px solid var(--p-base);
 }
 
@@ -543,14 +546,13 @@
 
 .app-set {
   padding: 6px 2px 0;
-  color: var(--p-muted);
+  color: var(--p-digit);
   font-size: 11.5px;
   line-height: 1.2;
 }
 
 .app-set b {
-  color: var(--p-ink);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* 套号：未选中是不带框的灰色数字，选中的是桃色实心块 + 深墨描边 */
@@ -745,14 +747,15 @@
   cursor: pointer;
 }
 
+/* 行首小方章：18px 圆角方块 + 1px 深墨描边 + 奶油底，里面一只 10px 纸飞机 */
 .app-row-send {
   flex: 0 0 18px;
   width: 18px;
   height: 18px;
-  padding: 2px;
-  border: none;
-  border-radius: 4px;
-  background: none;
+  padding: 3px;
+  border: 1px solid var(--p-ink);
+  border-radius: 5px;
+  background: var(--p-badge);
   color: var(--p-rust);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -760,6 +763,8 @@
 
 .app-row-send svg {
   display: block;
+  width: 10px;
+  height: 10px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -973,6 +978,7 @@
 
 .app-search {
   display: flex;
+  align-items: center;
   margin-top: 6px;
   border: 1px solid var(--p-base);
   border-radius: 6px;
@@ -983,13 +989,25 @@
   border-color: var(--p-focus);
 }
 
+.app-search-glass {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  color: #948b85;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
 .app-search-input {
   flex: 1;
   min-width: 0;
   height: 28px;
-  padding: 4px 8px;
+  padding: 4px 8px 4px 6px;
   border: none;
-  border-radius: 6px 0 0 6px;
+  border-radius: 0;
   background: transparent;
   color: var(--p-ink);
   font: inherit;
