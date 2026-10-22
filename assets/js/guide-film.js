@@ -116,12 +116,13 @@
     [6.2, "tab1"], [6.9, "tab2"], [7.6, "tab0"], [8.4, "digit3"], [9.1, "chip1"],
     [13.6, "title0"], [13.85, "title0"], [15.0, "input", -40, 6], [19.8, "plane1"], [37.05, "barInput", -60, 0],
   ];
-  // 按键提示：[出现, 按下, 消失, 键帽, 贴在哪个元素上方]
+  // 按键提示：[出现, 按下, 消失, 键帽, 贴在哪个元素旁边, dx, dy]（dx 从元素水平中心算，dy 从元素顶边算）。
+  // 第④段的键帽放在主界面右边的空白里、和搜索框齐平（dx 156 = 半宽 150 + 6），不压搜索结果卡。
   const KEYS = [
     [16.4, 17.0, 17.5, ["Enter"], "send", -24, -80],
-    [26.3, 27.0, 27.8, ["Alt", "Q"], "search", -60, -48],
-    [29.3, 29.8, 30.3, ["Tab"], "search", -60, -48],
-    [30.5, 31.0, 31.5, ["2"], "search", -60, -48],
+    [26.3, 27.0, 27.8, ["Alt", "Q"], "app", 156, 300],
+    [29.3, 29.8, 30.3, ["Tab"], "app", 156, 318],
+    [30.5, 31.0, 31.5, ["2"], "app", 156, 318],
     [38.3, 38.8, 39.3, ["Enter"], "bar", 230, -2],
   ];
   // 标注：[出现, 消失, 文字, 宽屏位置, 窄屏位置]
@@ -158,7 +159,7 @@
 
   stage.innerHTML = `<div class="gf-screen" aria-hidden="true">
   <div class="gf-win gf-chat" data-ref="chat" data-skin="css">
-    <div class="gf-chat-head"><span class="gf-chat-avatar">晓</span><span class="gf-chat-who"><strong>客户 晓明</strong><em>微信 · 在线</em></span></div>
+    <div class="gf-chat-head"><span class="gf-chat-avatar">陈</span><span class="gf-chat-who"><strong>顾客·小陈</strong><em>在线</em></span></div>
     <div class="gf-chat-log">
       ${BUBBLES.map((b) => `<div class="gf-msg ${b.side === "in" ? "gf-msg--in" : "gf-msg--out"}" hidden><p class="gf-bubble">${b.text}</p></div>`).join("")}
       <div class="gf-msg gf-msg--in" data-ref="typing" hidden><span class="gf-typing"><i class="gf-typing-dot"></i><i class="gf-typing-dot"></i><i class="gf-typing-dot"></i></span></div>
@@ -298,6 +299,7 @@
       R.chips,
       view.chips.map((c, i) => `<span class="gf-app-chip${i === view.chip ? " gf-app-chip--active" : ""}" data-ref="chip${i}" data-hov>${c}</span>`).join(""),
     );
+    R.tree.classList.toggle("gf-app-tree--results", Boolean(view.results));
     setHtml(R.tree, viewHtml(view, t >= 29.8 ? HINT.digits : HINT.tab));
     // 列表底边放不下整行的就不画：一行要么完整可见、要么还没开始，不会被底边横着切过文字。
     const treeBottom = R.tree.offsetTop + R.tree.clientTop + R.tree.clientHeight;
