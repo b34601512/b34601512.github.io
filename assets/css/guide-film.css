@@ -40,28 +40,36 @@
 /* 客户端白色主题 token（同 demo.css 的 .demo）。吸附栏不是 .gf-win，也要拿到同一套，否则它的底色是透明的。 */
 .gf-win,
 .gf-attached {
-  --w-base: #fcfcfc;
   --w-content: #ffffff;
   --w-text: #000000;
   --w-muted: #7a8695;
   --w-border: #cfcfcf;
   --w-edge: #d0d0d0;
   --w-panel-border: #d0d8e2;
-  --w-line: #e8e8e8;
-  --w-hover: #f2f4f7;
-  --w-selection: #dceeff;
   --w-selection-border: #8cb8d6;
   --w-title-fg: #e53935;
-  --w-answer-fg: #26313a;
-  --w-lv2-bg: #e7f0fa;
-  --w-lv2-sep: #c8d4df;
-  --w-chip-bg: #e8eef5;
-  --w-chip-fg: #1f2a33;
-  --w-chip-mark: #8e1b1b;
-  --w-chip-action-bg: #ffefc2;
-  --w-chip-action-fg: #8e1b1b;
   --w-cloud: #4c8dff;
-  --w-accent-border: #d0a030;
+  /* 话术精灵主界面（同 demo.css 的 --p-*，取样自客户端实机截图）；吸附栏结果行也要用 */
+  --p-frame: #fbf6ec;
+  --p-paper: #fffdf8;
+  --p-tab: #f4eadb;
+  --p-peach: #ffe4d1;
+  --p-ink: #2a1a12;
+  --p-chip: #f4ebde;
+  --p-muted: #7f7b74;
+  --p-digit: #8c7b6b;
+  --p-answer: #4a3a2e;
+  --p-sep: #e5eaf0;
+  --p-box: #8d8279;
+  --p-base: #75685f;
+  --p-tab-line: #b3a79b;
+  --p-chip-line: #d6cabb;
+  --p-lv2-line: #645145;
+  --p-hover: #fdf3e7;
+  --p-sending: #fff5e6;
+  --p-rust: #a54626;
+  --p-hot: #c2410c;
+  --p-focus: #e07f4a;
   /* 聊天窗：中性外观，不模仿任何平台的界面；自己发出的气泡与发送键用网站品牌橙 */
   --wx-bg: #ededed;
   --wx-head: #f7f7f7;
@@ -304,14 +312,15 @@
   color: var(--wx-out-fg);
 }
 
-/* ---------- 右：话术精灵主界面（同 demo.css 的 .app） ---------- */
+/* ---------- 右：话术精灵主界面（同 demo.css 的 .app：暖纸面 + 桃色选中 + 深墨描边） ---------- */
 .gf-app {
   display: flex;
   flex-direction: column;
   width: 300px;
   padding: 4px 8px 6px;
-  background: var(--w-base);
-  color: var(--w-text);
+  border-color: var(--p-box);
+  background: var(--p-frame);
+  color: var(--p-ink);
 }
 
 .gf-app-bar {
@@ -324,10 +333,10 @@
 
 .gf-app-tag {
   padding: 1px 7px;
-  border: 1px solid var(--w-accent-border);
+  border: 1px solid var(--p-ink);
   border-radius: 999px;
-  background: var(--w-chip-action-bg);
-  color: var(--w-chip-action-fg);
+  background: var(--p-peach);
+  color: var(--p-ink);
   font-size: 11px;
 }
 
@@ -341,7 +350,7 @@
   height: 22px;
   padding: 3px;
   border-radius: 6px;
-  color: #3c3c3c;
+  color: var(--p-ink);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.3;
@@ -350,48 +359,54 @@
 
 .gf-app-tabs {
   display: flex;
+  align-items: flex-end;
   gap: 6px;
   padding: 0 2px;
-  border-bottom: 1px solid var(--w-cloud);
+  border-bottom: 1px solid var(--p-base);
 }
 
 .gf-app-tab {
+  margin-bottom: -1px;
   padding: 5px 10px;
-  border: 1px solid var(--w-border);
+  border: 1px solid var(--p-tab-line);
   border-bottom: none;
-  border-radius: 6px 6px 0 0;
-  background: var(--w-content);
-  color: var(--w-muted);
+  border-radius: 7px 7px 0 0;
+  background: var(--p-tab);
+  color: var(--p-digit);
   font-size: 12px;
 }
 
 .gf-app-tab--active {
-  border-color: var(--w-cloud);
-  background: var(--w-base);
-  color: var(--w-text);
-  font-weight: 600;
+  padding: 4px 9px 5px;
+  border: 2px solid var(--p-ink);
+  border-bottom: none;
+  background: var(--p-frame);
+  color: var(--p-ink);
+  font-weight: 700;
 }
 
 .gf-app-digits {
-  display: flex;
-  gap: 6px;
-  padding: 6px 2px 5px;
+  display: grid;
+  grid-template-columns: repeat(10, 26px);
+  padding: 5px 0 6px;
 }
 
 .gf-app-digit {
-  min-width: 22px;
+  justify-self: center;
+  width: 22px;
   height: 22px;
-  padding: 0 2px;
+  border: 2px solid transparent;
   border-radius: 6px;
-  color: var(--w-muted);
+  color: var(--p-digit);
   font-size: 12.5px;
-  line-height: 22px;
+  line-height: 19px;
   text-align: center;
 }
 
 .gf-app-digit--active {
-  background: var(--w-selection);
-  color: var(--w-text);
+  border-color: var(--p-ink);
+  background: var(--p-peach);
+  color: var(--p-ink);
   font-weight: 700;
 }
 
@@ -399,73 +414,79 @@
   display: flex;
   gap: 6px;
   padding: 5px 6px;
-  border: 1px solid var(--w-panel-border);
-  border-top: none;
-  border-radius: 0 0 6px 6px;
-  background: var(--w-content);
+  border: 1px solid var(--p-box);
+  border-radius: 6px;
+  background: var(--p-paper);
 }
 
 .gf-app-chip {
-  padding: 3px 9px;
+  padding: 2px 8px;
+  border: 1px solid var(--p-chip-line);
   border-radius: 6px;
-  background: var(--w-chip-bg);
-  color: var(--w-chip-fg);
+  background: var(--p-chip);
+  color: var(--p-muted);
   font-size: 12px;
 }
 
 .gf-app-chip--active {
-  box-shadow: inset 0 -2px 0 var(--w-chip-mark);
-  color: var(--w-chip-mark);
+  padding: 1px 7px;
+  border: 2px solid var(--p-ink);
+  background: var(--p-peach);
+  color: var(--p-ink);
   font-weight: 700;
 }
 
 .gf-app-tree {
   flex: 1;
   margin-top: 7px;
-  border: 1px solid var(--w-panel-border);
+  padding: 3px;
+  border: 1px solid var(--p-box);
   border-radius: 6px;
-  background: var(--w-content);
+  background: var(--p-paper);
   overflow: hidden;
 }
 
+/* 二级分类（短片里总是展开的那一节）：整条桃色 */
 .gf-app-lv2 {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--w-lv2-sep);
-  background: var(--w-lv2-bg);
+  padding: 4px 7px;
+  border: 1px solid var(--p-lv2-line);
+  border-radius: 6px;
+  background: var(--p-peach);
 }
 
 .gf-app-lv2-arrow {
   width: 10px;
-  color: #4b5b6b;
-  font-size: 9px;
+  color: var(--p-ink);
+  font-size: 12px;
   line-height: 1;
+  text-align: center;
 }
 
 .gf-app-lv2-title {
-  color: var(--w-chip-fg);
+  color: var(--p-ink);
   font-size: 12.5px;
   font-weight: 600;
 }
 
+/* 话术行：[临时序号] [纸飞机] [行号.] 标题 / 答案，纸飞机与行号占固定宽度，标题对齐成一列 */
 .gf-app-row {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 9px 6px 5px;
-  border-bottom: 1px solid var(--w-line);
+  align-items: flex-start;
+  gap: 4px;
+  padding: 4px 8px 4px 6px;
+  border-bottom: 1px solid var(--p-sep);
 }
 
 .gf-app-row-send {
-  flex: 0 0 auto;
+  flex: 0 0 18px;
   width: 18px;
   height: 18px;
   padding: 2px;
   border-radius: 4px;
-  color: var(--w-cloud);
-  opacity: 0.38;
+  color: var(--p-rust);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -473,53 +494,67 @@
   stroke-linejoin: round;
 }
 
-.gf-app-row.gf-hover {
-  background: var(--w-hover);
+.gf-app-row-num {
+  flex: 0 0 1.6em;
+  color: var(--w-title-fg);
+  font-size: 12.5px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.gf-app-row.gf-hover .gf-app-row-send,
-.gf-app-row--selected .gf-app-row-send {
-  opacity: 1;
+.gf-app-row.gf-hover {
+  background: var(--p-hover);
 }
 
 .gf-app-row-send.gf-hover {
-  background: var(--w-selection);
+  background: var(--p-peach);
+  color: var(--p-ink);
 }
 
 /* 选中、正在发送压过悬停（同 demo.css 的先后） */
 .gf-app-row.gf-app-row--selected {
-  border-bottom-color: var(--w-selection-border);
-  background: var(--w-selection);
+  background: var(--p-peach);
+}
+
+.gf-app-row--selected .gf-app-row-title,
+.gf-app-row--selected .gf-app-row-num {
+  color: var(--p-ink);
+  font-weight: 700;
 }
 
 .gf-app-row.gf-app-row--sending {
-  background: #fff5e0;
+  background: var(--p-sending);
 }
 
 .gf-app-row-body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 
 .gf-app-row-main {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  line-height: 18px;
 }
 
 .gf-app-row-digit {
   display: grid;
+  flex: 0 0 auto;
   place-items: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  background: var(--w-chip-bg);
-  color: var(--w-chip-fg);
+  width: 17px;
+  height: 18px;
+  border: 2px solid var(--p-ink);
+  border-radius: 5px;
+  background: var(--p-paper);
+  color: var(--p-ink);
   font-size: 11px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .gf-app-row-icon {
@@ -531,13 +566,13 @@
   flex: 0 0 auto;
   color: var(--w-title-fg);
   font-size: 12.5px;
-  font-weight: 600;
 }
 
 .gf-app-row-text {
   overflow: hidden;
-  color: var(--w-answer-fg);
+  color: var(--p-answer);
   font-size: 12.5px;
+  line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -546,7 +581,7 @@
 .gf-app-row-path {
   margin-left: auto;
   overflow: hidden;
-  color: var(--w-muted);
+  color: var(--p-muted);
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -569,20 +604,20 @@
   align-items: baseline;
   gap: 8px;
   padding: 5px 8px 4px;
-  border-bottom: 1px solid var(--w-border);
+  border-bottom: 1px solid var(--p-sep);
   white-space: nowrap;
 }
 
 .gf-results-title {
   flex: 0 0 auto;
-  color: #c0392b;
+  color: var(--p-hot);
   font-size: 13px;
   font-weight: 700;
 }
 
 .gf-results-hint {
   overflow: hidden;
-  color: var(--w-muted);
+  color: var(--p-muted);
   font-size: 11.5px;
   text-overflow: ellipsis;
 }
@@ -603,16 +638,17 @@
 .gf-app-search {
   display: flex;
   margin-top: 7px;
+  border: 1px solid var(--p-base);
+  border-radius: 6px;
+  background: var(--p-paper);
 }
 
 .gf-app-search-input {
   flex: 1;
-  height: 28px;
-  padding: 4px 8px;
-  border: 1px solid var(--w-border);
+  height: 26px;
+  padding: 3px 8px;
   border-radius: 6px 0 0 6px;
-  background: var(--w-content);
-  color: var(--w-text);
+  color: var(--p-ink);
   font-size: 12.5px;
   line-height: 18px;
   white-space: nowrap;
@@ -620,16 +656,15 @@
 }
 
 .gf-app-search-input .gf-placeholder {
-  color: #9aa3ae;
+  color: #948b85;
 }
 
-.gf-app-search-input--focus {
-  border-color: var(--w-selection-border);
+.gf-app-search:has(.gf-app-search-input--focus) {
+  border-color: var(--p-focus);
 }
 
 /* Alt+Q 定位到搜索框时的短高亮（同 demo.css 的 app-search-hit 起点） */
 .gf-app-search-input--hit {
-  border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(255, 107, 44, 0.35);
 }
 
@@ -637,11 +672,9 @@
   display: grid;
   place-items: center;
   padding: 0 8px;
-  border: 1px solid var(--w-border);
-  border-left: none;
+  border-left: 1px solid var(--p-chip-line);
   border-radius: 0 6px 6px 0;
-  background: var(--w-content);
-  color: var(--w-muted);
+  color: var(--p-ink);
   font-size: 11.5px;
   white-space: nowrap;
 }
@@ -649,11 +682,12 @@
 /* 鼠标停在可点的东西上：同 demo.css 各控件的 :hover */
 .gf-app-tab.gf-hover,
 .gf-app-digit.gf-hover:not(.gf-app-digit--active) {
-  background: var(--w-hover);
+  color: var(--p-ink);
 }
 
-.gf-app-chip.gf-hover {
-  background: #dbe6f2;
+.gf-app-chip.gf-hover:not(.gf-app-chip--active) {
+  border-color: var(--p-box);
+  color: var(--p-ink);
 }
 
 .gf-chat-input.gf-hover {

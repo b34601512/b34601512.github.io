@@ -140,10 +140,13 @@
 
   // ---------- 舞台 ----------
   const PLANE = `<svg class="gf-app-row-send" viewBox="0 0 14 14" data-hov><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>`;
-  const rowHtml = (row, i) => `<div class="gf-app-row" data-ref="row${i}" data-hov>
+  // 同首页演示的行：[临时序号] [纸飞机] [行号.] 标题；行号只在分类列表里有，搜索结果不带。
+  const rowHtml = (row, i, num = "") => `<div class="gf-app-row" data-ref="row${i}" data-hov>
+    <span class="gf-app-row-digit" hidden>${(i + 1) % 10}</span>
     ${PLANE.replace("data-hov", `data-hov data-ref="plane${i}"`)}
+    ${num ? `<span class="gf-app-row-num">${num}.</span>` : ""}
     <span class="gf-app-row-body">
-      <span class="gf-app-row-main"><span class="gf-app-row-digit" hidden>${(i + 1) % 10}</span><img class="gf-app-row-icon" src="assets/type-text.png" alt="" /><span class="gf-app-row-title" data-ref="title${i}">${row.title}</span>${row.path ? `<span class="gf-app-row-path">${row.path}</span>` : ""}</span>
+      <span class="gf-app-row-main"><span class="gf-app-row-title" data-ref="title${i}">${row.title}</span><img class="gf-app-row-icon" src="assets/type-text.png" alt="" />${row.path ? `<span class="gf-app-row-path">${row.path}</span>` : ""}</span>
       <span class="gf-app-row-text">${row.text}</span>
     </span>
   </div>`;
@@ -153,9 +156,9 @@
   const viewHtml = (view, hint) =>
     (view.results ? resultsHeadHtml(view.rows.length, hint) : "") +
     (view.lv2
-      ? `<div class="gf-app-lv2"><span class="gf-app-lv2-arrow">▼</span><span class="gf-app-lv2-title">${view.lv2}</span></div>`
+      ? `<div class="gf-app-lv2"><span class="gf-app-lv2-arrow">▾</span><span class="gf-app-lv2-title">${view.lv2}</span></div>`
       : "") +
-    view.rows.map(rowHtml).join("");
+    view.rows.map((row, i) => rowHtml(row, i, view.results ? "" : i + 1)).join("");
 
   stage.innerHTML = `<div class="gf-screen" aria-hidden="true">
   <div class="gf-win gf-chat" data-ref="chat" data-skin="css">
