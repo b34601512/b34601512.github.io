@@ -47,6 +47,11 @@ function truncate(text) {
   return `${head.slice(0, cut >= 0 ? cut + 1 : SUMMARY_LIMIT).join("")}…`;
 }
 
+// 默认摘要取的是「结论先说」第一段，常以引出列表的冒号收尾，放在卡片上像半句话，去掉尾部的引导标点。
+function trimTrailingLead(text) {
+  return text.replace(/[：:，,、；;\s]+$/u, "");
+}
+
 function firstParagraph(blocks) {
   return blocks.find((block) => block.type === "paragraph")?.text;
 }
@@ -77,12 +82,13 @@ export function parsePost(file, source) {
     console.log(`[blog] 跳过内部区：${file.replace(/\.md$/, "")}（发布前检查起 ${count} 处）`);
     body = body.slice(0, internalIndex);
   }
-  const blocks = parseBlocks(body.join("\n"), where);
+  const blocks = parseBlocks(body.join("\n"), where, ruleIndex + 2);
   const summaryLine = meta.find((line) => /^>\s*摘要[：:]/.test(line));
   const summarySource = summaryLine ? summaryLine.replace(/^>\s*摘要[：:]\s*/, "") : firstParagraph(blocks);
   if (!summarySource) throw new Error(`${where}：正文里没有段落，没法生成摘要（可在备注区写「> 摘要：…」）`);
+  const summary = truncate(plainInline(summarySource));
 
-  return { title, date, summary: truncate(plainInline(summarySource)), bodyHtml: renderBlocks(blocks) };
+  return { title, date, summary: summaryLine ? summary : trimTrailingLead(summary), bodyHtml: renderBlocks(blocks) };
 }
 
 function loadPosts() {

@@ -46,8 +46,18 @@ function alignOf(spec) {
   return null;
 }
 
+// 表格单元格里的 > 起不了引用，开头的「> 」是原稿笔误：去掉一次并提示，其余照旧。
+function stripCellQuote(cells, where, line) {
+  return cells.map((cell) => {
+    if (!cell.startsWith("> ")) return cell;
+    console.warn(`[blog] ${where.split("/").pop()}:${line} 表格单元格开头的「> 」已忽略`);
+    return cell.slice(2);
+  });
+}
+
 // 把文本切成块：{ type: "heading" | "paragraph" | "list" | "quote" | "table", ... }。
-export function parseBlocks(source, where = "markdown") {
+// firstLine 是 source 第一行在原文件里的行号，报错和提示用它换算成原文件行号。
+export function parseBlocks(source, where = "markdown", firstLine = 1) {
   const lines = source.replace(/\r\n?/g, "\n").split("\n");
   const blocks = [];
   let i = 0;
@@ -64,20 +74,20 @@ export function parseBlocks(source, where = "markdown") {
     const heading = line.match(HEADING);
     if (heading) {
       const level = heading[1].length;
-      if (level === 1) throw new Error(`${where} 第 ${i + 1} 行：正文里不能再有「# 」一级标题（标题只能写在第一行）`);
-      if (level > 3) throw new Error(`${where} 第 ${i + 1} 行：只支持 ## 和 ### 两级小标题`);
+      if (level === 1) throw new Error(`${where} 第 ${firstLine + i} 行：正文里不能再有「# 」一级标题（标题只能写在第一行）`);
+      if (level > 3) throw new Error(`${where} 第 ${firstLine + i} 行：只支持 ## 和 ### 两级小标题`);
       blocks.push({ type: "heading", level, text: heading[2].trim() });
       i += 1;
       continue;
     }
 
     if (isTableStart(lines, i)) {
-      const head = splitRow(lines[i]);
+      const head = stripCellQuote(splitRow(lines[i]), where, firstLine + i);
       const aligns = splitRow(lines[i + 1]).map(alignOf);
       const rows = [];
       i += 2;
       while (i < lines.length && lines[i].trimStart().startsWith("|")) {
-        rows.push(splitRow(lines[i]));
+        rows.push(stripCellQuote(splitRow(lines[i]), where, firstLine + i));
         i += 1;
       }
       blocks.push({ type: "table", head, aligns, rows });
@@ -85,12 +95,13 @@ export function parseBlocks(source, where = "markdown") {
     }
 
     if (QUOTE.test(line)) {
+      const quoteLine = firstLine + i;
       const inner = [];
       while (i < lines.length && QUOTE.test(lines[i])) {
         inner.push(lines[i].match(QUOTE)[1]);
         i += 1;
       }
-      blocks.push({ type: "quote", blocks: parseBlocks(inner.join("\n"), where) });
+      blocks.push({ type: "quote", blocks: parseBlocks(inner.join("\n"), where, quoteLine) });
       continue;
     }
 
