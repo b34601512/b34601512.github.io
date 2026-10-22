@@ -1,20 +1,10 @@
 /* ==========================================================================
-   「怎么用」页：手绘动画播放器 + 五个步骤（步骤兼作章节按钮）
-   画布里的颜色由 assets/js/guide-film.js 按网站主题决定；这里只管外框与控件。
+   「怎么用」页：演示短片的播放控件 + 五个步骤（步骤兼作章节按钮）
+   短片舞台本身的样式在 assets/css/guide-film.css；这里只管控件与步骤。
    ========================================================================== */
 
 .film {
   margin: 0;
-}
-
-.film-canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  cursor: pointer;
 }
 
 .film-bar {

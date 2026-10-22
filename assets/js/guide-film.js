@@ -1,733 +1,496 @@
-// 「怎么用」页的手绘教程动画：Canvas 2D 逐帧画出来，不用视频文件。
-// 手绘做法取自 alesha-pro/tools 的 hand-drawn-canvas-animation（MIT）：线条沿长度缓慢游走而不是逐点抖动、
-// 两遍描线像粉笔/蜡笔、画面按二拍（每秒 12 张）换、描边轻微 boil、用排线代替平涂、随机数全部带种子。
-// 这里只实现本片用到的那一小部分。白天是纸上墨线，黑夜是黑板粉笔，跟着网站主题换。
+// 「怎么用」页的 45 秒演示短片：不用视频文件，也不用画布，而是一块 DOM 舞台——
+// 聊天窗、话术精灵主界面、吸附搜索栏都是首页演示同款的样子（样式见 assets/css/guide-film.css，数值照抄 demo.css），
+// 再由一条时间线按秒驱动：真的鼠标箭头会移动、悬停高亮、按下有涟漪，搜索框与输入框逐字打字。
+// 画面上的一切都是时间 T 的纯函数，拖进度条到哪一秒都能还原同一帧。
 (() => {
-  const canvas = document.getElementById("guide-film");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
+  const stage = document.getElementById("guide-film");
+  if (!stage) return;
   const playButton = document.getElementById("guide-play");
   const track = document.getElementById("guide-track");
   const fill = document.getElementById("guide-fill");
   const timeLabel = document.getElementById("guide-time");
   const stepButtons = [...document.querySelectorAll("[data-chapter]")];
 
-  const W = 960;
-  const H = 540;
-  const TAU = Math.PI * 2;
+  const W = 800;
   const DURATION = 45;
-  const FONT = '"KaiTi", "STKaiti", "Kaiti SC", "楷体", serif';
+  const ZOOM = 1.5; // 窄屏（舞台 < 560px）时镜头推近的倍数，字才看得清
 
-  const PALETTES = {
-    light: {
-      bg: "#f3ede1", card: "#fbf8f1", ink: "#2b2723", soft: "rgba(43, 39, 35, 0.42)",
-      accent: "#d4521c", green: "#4f9a3a", blue: "#3767cf", grain: "#6b5e4c", vignette: 0.07, chalk: false,
-    },
-    dark: {
-      bg: "#1c201e", card: "#222826", ink: "#eeeae0", soft: "rgba(238, 234, 224, 0.42)",
-      accent: "#ff8a4c", green: "#8fd46d", blue: "#8fb4ff", grain: "#ffffff", vignette: 0.28, chalk: true,
-    },
-  };
-  let P = PALETTES.dark;
-
-  // ---------- 数学与随机 ----------
+  // ---------- 数学 ----------
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const easeOutBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
-  const linear = (t) => t;
   const sm = (a, b, t, e = easeIO) => e(clamp((t - a) / (b - a), 0, 1));
-  const inWindow = (t, a, b, fade = 0.2) => sm(a, a + fade, t) * (1 - sm(b - fade, b, t));
+  const within = (t, a, b) => t >= a && t < b;
+  const fadeWin = (t, a, b, f = 0.25) => sm(a, a + f, t) * (1 - sm(b - f, b, t));
 
-  function rng(seed) {
-    let a = (seed * 1000003) >>> 0;
-    return () => {
-      a = (a + 0x6d2b79f5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  function hash(k, seed = 0) {
-    let a = (Math.imul(k | 0, 0x9e3779b1) + Math.imul((seed * 4096) | 0, 0x85ebca77)) | 0;
-    a ^= a >>> 15;
-    a = Math.imul(a, 0x2c1b3c6d);
-    a ^= a >>> 12;
-    a = Math.imul(a, 0x297a2d39);
-    a ^= a >>> 15;
-    return (a >>> 0) / 4294967296;
-  }
-  function noise1(x, seed) {
-    const i = Math.floor(x);
-    const f = x - i;
-    const u = f * f * (3 - 2 * f);
-    return lerp(hash(i, seed) * 2 - 1, hash(i + 1, seed) * 2 - 1, u);
-  }
-  function seedOf(text) {
-    let h = 2166136261;
-    for (const ch of text) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
-    return (h >>> 0) % 100000;
-  }
-  const quad = (p0, c, p1, t) => [
-    (1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0],
-    (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1],
-  ];
-
-  // ---------- 形状（都是点列，交给 line() 画成手绘线） ----------
-  function rrect(x, y, w, h, r = 10) {
-    const pts = [];
-    const corner = (cx, cy, a0) => {
-      for (let k = 0; k <= 4; k++) pts.push([cx + Math.cos(a0 + (k / 4) * (Math.PI / 2)) * r, cy + Math.sin(a0 + (k / 4) * (Math.PI / 2)) * r]);
-    };
-    corner(x + w - r, y + r, -Math.PI / 2);
-    corner(x + w - r, y + h - r, 0);
-    corner(x + r, y + h - r, Math.PI / 2);
-    corner(x + r, y + r, Math.PI);
-    return pts;
-  }
-  function circle(cx, cy, rx, ry = rx, n = 28) {
-    return Array.from({ length: n }, (_, i) => [cx + Math.cos((i / n) * TAU) * rx, cy + Math.sin((i / n) * TAU) * ry]);
-  }
-  const CURSOR = [[0, 0], [0, 27], [7, 21], [12, 32], [17, 30], [12, 19], [21, 19]];
-  const PLANE = [[-12, 0], [12, -9], [5, 0], [12, 9]];
-  const MAGNET = (() => {
-    const pts = [[-9, -12], [-9, 2]];
-    for (let k = 1; k < 8; k++) pts.push([Math.cos(Math.PI - (k / 8) * Math.PI) * 9, 2 + Math.sin(Math.PI - (k / 8) * Math.PI) * 9]);
-    pts.push([9, 2], [9, -12]);
-    return pts;
-  })();
-
-  // ---------- 笔触 ----------
-  // 同一张画在不同帧里保持同一组笔迹（按 id + boil 变体缓存），只有 boil 才换笔迹。
-  const PATHS = new Map();
-  let T = 0;
-  let BOIL = 0;
-
-  function densify(pts, close, step = 6) {
-    const out = [];
-    const n = pts.length;
-    const segs = close ? n : n - 1;
-    for (let i = 0; i < segs; i++) {
-      const a = pts[i];
-      const b = pts[(i + 1) % n];
-      const m = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) / step));
-      for (let k = 0; k < m; k++) out.push([lerp(a[0], b[0], k / m), lerp(a[1], b[1], k / m)]);
-    }
-    if (!close) out.push(pts[n - 1].slice());
-    return out;
-  }
-
-  // 手不是逐点抖，而是沿着线慢慢游走：闭合形状用首尾相接的正弦和，开放线用平滑噪声。
-  function wobPath(pts, amp, seed, close) {
-    const q = densify(pts, close);
-    const n = q.length;
-    const s = [0];
-    for (let i = 1; i < n; i++) s.push(s[i - 1] + Math.hypot(q[i][0] - q[i - 1][0], q[i][1] - q[i - 1][1]));
-    const length = close ? s[n - 1] + Math.hypot(q[0][0] - q[n - 1][0], q[0][1] - q[n - 1][1]) : s[n - 1];
-    const r = rng(seed);
-    const ph = [r() * TAU, r() * TAU, r() * 100];
-    const k1 = Math.max(2, Math.round(length / 140));
-    const off = close
-      ? (i) => amp * (0.6 * Math.sin((k1 * TAU * s[i]) / length + ph[0]) + 0.3 * Math.sin(((2 * k1 + 1) * TAU * s[i]) / length + ph[1]))
-      : (i) => amp * (0.65 * noise1(s[i] / 90 + ph[2], seed) + 0.3 * noise1(s[i] / 34 + ph[2] * 3, seed + 7));
-    const path = new Path2D();
-    for (let i = 0; i < n; i++) {
-      const a = q[i > 0 ? i - 1 : close ? n - 1 : 0];
-      const b = q[i < n - 1 ? i + 1 : close ? 0 : n - 1];
-      const nx = a[1] - b[1];
-      const ny = b[0] - a[0];
-      const l = Math.hypot(nx, ny) || 1;
-      const d = off(i);
-      const x = q[i][0] + (nx / l) * d;
-      const y = q[i][1] + (ny / l) * d;
-      if (i) path.lineTo(x, y);
-      else path.moveTo(x, y);
-    }
-    if (close) path.closePath();
-    return { path, length };
-  }
-
-  function line(id, pts, o = {}) {
-    const { color = P.ink, width = 2, amp = 1.4, close = false, progress = 1, fillColor = null, alpha = 1, boil = true } = o;
-    if (progress <= 0) return;
-    const variant = boil ? BOIL : 0;
-    const get = (pass) => {
-      const key = `${id}|${variant}|${pass}`;
-      let entry = PATHS.get(key);
-      if (!entry) {
-        entry = wobPath(pts, amp * (pass ? 1.7 : 1), seedOf(id) + variant * 101 + pass * 7, close);
-        PATHS.set(key, entry);
-      }
-      return entry;
-    };
-    const base = ctx.globalAlpha;
-    ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = color;
-    const main = get(0);
-    if (fillColor && progress >= 1) {
-      ctx.fillStyle = fillColor;
-      ctx.fill(main.path);
-    }
-    const pass = (entry, w, a) => {
-      ctx.globalAlpha = base * alpha * a;
-      ctx.lineWidth = w;
-      ctx.setLineDash(progress < 1 ? [entry.length * progress, entry.length * 2] : []);
-      ctx.stroke(entry.path);
-    };
-    pass(main, width, P.chalk ? 0.88 : 0.94);
-    if (width >= 1.5) pass(get(1), width * 0.55, P.chalk ? 0.45 : 0.32);
-    ctx.restore();
-  }
-
-  // 排线代替平涂：一组平行短线裁在形状里，progress 控制画到第几根。
-  function hatch(id, pts, o = {}) {
-    const { color = P.accent, gap = 6, angle = -0.95, width = 1.3, alpha = 0.5, progress = 1 } = o;
-    if (progress <= 0) return;
-    const key = `${id}|h|${BOIL}`;
-    let entry = PATHS.get(key);
-    if (!entry) {
-      const xs = pts.map((p) => p[0]);
-      const ys = pts.map((p) => p[1]);
-      const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-      const dx = Math.cos(angle);
-      const dy = Math.sin(angle);
-      const nx = -dy;
-      const ny = dx;
-      const proj = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => x * nx + y * ny);
-      const along = ((x0 + x1) / 2) * dx + ((y0 + y1) / 2) * dy;
-      const half = Math.hypot(x1 - x0, y1 - y0) / 2 + 6;
-      const lines = [];
-      for (let d = Math.min(...proj) + gap / 2; d < Math.max(...proj); d += gap) {
-        const bx = nx * d + dx * along;
-        const by = ny * d + dy * along;
-        const seg = [[bx - dx * half, by - dy * half], [bx + dx * half, by + dy * half]];
-        lines.push(wobPath(seg, 0.8, seedOf(id) + lines.length * 13 + BOIL * 101, false).path);
-      }
-      const clip = new Path2D();
-      pts.forEach((p, i) => (i ? clip.lineTo(p[0], p[1]) : clip.moveTo(p[0], p[1])));
-      clip.closePath();
-      entry = { lines, clip };
-      PATHS.set(key, entry);
-    }
-    ctx.save();
-    ctx.clip(entry.clip);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.lineCap = "round";
-    ctx.globalAlpha *= alpha;
-    const count = Math.ceil(entry.lines.length * progress);
-    for (let i = 0; i < count; i++) ctx.stroke(entry.lines[i]);
-    ctx.restore();
-  }
-
-  // 手写字：楷体逐字写出，每个字带一点固定的歪斜和高低（同一张画里不变）。
-  const WIDTHS = new Map();
-  function charWidths(text, size) {
-    const key = `${size}|${text}`;
-    let widths = WIDTHS.get(key);
-    if (!widths) {
-      ctx.font = `${size}px ${FONT}`;
-      widths = [...text].map((ch) => ctx.measureText(ch).width);
-      WIDTHS.set(key, widths);
-    }
-    return widths;
-  }
-  function hand(text, x, y, o = {}) {
-    const { size = 22, color = P.ink, progress = 1, align = "left" } = o;
+  // 逐字打字：每个字间隔 60–110ms（固定伪随机，拖进度条也一样），返回到 T 为止打出的字数。
+  function typedCount(text, start, t) {
     const chars = [...text];
-    const widths = charWidths(text, size);
-    const total = widths.reduce((a, b) => a + b, 0);
-    if (progress <= 0) return total;
-    const seed = seedOf(text);
-    const base = ctx.globalAlpha;
-    let cx = align === "center" ? x - total / 2 : align === "right" ? x - total : x;
-    const shown = progress * chars.length;
-    ctx.save();
-    ctx.font = `${size}px ${FONT}`;
-    ctx.fillStyle = color;
-    ctx.textBaseline = "middle";
-    chars.forEach((ch, i) => {
-      const vis = clamp(shown - i, 0, 1);
-      if (vis > 0) {
-        ctx.save();
-        ctx.globalAlpha = base * vis;
-        ctx.translate(cx + widths[i] / 2, y + (hash(i, seed) - 0.5) * 2.4 + (1 - vis) * 4);
-        ctx.rotate((hash(i + 50, seed) - 0.5) * 0.09);
-        ctx.fillText(ch, -widths[i] / 2, 0);
-        ctx.restore();
-      }
-      cx += widths[i];
-    });
-    ctx.restore();
-    return total;
-  }
-
-  // 看不清的手写行：话术答案只画成一串小拱形，让人知道这里有字就够了。
-  function squiggle(id, x, y, w, progress = 1) {
-    if (progress <= 0) return;
-    const r = rng(seedOf(id));
-    const words = [];
-    let px = x;
-    const end = x + w * (0.7 + r() * 0.3);
-    while (px < end) {
-      const wl = 16 + r() * 34;
-      const f = 0.55 + r() * 0.4;
-      const pts = [];
-      for (let u = 0; u <= wl; u += 2) pts.push([px + u, y - Math.abs(Math.sin(u * f)) * 4]);
-      words.push(pts);
-      px += wl + 7 + r() * 5;
+    let at = start;
+    for (let i = 0; i < chars.length; i++) {
+      at += 0.06 + ((i * 37 + chars.length * 11) % 51) / 1000;
+      if (t < at) return i;
     }
-    const count = Math.ceil(words.length * progress);
-    for (let i = 0; i < count; i++) line(`${id}-${i}`, words[i], { color: P.soft, width: 1.3, amp: 0.5 });
+    return chars.length;
   }
-
-  function dots(p0, c, p1, f) {
-    ctx.save();
-    ctx.fillStyle = P.soft;
-    for (let i = 0; i <= 20 * f; i++) {
-      const [x, y] = quad(p0, c, p1, i / 20);
-      ctx.beginPath();
-      ctx.arc(x, y, 1.8, 0, TAU);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  // ---------- 道具 ----------
-  function plane(id, x, y, s = 1, rot = 0) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot);
-    ctx.scale(s, s);
-    line(id, PLANE, { close: true, fillColor: P.card, width: 2 });
-    line(`${id}-fold`, [[5, 0], [-12, 0]], { width: 1.3 });
-    ctx.restore();
-  }
-
-  function sprite(x, y, o = {}) {
-    const { progress = 1, blink = 0, look = 0 } = o;
-    ctx.save();
-    ctx.translate(x, y);
-    const body = rrect(-46, -44, 92, 84, 28);
-    if (progress >= 1) hatch("sp-body-h", body, { color: P.accent, alpha: 0.6, gap: 5 });
-    line("sp-body", body, { close: true, color: P.accent, width: 3, progress });
-    line("sp-leg-l", [[-16, 40], [-16, 54]], { color: P.accent, width: 3, progress });
-    line("sp-leg-r", [[16, 40], [16, 54]], { color: P.accent, width: 3, progress });
-    if (progress >= 0.7) {
-      for (const sx of [-18, 18]) {
-        ctx.save();
-        ctx.translate(sx, -8);
-        ctx.scale(1, 1 - blink * 0.9);
-        line(`sp-eye${sx}`, circle(0, 0, 13), { close: true, fillColor: P.card, width: 2.2, color: P.ink });
-        ctx.beginPath();
-        ctx.arc(look * 4, 1, 5.5, 0, TAU);
-        ctx.fillStyle = P.ink;
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-    ctx.restore();
-  }
-  const blinkAt = (t, times) => Math.max(0, ...times.map((b) => 1 - Math.abs(t - b) / 0.12));
-
-  function keycap(label, x, y, w, shownFrom, pressAt, goneAt) {
-    const appear = sm(shownFrom, shownFrom + 0.3, T, linear) * (1 - sm(goneAt, goneAt + 0.3, T));
-    if (appear <= 0) return;
-    const press = T >= pressAt && T < pressAt + 0.25 ? 1 : 0;
-    ctx.save();
-    ctx.globalAlpha *= clamp(appear * 1.5, 0, 1);
-    ctx.translate(x + w / 2, y + 20);
-    const s = 0.6 + 0.4 * easeOutBack(appear);
-    ctx.scale(s, s);
-    ctx.translate(-w / 2, -20);
-    line(`key-sh-${label}-${w}`, rrect(0, 5, w, 40, 8), { close: true, color: P.soft, width: 1.6 });
-    ctx.translate(0, press * 4);
-    line(`key-${label}-${w}`, rrect(0, 0, w, 40, 8), { close: true, fillColor: P.card, width: 2.2 });
-    hand(label, w / 2, 20, { size: 19, align: "center" });
-    ctx.restore();
-  }
-
-  function note(text, x, y, from, to, arrow) {
-    const a = inWindow(T, from, to, 0.3);
-    if (a <= 0) return;
-    ctx.save();
-    ctx.globalAlpha *= a;
-    hand(text, x, y, { size: 19, color: P.accent, progress: sm(from, from + 0.6, T, linear) });
-    if (arrow) line(`note-${text}`, arrow, { color: P.accent, width: 1.8, progress: sm(from + 0.4, from + 0.8, T) });
-    ctx.restore();
-  }
+  const typed = (text, start, t) => [...text].slice(0, typedCount(text, start, t)).join("");
 
   // ---------- 剧本 ----------
-  // 场景时间都是整片的绝对秒数；窗口、气泡、光标的状态都是 T 的纯函数，拖进度条到哪一秒都画得出来。
+  // 场景时间都是整片的绝对秒数，与页面下方五个步骤（data-chapter = 段号）一一对应。
   const SCENES = [
     { start: 0, end: 4 },
-    { start: 4, end: 11, caption: "① 分好类：团队 / 个人 / 离线，每类 0–9 十套" },
-    { start: 11, end: 18, caption: "② 双击话术，贴进聊天输入框" },
-    { start: 18, end: 26, caption: "③ 点左侧纸飞机，直接发送" },
-    { start: 26, end: 35, caption: "④ Alt+Q 搜索，按 Tab 再按数字直接发送" },
-    { start: 35, end: 41, caption: "⑤ 吸附搜索栏贴在聊天窗口下面" },
+    { start: 4, end: 11, caption: "分好类：团队 / 个人 / 离线，每类 0–9 十套" },
+    { start: 11, end: 18, caption: "双击话术，贴进聊天输入框" },
+    { start: 18, end: 26, caption: "点左侧纸飞机，直接发送" },
+    { start: 26, end: 35, caption: "Alt+Q 搜索，按 Tab 再按数字直接发送" },
+    { start: 35, end: 41, caption: "吸附搜索栏贴在聊天窗口下面" },
     { start: 41, end: DURATION },
   ];
+  const NUMS = ["", "①", "②", "③", "④", "⑤"];
+  // 搜索框与结果区的提示语，照客户端：一次只提示下一步该按什么。
+  const HINT = {
+    idle: "Alt+Q 定位搜索栏",
+    empty: "输入关键词搜索",
+    tab: `按 <span class="gf-hint-cap">Tab</span> 固定结果 → 按数字发送`,
+    digits: "按数字直接发送 · Esc 退出",
+  };
 
-  const TABS = ["团队话术", "个人话术", "离线话术"];
-  const CHIPS = ["售前", "售后", "物流"];
-  const ROWS = ["正品保证", "发货时间", "包邮说明"];
-  const HITS = ["发货时间", "催发货", "发货地址"];
+  const ROW = {
+    welcome: { title: "欢迎问候", text: "亲，您好！欢迎光临，有什么可以帮到您的吗？" },
+    busy: { title: "忙时提醒", text: "您好，稍等一下哦，马上为您服务~" },
+    real: { title: "正品保证", text: "亲，我们是品牌直营，保证正品～" },
+    ship: { title: "发货时间", text: "亲，今天下单今天发货～" },
+    free: { title: "包邮说明", text: "亲，全场满 49 元包邮～" },
+    rush: { title: "催发货", text: "亲，已经帮您催仓库了，今天一定发出～" },
+    addr: { title: "发货地址", text: "亲，我们从杭州仓发货，一般 2 天到～" },
+    swap: { title: "退换说明", text: "亲，7 天无理由退换，运费险已经帮您买好～" },
+    hi: { title: "打招呼", text: "在的亲，请讲～" },
+    off: { title: "下班留言", text: "亲，客服已下班，明早 9 点第一时间回复您～" },
+    lag: { title: "网络异常", text: "亲，网络有点慢，稍等我一下～" },
+  };
+  // 主界面在各个时刻显示的那一屏：一级分类、二级分类、话术行（搜索结果带客户端格式的来源文案）。
+  const VIEWS = {
+    team0: { chips: ["欢迎", "售前", "售后", "物流"], chip: 0, lv2: "欢迎话术", rows: [ROW.welcome, ROW.busy] },
+    personal: { chips: ["我的常用", "催单"], chip: 0, lv2: "我的常用", rows: [ROW.hi, ROW.off] },
+    local: { chips: ["离线备用"], chip: 0, lv2: "离线备用", rows: [ROW.lag] },
+    team3: { chips: ["欢迎", "售前", "售后", "物流"], chip: 0, lv2: "欢迎话术", rows: [ROW.welcome, ROW.busy] },
+    presale: { chips: ["欢迎", "售前", "售后", "物流"], chip: 1, lv2: "常见问题", rows: [ROW.real, ROW.ship, ROW.free] },
+    search: {
+      results: true,
+      chips: ["欢迎", "售前", "售后", "物流"],
+      chip: 1,
+      lv2: null,
+      rows: [
+        { ...ROW.ship, path: "团队·第3套｜售前 > 常见问题" },
+        { ...ROW.rush, path: "团队·第3套｜售后 > 物流跟进" },
+        { ...ROW.addr, path: "团队·第3套｜物流 > 发货说明" },
+      ],
+    },
+    located: { chips: ["欢迎", "售前", "售后", "物流"], chip: 2, lv2: "物流跟进", rows: [ROW.rush, ROW.swap] },
+  };
+  const BAR_HIT = { ...ROW.free, path: "团队·第3套｜售前 > 常见问题" };
+
+  const PASTED = ROW.real.text;
+  const EDIT = "放心拍哦";
   const BUBBLES = [
-    { id: "b-c1", side: "in", text: "老板，是正品吗？", y: 76, at: 12.0 },
-    { id: "b-o1", side: "out", text: "亲，我们是品牌直营，保证正品～", y: 124, at: 17.1 },
-    { id: "b-o2", side: "out", text: "亲，今天下单今天发货～", y: 172, at: 21.1 },
-    { id: "b-c2", side: "in", text: "好的，那我拍了！", y: 220, at: 23.2 },
-    { id: "b-o3", side: "out", text: "亲，已经帮您催仓库了，今天一定发出～", y: 268, at: 32.1 },
-    { id: "b-o4", side: "out", text: "亲，全场满 49 元包邮～", y: 316, at: 39.1 },
+    { side: "in", text: "老板，是正品吗？", at: 12.0 },
+    { side: "out", text: PASTED + EDIT, at: 17.05 },
+    { side: "out", text: ROW.ship.text, at: 20.45 },
+    { side: "in", text: "好的，那我拍了！", at: 23.2 },
+    { side: "out", text: ROW.rush.text, at: 31.55 },
+    { side: "out", text: ROW.free.text, at: 39.3 },
   ];
+
+  // 鼠标轨迹：[秒, 目标, dx, dy]。目标是舞台里的 data-ref，位置每帧现量（窗口在动也能停在按钮正中）；
+  // 目标为 null 时 dx/dy 是舞台坐标。相邻两点之间缓动。
+  const POINTER = [
+    [5.5, null, 400, 420], [6.1, "tab1"], [6.3, "tab1"], [6.8, "tab2"], [7.0, "tab2"], [7.5, "tab0"], [7.7, "tab0"],
+    [8.3, "digit3"], [8.5, "digit3"], [9.0, "chip1"], [9.2, "chip1"], [9.9, null, 430, 430],
+    [12.8, null, 640, 430], [13.5, "title0"], [14.0, "title0"], [14.9, "input", -40, 6], [15.4, "input", -40, 6], [16.2, "input", 60, 40],
+    [18.6, null, 660, 430], [19.6, "plane1"], [19.95, "plane1"], [20.9, "plane1", 70, 50],
+    [36.5, null, 600, 300], [37.0, "barInput", -60, 0], [37.5, "barInput", -60, 0], [39.6, "barInput", -40, 0],
+  ];
+  const POINTER_SHOWN = [[5.5, 9.9], [12.8, 16.2], [18.6, 21.0], [36.5, 39.6]];
   const CLICKS = [
-    [6.2, 473, 98], [6.9, 573, 98], [7.6, 373, 98], [8.4, 429, 150], [9.1, 362, 184],
-    [13.6, 670, 266], [13.85, 670, 266], [19.8, 616, 322],
+    [6.2, "tab1"], [6.9, "tab2"], [7.6, "tab0"], [8.4, "digit3"], [9.1, "chip1"],
+    [13.6, "title0"], [13.85, "title0"], [15.0, "input", -40, 6], [19.8, "plane1"], [37.05, "barInput", -60, 0],
   ];
-  const CURSOR_KEYS = [
-    [5.5, 540, 330], [6.1, 473, 98], [6.2, 473, 98], [6.8, 573, 98], [6.9, 573, 98], [7.5, 373, 98], [7.6, 373, 98],
-    [8.3, 429, 150], [8.4, 429, 150], [9.0, 362, 184], [9.1, 362, 184], [9.8, 430, 300],
-    [12.8, 520, 390], [13.5, 670, 266], [14.0, 670, 266], [15.0, 720, 340],
-    [18.6, 720, 420], [19.6, 616, 322], [19.9, 616, 322], [20.8, 690, 390],
+  // 按键提示：[出现, 按下, 消失, 键帽, 贴在哪个元素旁边, dx, dy]（dx 从元素水平中心算，dy 从元素顶边算）。
+  // 第④段的键帽放在主界面右边的空白里、和搜索框齐平（dx 156 = 半宽 150 + 6），不压搜索结果卡。
+  const KEYS = [
+    [16.4, 17.0, 17.5, ["Enter"], "send", -24, -80],
+    [26.3, 27.0, 27.8, ["Alt", "Q"], "app", 156, 300],
+    [29.3, 29.8, 30.3, ["Tab"], "app", 156, 318],
+    [30.5, 31.0, 31.5, ["2"], "app", 156, 318],
+    [38.3, 38.8, 39.3, ["Enter"], "bar", 230, -2],
   ];
-  const CURSOR_SHOWN = [[5.5, 9.9], [12.8, 15.2], [18.6, 20.9]];
+  // 标注：[出现, 消失, 文字, 宽屏位置, 窄屏位置]
+  const NOTES = [
+    [15.6, 17.0, "只贴进来，还没发，还能改字", [52, 276], [52, 276]],
+    [20.6, 22.3, "贴进去 + 回车，一步发出", [52, 276], [52, 276]],
+    [37.6, 41, "不用切回主界面，也能搜、能发", [470, 300], [52, 196]],
+  ];
+  // 窄屏镜头跟着操作走：[秒, 中心 x, 中心 y]（舞台坐标）
+  const CAMERA = [
+    [0, 400, 225], [10.0, 400, 225], [11.0, 600, 225], [13.95, 600, 225], [14.5, 240, 260], [17.8, 240, 260],
+    [18.5, 610, 225], [20.0, 610, 225], [20.5, 240, 260], [26.0, 240, 260], [26.6, 610, 260], [31.1, 610, 260],
+    [31.5, 240, 260], [35.4, 240, 260], [36.0, 300, 330], [41.0, 300, 330], [41.5, 400, 225],
+  ];
 
-  function panelState() {
-    let x = 590;
-    let alpha = 1;
-    if (T < 9.8) x = 315;
-    else if (T < 10.8) x = lerp(315, 590, sm(9.8, 10.8, T));
-    if (T >= 35) {
-      const k = sm(35, 35.6, T);
-      x = 590 + 30 * k;
-      alpha = 1 - k;
-    }
-    const tab = T < 6.2 ? 0 : T < 6.9 ? 1 : T < 7.6 ? 2 : 0;
-    const searching = T >= 28.6 && T < 33.3;
-    let hi = -1;
-    if (T >= 13.6 && T < 17.2) hi = 0;
-    if (T >= 19.8 && T < 21.5) hi = 1;
-    if (T >= 31 && T < 33.3) hi = 1;
-    return {
-      x, alpha, tab, hi, searching,
-      progress: sm(4, 5.6, T, linear),
-      digit: T >= 8.4 ? 3 : 0,
-      digitRing: sm(8.4, 8.8, T),
-      chip: T >= 9.1 ? 0 : -1,
-      rowsProgress: searching ? sm(28.6, 29.2, T, linear) : 1,
-      numbers: searching ? sm(29.85, 30.2, T) : 0,
-      search: T >= 27.8 && T < 33.3 ? sm(27.8, 28.4, T, linear) : 0,
-      searchRing: sm(27.05, 27.5, T) * (1 - sm(28.2, 28.6, T)),
-    };
+  // ---------- 舞台 ----------
+  const PLANE = `<svg class="gf-app-row-send" viewBox="0 0 14 14" data-hov><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>`;
+  const rowHtml = (row, i) => `<div class="gf-app-row" data-ref="row${i}" data-hov>
+    ${PLANE.replace("data-hov", `data-hov data-ref="plane${i}"`)}
+    <span class="gf-app-row-body">
+      <span class="gf-app-row-main"><span class="gf-app-row-digit" hidden>${(i + 1) % 10}</span><img class="gf-app-row-icon" src="assets/type-text.png" alt="" /><span class="gf-app-row-title" data-ref="title${i}">${row.title}</span>${row.path ? `<span class="gf-app-row-path">${row.path}</span>` : ""}</span>
+      <span class="gf-app-row-text">${row.text}</span>
+    </span>
+  </div>`;
+  // 搜索结果卡的表头：「搜索结果 · N」+ 下一步提示（按 Tab 之前教 Tab，按过 Tab 教数字）。
+  const resultsHeadHtml = (count, hint) =>
+    `<div class="gf-results-head"><span class="gf-results-title">搜索结果 · ${count}</span><span class="gf-results-hint">${hint}</span></div>`;
+  const viewHtml = (view, hint) =>
+    (view.results ? resultsHeadHtml(view.rows.length, hint) : "") +
+    (view.lv2
+      ? `<div class="gf-app-lv2"><span class="gf-app-lv2-arrow">▼</span><span class="gf-app-lv2-title">${view.lv2}</span></div>`
+      : "") +
+    view.rows.map(rowHtml).join("");
+
+  stage.innerHTML = `<div class="gf-screen" aria-hidden="true">
+  <div class="gf-win gf-chat" data-ref="chat" data-skin="css">
+    <div class="gf-chat-head"><span class="gf-chat-avatar">陈</span><span class="gf-chat-who"><strong>顾客·小陈</strong><em>在线</em></span></div>
+    <div class="gf-chat-log">
+      ${BUBBLES.map((b) => `<div class="gf-msg ${b.side === "in" ? "gf-msg--in" : "gf-msg--out"}" hidden><p class="gf-bubble">${b.text}</p></div>`).join("")}
+      <div class="gf-msg gf-msg--in" data-ref="typing" hidden><span class="gf-typing"><i class="gf-typing-dot"></i><i class="gf-typing-dot"></i><i class="gf-typing-dot"></i></span></div>
+    </div>
+    <div class="gf-chat-foot">
+      <div class="gf-chat-input" data-ref="input" data-hov></div>
+      <span class="gf-chat-send" data-ref="send">发送</span>
+    </div>
+  </div>
+  <div class="gf-attached" data-ref="bar" hidden>
+    <div class="gf-attached-results" data-ref="pop" hidden>
+      ${resultsHeadHtml(1, HINT.tab)}
+      <div data-ref="popList">${rowHtml(BAR_HIT, 9)}</div>
+    </div>
+    <span class="gf-snap" data-ref="snap"></span>
+    <div class="gf-attached-row" data-ref="barRow">
+      <span class="gf-attached-input" data-ref="barInput" data-hov></span>
+      <span class="gf-attached-range">全部</span>
+      <span class="gf-attached-toggle">›</span>
+    </div>
+  </div>
+  <div class="gf-win gf-app" data-ref="app">
+    <div class="gf-app-bar">
+      <span class="gf-app-tag">演示</span>
+      <span class="gf-app-wins">
+        <svg class="gf-app-win" viewBox="0 0 16 16"><path d="M5 3.5v5a3 3 0 0 0 6 0v-5" /><path d="M5 3.5h1.6M9.4 3.5H11" /></svg>
+        <svg class="gf-app-win" viewBox="0 0 16 16"><path d="M6.3 3.6h3.4" /><path d="M6.9 3.6 6.4 7.4h3.2l-.5-3.8" /><path d="M8 7.4v5.6" /></svg>
+        <svg class="gf-app-win" viewBox="0 0 16 16"><path d="M4 8h8" /></svg>
+      </span>
+    </div>
+    <div class="gf-app-tabs">${["团队话术", "个人话术", "离线话术"].map((t, i) => `<span class="gf-app-tab" data-ref="tab${i}" data-hov>${t}</span>`).join("")}</div>
+    <div class="gf-app-digits">${Array.from({ length: 10 }, (_, i) => `<span class="gf-app-digit" data-ref="digit${i}" data-hov>${i}</span>`).join("")}</div>
+    <div class="gf-app-lv1" data-ref="chips"></div>
+    <div class="gf-app-tree" data-ref="tree"></div>
+    <div class="gf-app-search">
+      <span class="gf-app-search-input" data-ref="search"></span>
+      <span class="gf-app-range">全部 ▾</span>
+    </div>
+  </div>
+  ${NOTES.map(() => `<span class="gf-note" hidden></span>`).join("")}
+  ${KEYS.map((k) => `<span class="gf-key" hidden>${k[3].map((c) => `<span class="gf-cap">${c}</span>`).join("+")}</span>`).join("")}
+  <span class="gf-ripple" hidden></span><span class="gf-ripple" hidden></span>
+  <span class="gf-pointer" data-ref="pointer" hidden><svg viewBox="0 0 14 21"><path d="M1 1v16.2l3.9-3.7 2.6 6.1 2.6-1.1-2.6-6H13Z" fill="#fff" stroke="#000" stroke-width="1" stroke-linejoin="round" /></svg></span>
+</div>
+<div class="gf-hud" aria-hidden="true">
+  <p class="gf-caption" data-ref="caption"></p>
+  <div class="gf-title" data-ref="intro"><img src="assets/logo.png" alt="" /><strong>话术精灵</strong><span>45 秒看懂怎么用</span></div>
+  <div class="gf-title" data-ref="outro" hidden><img src="assets/logo.png" alt="" /><strong>装好就能用</strong><span>本地永久免费 · <b>luyao2089.cc</b></span></div>
+</div>`;
+
+  const screen = stage.querySelector(".gf-screen");
+  const hud = stage.querySelector(".gf-hud");
+  const ref = (name) => stage.querySelector(`[data-ref="${name}"]`);
+  const R = Object.fromEntries(
+    ["chat", "input", "send", "typing", "bar", "pop", "snap", "barRow", "barInput", "app", "chips", "tree", "search", "pointer", "caption", "intro", "outro"].map(
+      (name) => [name, ref(name)],
+    ),
+  );
+  const msgs = [...stage.querySelectorAll(".gf-chat-log .gf-msg:not([data-ref])")];
+  const typingDots = [...R.typing.querySelectorAll(".gf-typing-dot")];
+  const notes = [...stage.querySelectorAll(".gf-note")];
+  const keys = [...stage.querySelectorAll(".gf-key")];
+  const ripples = [...stage.querySelectorAll(".gf-ripple")];
+  const tabs = [0, 1, 2].map((i) => ref(`tab${i}`));
+  const digits = Array.from({ length: 10 }, (_, i) => ref(`digit${i}`));
+
+  // 截图模式：页面上给了 data-chat-shot（assets/img/ 下的真实聊天窗截图）就用截图当聊天窗的底，
+  // 代码画的外框隐藏，气泡和输入框里的字照常叠在上面。没给就是代码画的。
+  const chatShot = stage.dataset.chatShot;
+  if (chatShot) {
+    R.chat.dataset.skin = "shot";
+    R.chat.insertAdjacentHTML("afterbegin", `<img class="gf-shot" src="${chatShot}" alt="" />`);
   }
 
-  function drawPanel() {
-    if (T < 4 || T >= 35.6) return;
-    const s = panelState();
-    const q = (a, b) => clamp((s.progress - a) / (b - a), 0, 1);
-    ctx.save();
-    ctx.globalAlpha *= s.alpha;
-    ctx.translate(s.x, 70);
-    line("pn-frame", rrect(0, 0, 330, 400, 12), { close: true, fillColor: P.card, width: 2.2, progress: q(0, 0.5) });
-    TABS.forEach((t, i) => hand(t, 20 + i * 100, 28, { size: 19, progress: q(0.3, 0.6), color: i === s.tab ? P.ink : P.soft }));
-    line(`pn-tab-ul-${s.tab}`, [[18 + s.tab * 100, 46], [98 + s.tab * 100, 47]], { color: P.accent, width: 3, progress: q(0.5, 0.7) });
-    line("pn-div", [[12, 56], [318, 56]], { color: P.soft, width: 1.2, progress: q(0.4, 0.7) });
-    for (let i = 0; i < 10; i++) {
-      hand(String(i), 24 + i * 30, 80, { size: 18, align: "center", progress: q(0.55, 0.8), color: i === s.digit ? P.accent : P.ink });
-    }
-    if (s.digit) line(`pn-dig-${s.digit}`, circle(24 + s.digit * 30, 80, 13), { close: true, color: P.accent, width: 2, progress: s.digitRing });
-    CHIPS.forEach((c, i) => {
-      ctx.save();
-      ctx.translate(16 + i * 72, 100);
-      const shape = rrect(0, 0, 62, 28, 8);
-      if (i === s.chip) hatch("pn-chip-h", shape, { color: P.accent, alpha: 0.4, gap: 5 });
-      line(`pn-chip-${i}`, shape, { close: true, width: 1.6, progress: q(0.6, 0.85) });
-      hand(c, 31, 14, { size: 16, align: "center", progress: q(0.65, 0.9) });
-      ctx.restore();
+  // ---------- 小工具 ----------
+  const show = (el, on) => {
+    if (el.hidden === on) el.hidden = !on;
+  };
+  const setHtml = (el, html) => {
+    if (el._html !== html) el.innerHTML = el._html = html;
+  };
+  const caretHtml = (on) => `<i class="gf-caret"${on ? "" : " hidden"}></i>`;
+  const fieldHtml = (text, focused, placeholder, t) => {
+    const blink = Math.floor(t * 2) % 2 === 0;
+    if (!text) return focused ? caretHtml(blink) + `<span class="gf-placeholder">${placeholder}</span>` : `<span class="gf-placeholder">${placeholder}</span>`;
+    return text + (focused ? caretHtml(blink) : "");
+  };
+
+  let scale = 1;
+  let zoomed = false;
+  let cam = { x: 0, y: 0, z: 1 };
+
+  // 元素在舞台坐标里的位置（扣掉缩放和镜头）。
+  let screenRect = null; // 每帧量一次
+  function rectOf(el) {
+    const s = (screenRect ??= screen.getBoundingClientRect());
+    const r = el.getBoundingClientRect();
+    const k = scale * cam.z;
+    return { x: (r.left - s.left) / k, y: (r.top - s.top) / k, w: r.width / k, h: r.height / k };
+  }
+  function pointOf(target, dx = 0, dy = 0) {
+    if (!target) return [dx, dy];
+    const el = ref(target);
+    if (!el) return [dx, dy];
+    const r = rectOf(el);
+    return [r.x + r.w / 2 + dx, r.y + r.h / 2 + dy];
+  }
+
+  // ---------- 每一帧 ----------
+  function viewAt(t) {
+    const tab = t < 6.2 ? 0 : t < 6.9 ? 1 : t < 7.6 ? 2 : 0;
+    if (tab === 1) return "personal";
+    if (tab === 2) return "local";
+    if (t < 8.4) return "team0";
+    if (t < 9.1) return "team3";
+    if (within(t, 27.6, 31.6) && typedCount("发货", 27.6, t) === 2) return "search";
+    if (t >= 31.6) return "located";
+    return "presale";
+  }
+
+  function renderApp(t) {
+    const on = within(t, 4, 35.6);
+    show(R.app, on);
+    if (!on) return;
+    R.app.style.opacity = String(sm(4, 4.6, t) * (1 - sm(35, 35.6, t)));
+    R.app.style.left = `${lerp(250, 460, sm(9.8, 10.8, t)) + 20 * sm(35, 35.6, t)}px`;
+    R.app.style.transform = `scale(${lerp(0.97, 1, sm(4, 4.6, t))})`;
+
+    const tab = t < 6.2 ? 0 : t < 6.9 ? 1 : t < 7.6 ? 2 : 0;
+    tabs.forEach((el, i) => el.classList.toggle("gf-app-tab--active", i === tab));
+    const digit = tab === 0 && t >= 8.4 ? 3 : 0;
+    digits.forEach((el, i) => el.classList.toggle("gf-app-digit--active", i === digit));
+
+    const name = viewAt(t);
+    const view = VIEWS[name];
+    setHtml(
+      R.chips,
+      view.chips.map((c, i) => `<span class="gf-app-chip${i === view.chip ? " gf-app-chip--active" : ""}" data-ref="chip${i}" data-hov>${c}</span>`).join(""),
+    );
+    R.tree.classList.toggle("gf-app-tree--results", Boolean(view.results));
+    setHtml(R.tree, viewHtml(view, t >= 29.8 ? HINT.digits : HINT.tab));
+    // 列表底边放不下整行的就不画：一行要么完整可见、要么还没开始，不会被底边横着切过文字。
+    const treeBottom = R.tree.offsetTop + R.tree.clientTop + R.tree.clientHeight;
+    R.tree.querySelectorAll(".gf-app-row").forEach((row) => {
+      row.style.visibility = row.offsetTop + row.offsetHeight <= treeBottom ? "" : "hidden";
     });
-    line("pn-lv2", rrect(12, 140, 306, 28, 6), { close: true, color: P.soft, width: 1.4, progress: q(0.7, 0.9) });
-    hand(s.searching ? "搜索结果 · 3" : "价格问题", 24, 154, { size: 16, color: P.soft, progress: q(0.72, 0.92) });
-    const rows = s.searching ? HITS : ROWS;
-    const rowsProgress = q(0.8, 1) * s.rowsProgress;
-    rows.forEach((title, i) => {
-      ctx.save();
-      ctx.translate(0, 180 + i * 54);
-      if (s.hi === i) hatch(`pn-hi-${i}`, rrect(8, 0, 314, 48, 6), { color: P.blue, alpha: 0.35, gap: 6 });
-      if (rowsProgress > 0) plane(`pn-plane-${i}`, 26, 16, 0.7);
-      hand(title, 48, 14, { size: 18, color: P.accent, progress: rowsProgress });
-      squiggle(`pn-sq-${s.searching ? "hit" : "row"}-${i}`, 48, 36, 220, rowsProgress);
-      if (s.numbers > 0) {
-        line(`pn-num-${i}`, circle(298, 16, 11), { close: true, color: P.accent, width: 1.6, progress: s.numbers });
-        hand(String(i + 1), 298, 16, { size: 15, align: "center", color: P.accent, progress: s.numbers });
-      }
-      ctx.restore();
+
+    // 选中 / 正在发送的行
+    let selected = -1;
+    let sending = -1;
+    if (name === "presale" && within(t, 13.6, 18)) selected = 0;
+    if (name === "presale" && within(t, 19.8, 20.45)) sending = 1;
+    if (name === "presale" && within(t, 20.45, 26)) selected = 1;
+    if (name === "search" && within(t, 31.0, 31.6)) sending = 1;
+    if (name === "located") selected = 0;
+    R.tree.querySelectorAll(".gf-app-row").forEach((row, i) => {
+      row.classList.toggle("gf-app-row--selected", i === selected);
+      row.classList.toggle("gf-app-row--sending", i === sending);
+      const badge = row.querySelector(".gf-app-row-digit");
+      if (badge) show(badge, name === "search" && t >= 29.8);
     });
-    ctx.save();
-    ctx.translate(12, 346);
-    line("pn-search", rrect(0, 0, 306, 38, 8), { close: true, width: 1.8, progress: q(0.85, 1) });
-    if (s.search > 0) hand("发货", 14, 19, { size: 18, progress: s.search });
-    else hand("Alt+Q 定位搜索栏", 14, 19, { size: 16, color: P.soft, progress: q(0.9, 1) });
-    if (s.searchRing > 0) line("pn-search-ring", circle(153, 19, 172, 30, 40), { close: true, color: P.accent, width: 2.2, progress: s.searchRing });
-    ctx.restore();
-    ctx.restore();
+
+    // 搜索框：Alt+Q 定位 → 逐字打「发货」→ 用了第 2 条命中后退出搜索
+    const focused = within(t, 27.0, 31.6);
+    const text = within(t, 27.6, 31.6) ? typed("发货", 27.6, t) : "";
+    R.search.classList.toggle("gf-app-search-input--focus", focused);
+    R.search.classList.toggle("gf-app-search-input--hit", within(t, 27.0, 27.9));
+    setHtml(R.search, fieldHtml(text, focused, focused ? HINT.empty : HINT.idle, t));
   }
 
-  function bubble(b, shift) {
-    const progress = clamp((T - b.at) / 0.8, 0, 1);
-    if (progress <= 0) return;
-    const size = 17;
-    const w = charWidths(b.text, size).reduce((a, c) => a + c, 0) + 30;
-    const h = 36;
-    ctx.save();
-    ctx.translate(b.side === "in" ? 16 : 480 - 16 - w, b.y - shift);
-    const shape = rrect(0, 0, w, h, 10);
-    if (b.side === "out") {
-      hatch(`${b.id}-h`, shape, { color: P.green, alpha: 0.5, gap: 5, progress: clamp((progress - 0.35) / 0.4, 0, 1) });
-      line(b.id, shape, { close: true, color: P.green, width: 2, progress: clamp(progress / 0.4, 0, 1) });
-    } else {
-      line(b.id, shape, { close: true, fillColor: P.card, width: 1.8, progress: clamp(progress / 0.4, 0, 1) });
-    }
-    hand(b.text, 15, h / 2, { size, progress: clamp((progress - 0.3) / 0.7, 0, 1) });
-    ctx.restore();
-  }
+  function renderChat(t) {
+    const on = t >= 11;
+    show(R.chat, on);
+    if (!on) return;
+    const k = sm(11, 11.6, t);
+    R.chat.style.opacity = String(k);
+    R.chat.style.transform = `translateY(${(1 - k) * 8}px)`;
 
-  function drawChat() {
-    if (T < 11) return;
-    const p = sm(11, 12.2, T, linear);
-    const q = (a, b) => clamp((p - a) / (b - a), 0, 1);
-    ctx.save();
-    ctx.translate(50, 70);
-    line("ch-frame", rrect(0, 0, 480, 400, 12), { close: true, fillColor: P.card, width: 2.2, progress: q(0, 0.5) });
-    line("ch-avatar", circle(32, 30, 15), { close: true, width: 1.8, progress: q(0.3, 0.6) });
-    hand("晓", 32, 30, { size: 16, align: "center", progress: q(0.4, 0.7) });
-    hand("客户 晓明", 58, 30, { size: 18, progress: q(0.45, 0.75) });
-    line("ch-head", [[0, 58], [480, 58]], { color: P.soft, width: 1.2, progress: q(0.3, 0.7) });
-    line("ch-input", rrect(14, 344, 360, 40, 8), { close: true, width: 1.8, progress: q(0.6, 0.9) });
-    const sendFlash = (T >= 17 && T < 17.3) || (T >= 38.8 && T < 39.1);
-    if (sendFlash) hatch("ch-send-h", rrect(388, 344, 78, 40, 8), { color: P.green, alpha: 0.6, gap: 5 });
-    line("ch-send", rrect(388, 344, 78, 40, 8), { close: true, width: 1.8, progress: q(0.65, 0.95) });
-    hand("发送", 427, 364, { size: 17, align: "center", progress: q(0.7, 1) });
-    if (T >= 15 && T < 17.1) hand("亲，我们是品牌直营，保证正品～", 28, 364, { size: 17, progress: sm(15, 15.4, T, linear) });
-
-    const shift = 48 * sm(38.9, 39.3, T);
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(2, 60, 476, 278);
-    ctx.clip();
-    BUBBLES.forEach((b) => bubble(b, shift));
-    if (T >= 22.3 && T < 23.2) {
-      ctx.fillStyle = P.soft;
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        ctx.arc(34 + i * 13, 238 - Math.max(0, Math.sin(T * 9 - i)) * 4, 3.2, 0, TAU);
-        ctx.fill();
+    BUBBLES.forEach((b, i) => {
+      const d = t - b.at;
+      show(msgs[i], d >= 0);
+      if (d >= 0) {
+        const e = clamp(d / 0.22, 0, 1);
+        msgs[i].style.opacity = String(e);
+        msgs[i].style.transform = e < 1 ? `translateY(${(1 - e) * 6}px)` : "";
       }
-    }
-    ctx.restore();
-    ctx.restore();
+    });
+    const typing = within(t, 22.3, 23.2);
+    show(R.typing, typing);
+    if (typing) typingDots.forEach((dot, i) => (dot.style.opacity = String(0.3 + 0.7 * Math.max(0, Math.sin((t - i * 0.15) * Math.PI * 2)))));
+
+    // 输入框：双击贴入（只贴不发）→ 点一下补几个字 → 回车发出；纸飞机、数字键、吸附栏回车都是「贴入 + 回车」
+    let text = "";
+    if (within(t, 13.95, 17.05)) text = PASTED + (t >= 15.1 ? typed(EDIT, 15.1, t) : "");
+    else if (within(t, 19.85, 20.45)) text = ROW.ship.text;
+    else if (within(t, 31.05, 31.55)) text = ROW.rush.text;
+    else if (within(t, 38.85, 39.3)) text = ROW.free.text;
+    const focused = within(t, 13.95, 17.05);
+    R.input.classList.toggle("gf-chat-input--focus", focused);
+    setHtml(R.input, fieldHtml(text, focused, "双击右侧话术贴进来，也可以直接打字，回车发送", t));
+    R.send.classList.toggle("gf-chat-send--ready", Boolean(text));
   }
 
-  function drawAttached() {
-    if (T < 35.8) return;
-    const k = easeOutBack(clamp((T - 35.8) / 0.7, 0, 1));
-    const y = lerp(560, 474, k);
-    ctx.save();
-    ctx.translate(50, y);
-    line("bar", rrect(0, 0, 480, 40, 8), { close: true, fillColor: P.card, width: 2.2 });
-    if (T >= 37.2 && T < 39) hand("包邮", 14, 20, { size: 18, progress: sm(37.2, 37.8, T, linear) });
-    else hand("搜索话术…", 14, 20, { size: 16, color: P.soft });
-    hand("全部", 418, 20, { size: 16, color: P.soft });
-    hand("›", 460, 20, { size: 20, color: P.soft });
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(560, y + 24);
-    line("magnet", MAGNET, { color: P.accent, width: 3 });
-    line("magnet-l", [[-9, -12], [-9, -6]], { color: P.ink, width: 3.4 });
-    line("magnet-r", [[9, -12], [9, -6]], { color: P.ink, width: 3.4 });
-    if (T >= 36.4 && T < 37.2) {
-      const a = 1 - sm(36.4, 37.2, T, linear);
-      line("snap-1", [[-20, -22], [-14, -16]], { color: P.accent, width: 2, alpha: a });
-      line("snap-2", [[0, -28], [0, -20]], { color: P.accent, width: 2, alpha: a });
-      line("snap-3", [[20, -22], [14, -16]], { color: P.accent, width: 2, alpha: a });
-    }
-    ctx.restore();
-
-    const pop = sm(37.9, 38.2, T) * (1 - sm(38.9, 39, T));
-    if (pop > 0) {
-      ctx.save();
-      ctx.globalAlpha *= pop;
-      ctx.translate(50, 384);
-      line("pop", rrect(0, 0, 480, 86, 8), { close: true, fillColor: P.card, width: 2 });
-      hand("搜索结果 · 1", 14, 18, { size: 15, color: P.soft });
-      hatch("pop-hi", rrect(8, 34, 464, 42, 6), { color: P.blue, alpha: 0.35 });
-      plane("pop-plane", 26, 55, 0.7);
-      hand("包邮说明", 48, 55, { size: 18, color: P.accent });
-      squiggle("pop-sq", 140, 60, 200);
-      ctx.restore();
-    }
+  function renderBar(t) {
+    const on = t >= 35.8;
+    show(R.bar, on);
+    if (!on) return;
+    // 从下方滑上来，吸附到聊天窗口底边（顶边亮一下表示吸住了）
+    R.bar.style.top = `${lerp(470, 398, easeOutBack(clamp((t - 35.8) / 0.6, 0, 1)))}px`;
+    R.snap.style.opacity = String(fadeWin(t, 36.3, 37.1, 0.15));
+    const focused = within(t, 37.05, 38.85);
+    R.barRow.classList.toggle("gf-attached-row--focus", focused);
+    const text = within(t, 37.4, 38.85) ? typed("包邮", 37.4, t) : "";
+    setHtml(R.barInput, fieldHtml(text, focused, focused ? HINT.empty : HINT.idle, t));
+    show(R.pop, text === "包邮");
   }
 
-  function drawMotion() {
-    if (T >= 14 && T < 15.1) {
-      const f = sm(14, 15, T);
-      const p0 = [640, 264];
-      const c = [380, 170];
-      const p1 = [80, 434];
-      dots(p0, c, p1, f);
-      const [x, y] = quad(p0, c, p1, f);
-      hand("亲，我们是品牌直营…", x, y, { size: 15, color: P.accent });
+  function renderPointer(t) {
+    const visible = Math.max(...POINTER_SHOWN.map(([a, b]) => fadeWin(t, a, b, 0.2)));
+    show(R.pointer, visible > 0);
+    let at = null;
+    if (visible > 0) {
+      let i = POINTER.findIndex((key) => key[0] > t);
+      if (i === -1) i = POINTER.length - 1;
+      const b = POINTER[i];
+      const a = POINTER[Math.max(0, i - 1)];
+      const f = b[0] === a[0] ? 1 : easeIO(clamp((t - a[0]) / (b[0] - a[0]), 0, 1));
+      const pa = pointOf(a[1], a[2], a[3]);
+      const pb = pointOf(b[1], b[2], b[3]);
+      at = [lerp(pa[0], pb[0], f), lerp(pa[1], pb[1], f)];
+      const pressed = CLICKS.some(([c]) => within(t, c, c + 0.1));
+      R.pointer.style.opacity = String(visible);
+      R.pointer.style.transform = `translate(${at[0] - 1}px, ${at[1] - 1}px) scale(${pressed ? 0.88 : 1})`;
     }
-    const flights = [
-      [19.9, 21.1, [616, 320], [560, 150], [405, 260]],
-      [31.1, 32.1, [616, 320], [520, 200], [346, 356]],
-    ];
-    for (const [a, b, p0, c, p1] of flights) {
-      if (T < a || T >= b + 0.1) continue;
-      const f = sm(a, b, T);
-      dots(p0, c, p1, f);
-      const [x, y] = quad(p0, c, p1, f);
-      const [nx, ny] = quad(p0, c, p1, Math.min(1, f + 0.02));
-      plane(`fly-${a}`, x, y, 1.3, Math.atan2(ny - y, nx - x) + Math.PI);
-    }
-    keycap("Enter", 420, 356, 96, 16.2, 17.0, 17.5);
-    keycap("Alt", 80, 356, 64, 26.3, 27.0, 27.8);
-    keycap("Q", 170, 356, 48, 26.3, 27.0, 27.8);
-    if (T >= 26.4 && T < 28.1) hand("+", 157, 376, { size: 22, align: "center", color: P.soft });
-    keycap("Tab", 80, 356, 70, 29.3, 29.8, 30.2);
-    keycap("2", 80, 356, 48, 30.5, 31.0, 31.5);
-    keycap("Enter", 620, 420, 96, 38.1, 38.8, 39.4);
-    note("只贴进来，还没发", 80, 392, 15.4, 17.9, [[96, 404], [102, 420]]);
-    note("贴进去 + 回车，一步发出", 80, 392, 21.8, 25.6);
-    note("不用切回主界面", 610, 240, 36.8, 40.8);
-    note("也能搜、能发", 610, 274, 37.1, 40.8, [[640, 296], [610, 380], [548, 470]]);
-  }
-
-  function drawCursor() {
-    const visible = Math.max(...CURSOR_SHOWN.map(([a, b]) => inWindow(T, a, b)));
-    for (const [t, x, y] of CLICKS) {
-      const d = T - t;
-      if (d < 0 || d > 0.5) continue;
-      const k = d / 0.5;
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(6 + 28 * k, 6 + 28 * k);
-      ctx.globalAlpha = 1 - k;
-      ctx.lineWidth = 2.2 / (6 + 28 * k);
-      ctx.strokeStyle = P.accent;
-      ctx.beginPath();
-      ctx.arc(0, 0, 1, 0, TAU);
-      ctx.stroke();
-      ctx.restore();
-    }
-    if (visible <= 0) return;
-    let i = CURSOR_KEYS.findIndex((key) => key[0] > T);
-    if (i === -1) i = CURSOR_KEYS.length - 1;
-    const b = CURSOR_KEYS[i];
-    const a = CURSOR_KEYS[Math.max(0, i - 1)];
-    const f = b[0] === a[0] ? 1 : easeIO(clamp((T - a[0]) / (b[0] - a[0]), 0, 1));
-    const pressed = CLICKS.some(([t]) => T >= t && T < t + 0.12);
-    ctx.save();
-    ctx.globalAlpha *= visible;
-    ctx.translate(lerp(a[1], b[1], f), lerp(a[2], b[2], f));
-    if (pressed) ctx.scale(0.88, 0.88);
-    line("cursor", CURSOR, { close: true, fillColor: P.card, width: 2 });
-    ctx.restore();
-  }
-
-  function drawCaption() {
-    const scene = SCENES.find((s) => s.caption && T >= s.start && T < s.end);
-    if (!scene) return;
-    const u = T - scene.start;
-    ctx.save();
-    ctx.globalAlpha = 1 - sm(scene.end - 0.35, scene.end, T);
-    const w = hand(scene.caption, W / 2, 36, { size: 25, align: "center", progress: sm(0, 0.9, u, linear) });
-    line(`cap-ul-${scene.start}`, [[W / 2 - w / 2, 57], [W / 2 + w / 2, 59]], { color: P.accent, width: 2.4, progress: sm(0.7, 1.2, u) });
-    ctx.restore();
-  }
-
-  function drawIntro() {
-    if (T >= 4) return;
-    ctx.save();
-    ctx.globalAlpha = 1 - sm(3.4, 4, T);
-    sprite(W / 2, 200, { progress: sm(0, 1.1, T), blink: blinkAt(T, [2.3]), look: Math.sin(T * 1.3) * 0.6 });
-    hand("话术精灵", W / 2, 318, { size: 58, align: "center", progress: sm(0.9, 1.8, T, linear) });
-    const w = hand("45 秒看懂怎么用", W / 2, 378, { size: 26, align: "center", progress: sm(1.7, 2.5, T, linear) });
-    line("intro-ul", [[W / 2 - w / 2, 402], [W / 2 + w / 2, 404]], { color: P.accent, width: 3, progress: sm(2.4, 2.9, T) });
-    ctx.restore();
-  }
-
-  function drawOutro() {
-    if (T < 41) return;
-    const u = T - 41;
-    const hop = u > 1.2 ? Math.exp(-4 * (u - 1.2)) * Math.sin(TAU * 2 * (u - 1.2)) * 10 : 0;
-    sprite(W / 2, 190 - Math.abs(hop), { progress: sm(0.3, 1.1, u), blink: blinkAt(u, [2.7]), look: 0 });
-    hand("装好就能用", W / 2, 310, { size: 48, align: "center", progress: sm(1, 1.8, u, linear) });
-    const w = hand("本地永久免费 · luyao2089.cc", W / 2, 368, { size: 24, align: "center", progress: sm(1.8, 2.6, u, linear) });
-    line("outro-ul", [[W / 2 - w / 2, 392], [W / 2 + w / 2, 394]], { color: P.accent, width: 3, progress: sm(2.5, 3, u) });
-  }
-
-  // ---------- 纸面 ----------
-  // 纸纹属于纸，不属于画：只按画布尺寸与主题生成一次，每帧直接贴上。
-  let paperLayer = null;
-  function buildPaper() {
-    const layer = document.createElement("canvas");
-    layer.width = canvas.width;
-    layer.height = canvas.height;
-    const g = layer.getContext("2d");
-    g.scale(layer.width / W, layer.height / H);
-    g.fillStyle = P.bg;
-    g.fillRect(0, 0, W, H);
-    const r = rng(5);
-    g.fillStyle = P.grain;
-    for (let i = 0; i < 2600; i++) {
-      g.globalAlpha = 0.025 + r() * (P.chalk ? 0.05 : 0.06);
-      g.fillRect(r() * W, r() * H, 0.6 + r() * 1.4, 0.6 + r() * 1.4);
-    }
-    if (P.chalk) {
-      for (let i = 0; i < 12; i++) {
-        const x = r() * W;
-        const y = r() * H;
-        const rad = 80 + r() * 160;
-        const smudge = g.createRadialGradient(x, y, 0, x, y, rad);
-        smudge.addColorStop(0, "rgba(255,255,255,0.035)");
-        smudge.addColorStop(1, "rgba(255,255,255,0)");
-        g.globalAlpha = 1;
-        g.fillStyle = smudge;
-        g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    // 悬停：鼠标尖下面的可点元素亮起来（和真实界面的 :hover 一样）
+    stage.querySelectorAll("[data-hov]").forEach((el) => {
+      let over = false;
+      if (at && visible > 0.5 && !el.closest("[hidden]")) {
+        const r = rectOf(el);
+        over = at[0] >= r.x && at[0] <= r.x + r.w && at[1] >= r.y && at[1] <= r.y + r.h;
       }
-    }
-    const vignette = g.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, W * 0.7);
-    vignette.addColorStop(0, "rgba(0,0,0,0)");
-    vignette.addColorStop(1, `rgba(0,0,0,${P.vignette})`);
-    g.globalAlpha = 1;
-    g.fillStyle = vignette;
-    g.fillRect(0, 0, W, H);
-    paperLayer = layer;
+      el.classList.toggle("gf-hover", over);
+    });
+    // 按下的涟漪：双击两下各一圈
+    const active = CLICKS.filter(([c]) => within(t, c, c + 0.4)).slice(-2);
+    ripples.forEach((el, i) => {
+      const click = active[i];
+      show(el, Boolean(click));
+      if (!click) return;
+      const k = (t - click[0]) / 0.4;
+      const [x, y] = pointOf(click[1], click[2], click[3]);
+      el.style.opacity = String(1 - k);
+      el.style.transform = `translate(${x}px, ${y}px) scale(${0.3 + 0.9 * k})`;
+    });
   }
 
-  function render(time) {
-    T = Math.floor(time * 12) / 12;
-    BOIL = Math.floor(T * 6) % 3;
-    ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
-    ctx.globalAlpha = 1;
-    ctx.drawImage(paperLayer, 0, 0, W, H);
-    drawIntro();
-    if (T >= 4 && T < 41.6) {
-      ctx.save();
-      ctx.globalAlpha = 1 - sm(41, 41.6, T);
-      drawChat();
-      drawAttached();
-      drawPanel();
-      drawMotion();
-      drawCursor();
-      ctx.restore();
+  function renderKeysAndNotes(t) {
+    KEYS.forEach(([from, press, to, , target, dx, dy], i) => {
+      const el = keys[i];
+      const on = within(t, from, to);
+      show(el, on);
+      if (!on) return;
+      const r = rectOf(ref(target));
+      el.style.left = `${r.x + r.w / 2 + dx}px`;
+      el.style.top = `${r.y + dy}px`;
+      el.style.opacity = String(fadeWin(t, from, to, 0.15));
+      el.querySelectorAll(".gf-cap").forEach((cap) => cap.classList.toggle("gf-cap--down", within(t, press, press + 0.18)));
+    });
+    NOTES.forEach(([from, to, text, wide, narrow], i) => {
+      const el = notes[i];
+      const on = within(t, from, to);
+      show(el, on);
+      if (!on) return;
+      const [x, y] = zoomed ? narrow : wide;
+      el.textContent = text;
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.opacity = String(fadeWin(t, from, to, 0.25));
+    });
+  }
+
+  function renderHud(t) {
+    const scene = SCENES.findIndex((s) => s.caption && t >= s.start && t < s.end);
+    show(R.caption, scene > 0);
+    if (scene > 0) {
+      const s = SCENES[scene];
+      setHtml(R.caption, `<b>${NUMS[scene]}</b> ${s.caption}`);
+      R.caption.style.opacity = String(fadeWin(t, s.start, s.end, 0.35));
     }
-    drawCaption();
-    drawOutro();
+    show(R.intro, t < 4);
+    if (t < 4) {
+      R.intro.style.opacity = String(1 - sm(3.4, 4, t));
+      [...R.intro.children].forEach((el, i) => (el.style.opacity = String(sm(0.2 + i * 0.5, 0.8 + i * 0.5, t))));
+    }
+    show(R.outro, t >= 41);
+    if (t >= 41) {
+      R.outro.style.opacity = String(sm(41, 41.6, t));
+      [...R.outro.children].forEach((el, i) => (el.style.opacity = String(sm(41.4 + i * 0.5, 42 + i * 0.5, t))));
+    }
+  }
+
+  function renderCamera(t) {
+    let x = W / 2;
+    let y = 225;
+    if (zoomed) {
+      let i = CAMERA.findIndex((key) => key[0] > t);
+      if (i === -1) i = CAMERA.length - 1;
+      const b = CAMERA[i];
+      const a = CAMERA[Math.max(0, i - 1)];
+      const f = b[0] === a[0] ? 1 : easeIO(clamp((t - a[0]) / (b[0] - a[0]), 0, 1));
+      x = lerp(a[1], b[1], f);
+      y = lerp(a[2], b[2], f);
+    }
+    const z = zoomed ? ZOOM : 1;
+    const vw = W / z;
+    const vh = 450 / z;
+    cam = { x: clamp(x - vw / 2, 0, W - vw), y: clamp(y - vh / 2, 0, 450 - vh), z };
+    screen.style.transform = `scale(${scale * z}) translate(${-cam.x}px, ${-cam.y}px)`;
+    hud.style.transform = `scale(${scale})`;
+  }
+
+  function render(t) {
+    renderCamera(t);
+    renderApp(t);
+    renderChat(t);
+    renderBar(t);
+    // 下面这些要量元素位置，放在所有状态写完之后
+    screenRect = null;
+    renderKeysAndNotes(t);
+    renderPointer(t);
+    renderHud(t);
   }
 
   // ---------- 播放器 ----------
@@ -738,7 +501,6 @@
   let userPaused = calm;
   let onScreen = false;
   let lastNow = 0;
-  let lastFrame = -1;
   let raf = 0;
 
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -759,10 +521,7 @@
     stepButtons.forEach((button) => button.setAttribute("aria-current", String(Number(button.dataset.chapter) === chapter)));
   }
 
-  function draw(force = false) {
-    const frame = Math.floor(time * 12);
-    if (!force && frame === lastFrame) return;
-    lastFrame = frame;
+  function draw() {
     render(time);
     syncUi();
   }
@@ -790,31 +549,23 @@
 
   function seek(t) {
     time = clamp(t, 0, DURATION - 0.01);
-    draw(true);
+    draw();
   }
 
   function resize() {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const width = Math.max(320, Math.round(canvas.clientWidth * dpr));
-    const height = Math.round((width * H) / W);
-    if (canvas.width === width && canvas.height === height && paperLayer) return;
-    canvas.width = width;
-    canvas.height = height;
-    buildPaper();
-    draw(true);
-  }
-
-  function applyTheme() {
-    P = document.documentElement.dataset.theme === "light" ? PALETTES.light : PALETTES.dark;
-    buildPaper();
-    draw(true);
+    const width = stage.clientWidth;
+    if (!width) return;
+    scale = width / W;
+    zoomed = width < 560;
+    stage.toggleAttribute("data-zoom", zoomed);
+    draw();
   }
 
   playButton?.addEventListener("click", () => {
     userPaused = playing;
     setPlaying(!playing);
   });
-  canvas.addEventListener("click", () => playButton?.click());
+  stage.addEventListener("click", () => playButton?.click());
 
   track?.addEventListener("pointerdown", (event) => {
     const rect = track.getBoundingClientRect();
@@ -836,7 +587,7 @@
       seek(SCENES[Number(button.dataset.chapter)].start);
       userPaused = false;
       setPlaying(true);
-      canvas.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "center" });
+      stage.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "center" });
     });
   });
 
@@ -847,18 +598,10 @@
       if (!userPaused) setPlaying(onScreen && !document.hidden);
     },
     { threshold: 0.35 },
-  ).observe(canvas);
+  ).observe(stage);
   document.addEventListener("visibilitychange", () => {
     if (!userPaused) setPlaying(onScreen && !document.hidden);
   });
-  new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-  new ResizeObserver(resize).observe(canvas);
-
-  P = document.documentElement.dataset.theme === "light" ? PALETTES.light : PALETTES.dark;
+  new ResizeObserver(resize).observe(stage);
   resize();
-  // 楷体可能晚于首帧加载完，加载完再画一次，免得停在后备字体上。
-  document.fonts?.ready.then(() => {
-    WIDTHS.clear();
-    draw(true);
-  });
 })();
