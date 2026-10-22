@@ -37,8 +37,9 @@
 }
 
 /* ---------- 客户端窗口通用 ---------- */
-.gf-win {
-  /* 客户端白色主题 token（同 demo.css 的 .demo） */
+/* 客户端白色主题 token（同 demo.css 的 .demo）。吸附栏不是 .gf-win，也要拿到同一套，否则它的底色是透明的。 */
+.gf-win,
+.gf-attached {
   --w-base: #fcfcfc;
   --w-content: #ffffff;
   --w-text: #000000;
@@ -74,7 +75,9 @@
   --wx-avatar-fg: #33506e;
   --wx-focus: #95c95f;
   --wx-focus-ring: rgba(149, 201, 95, 0.2);
+}
 
+.gf-win {
   position: absolute;
   top: 48px;
   height: 350px;
@@ -534,6 +537,7 @@
 }
 
 .gf-app-row-title {
+  flex: 0 0 auto;
   color: var(--w-title-fg);
   font-size: 12.5px;
   font-weight: 600;
@@ -547,9 +551,51 @@
   white-space: nowrap;
 }
 
+/* 命中来源跟在标题同一行的右边，一条结果只占两行高，三条结果放得下 */
 .gf-app-row-path {
+  margin-left: auto;
+  overflow: hidden;
   color: var(--w-muted);
   font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 搜索结果卡表头（主界面与吸附栏共用）：「搜索结果 · N」+ 下一步提示 */
+.gf-results-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 8px 4px;
+  border-bottom: 1px solid var(--w-border);
+  white-space: nowrap;
+}
+
+.gf-results-title {
+  flex: 0 0 auto;
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gf-results-hint {
+  overflow: hidden;
+  color: var(--w-muted);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+}
+
+/* 提示语里的 Tab 画成键帽；在客户端窗口里，所以颜色固定，不跟网站主题 */
+.gf-hint-cap {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #c2410c;
+  color: #ffffff;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
 }
 
 .gf-app-search {
@@ -675,31 +721,17 @@
   line-height: 1;
 }
 
+/* 结果弹层：向上弹出、盖住聊天窗口下半截，和吸附栏之间留 8px；不透明，聊天窗里的字不会透上来 */
 .gf-attached-results {
   position: absolute;
   right: -1px;
-  bottom: 100%;
+  bottom: calc(100% + 8px);
   left: -1px;
   border: 1px solid var(--w-border);
-  border-bottom: none;
+  border-radius: 12px;
   background: var(--w-content);
-  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.08);
-}
-
-.gf-attached-title {
-  display: block;
-  padding: 3px 4px 0 6px;
-  color: #c0392b;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.gf-attached-hint {
-  margin: 0;
-  padding: 1px 6px 4px;
-  border-bottom: 1px solid var(--w-border);
-  color: var(--w-muted);
-  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
 }
 
 /* 吸附到聊天窗口底边那一下：顶边亮一道 */
@@ -809,7 +841,7 @@
 }
 
 .gf-caption b {
-  margin-right: 8px;
+  margin-right: 4px;
   color: var(--accent);
 }
 

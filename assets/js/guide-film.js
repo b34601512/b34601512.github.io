@@ -48,6 +48,13 @@
     { start: 41, end: DURATION },
   ];
   const NUMS = ["", "①", "②", "③", "④", "⑤"];
+  // 搜索框与结果区的提示语，照客户端：一次只提示下一步该按什么。
+  const HINT = {
+    idle: "Alt+Q 定位搜索栏",
+    empty: "输入关键词搜索",
+    tab: `按 <span class="gf-hint-cap">Tab</span> 固定结果 → 按数字发送`,
+    digits: "按数字直接发送 · Esc 退出",
+  };
 
   const ROW = {
     welcome: { title: "欢迎问候", text: "亲，您好！欢迎光临，有什么可以帮到您的吗？" },
@@ -70,6 +77,7 @@
     team3: { chips: ["欢迎", "售前", "售后", "物流"], chip: 0, lv2: "欢迎话术", rows: [ROW.welcome, ROW.busy] },
     presale: { chips: ["欢迎", "售前", "售后", "物流"], chip: 1, lv2: "常见问题", rows: [ROW.real, ROW.ship, ROW.free] },
     search: {
+      results: true,
       chips: ["欢迎", "售前", "售后", "物流"],
       chip: 1,
       lv2: null,
@@ -134,15 +142,19 @@
   const rowHtml = (row, i) => `<div class="gf-app-row" data-ref="row${i}" data-hov>
     ${PLANE.replace("data-hov", `data-hov data-ref="plane${i}"`)}
     <span class="gf-app-row-body">
-      <span class="gf-app-row-main"><span class="gf-app-row-digit" hidden>${(i + 1) % 10}</span><img class="gf-app-row-icon" src="assets/type-text.png" alt="" /><span class="gf-app-row-title" data-ref="title${i}">${row.title}</span></span>
+      <span class="gf-app-row-main"><span class="gf-app-row-digit" hidden>${(i + 1) % 10}</span><img class="gf-app-row-icon" src="assets/type-text.png" alt="" /><span class="gf-app-row-title" data-ref="title${i}">${row.title}</span>${row.path ? `<span class="gf-app-row-path">${row.path}</span>` : ""}</span>
       <span class="gf-app-row-text">${row.text}</span>
-      ${row.path ? `<span class="gf-app-row-path">${row.path}</span>` : ""}
     </span>
   </div>`;
-  const viewHtml = (view) =>
+  // 搜索结果卡的表头：「搜索结果 · N」+ 下一步提示（按 Tab 之前教 Tab，按过 Tab 教数字）。
+  const resultsHeadHtml = (count, hint) =>
+    `<div class="gf-results-head"><span class="gf-results-title">搜索结果 · ${count}</span><span class="gf-results-hint">${hint}</span></div>`;
+  const viewHtml = (view, hint) =>
+    (view.results ? resultsHeadHtml(view.rows.length, hint) : "") +
     (view.lv2
       ? `<div class="gf-app-lv2"><span class="gf-app-lv2-arrow">▼</span><span class="gf-app-lv2-title">${view.lv2}</span></div>`
-      : "") + view.rows.map(rowHtml).join("");
+      : "") +
+    view.rows.map(rowHtml).join("");
 
   stage.innerHTML = `<div class="gf-screen" aria-hidden="true">
   <div class="gf-win gf-chat" data-ref="chat" data-skin="css">
@@ -158,8 +170,7 @@
   </div>
   <div class="gf-attached" data-ref="bar" hidden>
     <div class="gf-attached-results" data-ref="pop" hidden>
-      <span class="gf-attached-title">搜索结果 · 1</span>
-      <p class="gf-attached-hint">按 Tab键，再按数字直接发送话术。</p>
+      ${resultsHeadHtml(1, HINT.tab)}
       <div data-ref="popList">${rowHtml(BAR_HIT, 9)}</div>
     </div>
     <span class="gf-snap" data-ref="snap"></span>
@@ -287,7 +298,12 @@
       R.chips,
       view.chips.map((c, i) => `<span class="gf-app-chip${i === view.chip ? " gf-app-chip--active" : ""}" data-ref="chip${i}" data-hov>${c}</span>`).join(""),
     );
-    setHtml(R.tree, viewHtml(view));
+    setHtml(R.tree, viewHtml(view, t >= 29.8 ? HINT.digits : HINT.tab));
+    // 列表底边放不下整行的就不画：一行要么完整可见、要么还没开始，不会被底边横着切过文字。
+    const treeBottom = R.tree.offsetTop + R.tree.clientTop + R.tree.clientHeight;
+    R.tree.querySelectorAll(".gf-app-row").forEach((row) => {
+      row.style.visibility = row.offsetTop + row.offsetHeight <= treeBottom ? "" : "hidden";
+    });
 
     // 选中 / 正在发送的行
     let selected = -1;
@@ -309,7 +325,7 @@
     const text = within(t, 27.6, 31.6) ? typed("发货", 27.6, t) : "";
     R.search.classList.toggle("gf-app-search-input--focus", focused);
     R.search.classList.toggle("gf-app-search-input--hit", within(t, 27.0, 27.9));
-    setHtml(R.search, fieldHtml(text, focused, focused ? "按 Tab键，再按数字直接发送话术。" : "Alt+Q 定位搜索栏", t));
+    setHtml(R.search, fieldHtml(text, focused, focused ? HINT.empty : HINT.idle, t));
   }
 
   function renderChat(t) {
@@ -355,7 +371,7 @@
     const focused = within(t, 37.05, 38.85);
     R.barRow.classList.toggle("gf-attached-row--focus", focused);
     const text = within(t, 37.4, 38.85) ? typed("包邮", 37.4, t) : "";
-    setHtml(R.barInput, fieldHtml(text, focused, "按 Tab键，再按数字直接发送话术。", t));
+    setHtml(R.barInput, fieldHtml(text, focused, focused ? HINT.empty : HINT.idle, t));
     show(R.pop, text === "包邮");
   }
 
@@ -428,7 +444,7 @@
     show(R.caption, scene > 0);
     if (scene > 0) {
       const s = SCENES[scene];
-      setHtml(R.caption, `<b>${NUMS[scene]}</b>${s.caption}`);
+      setHtml(R.caption, `<b>${NUMS[scene]}</b> ${s.caption}`);
       R.caption.style.opacity = String(fadeWin(t, s.start, s.end, 0.35));
     }
     show(R.intro, t < 4);
