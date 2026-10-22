@@ -159,9 +159,7 @@
             !state.query && index === state.category ? " app-chip--active" : ""
           }" type="button" data-category="${index}" aria-pressed="${
             !state.query && index === state.category ? "true" : "false"
-          }"${
-            category.color ? ` style="background:${category.color}"` : ""
-          }>${esc(category.label)}</button>`,
+          }">${esc(category.label)}</button>`,
       )
       .join("");
     el.chips.innerHTML = `${chips}<span class="app-chip app-chip--add" aria-hidden="true">+</span>`;

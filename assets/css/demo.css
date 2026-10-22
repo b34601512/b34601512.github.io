@@ -13,21 +13,36 @@
   --w-border: #cfcfcf;
   --w-edge: #d0d0d0;
   --w-panel-border: #d0d8e2;
-  --w-line: #e8e8e8;
   --w-hover: #f2f4f7;
-  --w-selection: #dceeff;
   --w-selection-border: #8cb8d6;
   --w-title-fg: #e53935;
-  --w-answer-fg: #26313a;
-  --w-lv2-bg: #e7f0fa;
-  --w-lv2-sep: #c8d4df;
   --w-chip-bg: #e8eef5;
   --w-chip-fg: #1f2a33;
-  --w-chip-mark: #8e1b1b;
   --w-chip-action-bg: #ffefc2;
   --w-chip-action-fg: #8e1b1b;
-  --w-cloud: #4c8dff;
   --w-accent-border: #d0a030;
+  /* 话术精灵主界面 token：取样自客户端实机截图（暖纸面 + 桃色选中 + 深墨描边）。
+     放在 .demo 上而不是 .app 上：吸附栏结果行也是 .app-row，要拿到同一套。 */
+  --p-frame: #fbf6ec;
+  --p-paper: #fffdf8;
+  --p-tab: #f4eadb;
+  --p-peach: #ffe4d1;
+  --p-ink: #2a1a12;
+  --p-chip: #f4ebde;
+  --p-muted: #7f7b74;
+  --p-digit: #8c7b6b;
+  --p-answer: #4a3a2e;
+  --p-sep: #e5eaf0;
+  --p-box: #8d8279;
+  --p-base: #75685f;
+  --p-tab-line: #b3a79b;
+  --p-chip-line: #d6cabb;
+  --p-lv2-line: #645145;
+  --p-hover: #fdf3e7;
+  --p-sending: #fff5e6;
+  --p-rust: #a54626;
+  --p-hot: #c2410c;
+  --p-focus: #e07f4a;
   /* 聊天窗口 token：五个平台标签卡共用这一套中性皮肤，切标签只换标题里的平台名。
      自己发出的气泡与发送键用品牌橙（与「怎么用」短片同一套），不模仿任何平台的配色。 */
   --wx-bg: #ededed;
@@ -441,16 +456,17 @@
 }
 
 /* ---------- 右：话术精灵主界面 ---------- */
+/* 外框底 --p-frame、内容区 --p-paper、选中/展开 --p-peach、深墨 --p-ink（token 见 .demo）。 */
 .app {
   position: relative;
   display: flex;
   flex-direction: column;
   height: 620px;
   padding: 4px 8px 6px;
-  border: 1px solid var(--w-edge);
+  border: 1px solid var(--p-box);
   border-radius: 8px;
-  background: var(--w-base);
-  color: var(--w-text);
+  background: var(--p-frame);
+  color: var(--p-ink);
 }
 
 .app-bar {
@@ -463,10 +479,10 @@
 
 .app-tag {
   padding: 1px 7px;
-  border: 1px solid var(--w-accent-border);
+  border: 1px solid var(--p-ink);
   border-radius: 999px;
-  background: var(--w-chip-action-bg);
-  color: var(--w-chip-action-fg);
+  background: var(--p-peach);
+  color: var(--p-ink);
   font-size: 11px;
 }
 
@@ -481,74 +497,88 @@
   height: 22px;
   padding: 3px;
   border-radius: 6px;
-  color: #3c3c3c;
+  color: var(--p-ink);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.3;
   stroke-linecap: round;
 }
 
+/* 页签：选中的那张是外框同色的奶油底 + 深墨描边、没有底边，和下面的面板连成一片
+   深墨描边统一 2px：Chrome 会把 1.5px 边框向下取整成 1px，截图里的描边明显比 1px 粗。 */
 .app-tabs {
   display: flex;
+  align-items: flex-end;
   gap: 6px;
   padding: 0 2px;
-  border-bottom: 1px solid var(--w-cloud);
+  border-bottom: 1px solid var(--p-base);
 }
 
 .app-tab {
+  position: relative;
+  margin-bottom: -1px;
   padding: 5px 10px;
-  border: 1px solid var(--w-border);
+  border: 1px solid var(--p-tab-line);
   border-bottom: none;
-  border-radius: 6px 6px 0 0;
-  background: var(--w-content);
-  color: var(--w-muted);
+  border-radius: 7px 7px 0 0;
+  background: var(--p-tab);
+  color: var(--p-digit);
   font-size: 12px;
   cursor: pointer;
   transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
+.app-tab:hover {
+  color: var(--p-ink);
+}
+
 .app-tab--active {
-  border-color: var(--w-cloud);
-  background: var(--w-base);
-  color: var(--w-text);
-  font-weight: 600;
+  padding: 4px 9px 5px;
+  border: 2px solid var(--p-ink);
+  border-bottom: none;
+  background: var(--p-frame);
+  color: var(--p-ink);
+  font-weight: 700;
 }
 
 .app-set {
   padding: 6px 2px 0;
-  color: var(--w-muted);
+  color: var(--p-muted);
   font-size: 11.5px;
   line-height: 1.2;
 }
 
 .app-set b {
-  color: var(--w-text);
+  color: var(--p-ink);
   font-weight: 600;
 }
 
+/* 套号：未选中是不带框的灰色数字，选中的是桃色实心块 + 深墨描边 */
 .app-digits {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 2px 5px;
+  display: grid;
+  grid-template-columns: repeat(10, 26px);
+  justify-content: start;
+  padding: 5px 0 6px;
 }
 
 .app-digit {
-  min-width: 22px;
+  justify-self: center;
+  width: 22px;
   height: 22px;
-  padding: 0 2px;
-  border: none;
+  padding: 0;
+  border: 2px solid transparent;
   border-radius: 6px;
   background: none;
-  color: var(--w-muted);
+  color: var(--p-digit);
   font: inherit;
   font-size: 12.5px;
+  line-height: 1;
   cursor: pointer;
-  transition: background-color 0.16s ease, color 0.16s ease;
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
 .app-digit:hover:enabled {
-  background: var(--w-hover);
+  color: var(--p-ink);
 }
 
 .app-digit:disabled {
@@ -557,17 +587,18 @@
 }
 
 .app-digit--active {
-  background: var(--w-selection);
-  color: var(--w-text);
+  border-color: var(--p-ink);
+  background: var(--p-peach);
+  color: var(--p-ink);
   font-weight: 700;
 }
 
+/* 一级分类条：自己的细框；选中是桃色 + 深墨描边，未选中都是同一个暖灰底（客户端不按分类上色） */
 .app-lv1 {
   padding: 5px 6px;
-  border: 1px solid var(--w-panel-border);
-  border-top: none;
-  border-radius: 0 0 6px 6px;
-  background: var(--w-content);
+  border: 1px solid var(--p-box);
+  border-radius: 6px;
+  background: var(--p-paper);
 }
 
 .app-chips {
@@ -594,9 +625,26 @@
   background: #dbe6f2;
 }
 
-.app-chip--active {
-  box-shadow: inset 0 -2px 0 var(--w-chip-mark);
-  color: var(--w-chip-mark);
+.app-lv1 .app-chip {
+  padding: 2px 8px;
+  border: 1px solid var(--p-chip-line);
+  background: var(--p-chip);
+  color: var(--p-muted);
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.app-lv1 .app-chip:hover {
+  border-color: var(--p-box);
+  background: var(--p-chip);
+  color: var(--p-ink);
+}
+
+.app-lv1 .app-chip--active,
+.app-lv1 .app-chip--active:hover {
+  padding: 1px 7px;
+  border: 2px solid var(--p-ink);
+  background: var(--p-peach);
+  color: var(--p-ink);
   font-weight: 700;
 }
 
@@ -614,13 +662,28 @@
   cursor: default;
 }
 
+/* 主界面里的 ⊕：桃色圆 + 锈红描边与加号（取样自客户端截图） */
+.app .app-chip--add,
+.app .app-chip--add:hover {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--p-rust);
+  background: var(--p-peach);
+  color: var(--p-rust);
+  font-size: 13px;
+  font-weight: 400;
+}
+
 .app-tree {
   flex: 1;
   margin-top: 7px;
-  border: 1px solid var(--w-panel-border);
+  padding: 3px;
+  border: 1px solid var(--p-box);
   border-radius: 6px;
-  background: var(--w-content);
+  background: var(--p-paper);
   overflow-y: auto;
+  container-type: inline-size;
 }
 
 .app-tree:focus-visible {
@@ -628,56 +691,75 @@
 }
 
 .app-lv2 + .app-lv2 {
-  border-top: 1px solid var(--w-lv2-sep);
+  margin-top: 3px;
 }
 
+/* 二级分类：展开的整条桃色，收起的暖灰底 */
 .app-lv2-head {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--w-lv2-sep);
-  background: var(--w-lv2-bg);
+  padding: 4px 7px;
+  border: 1px solid var(--p-chip-line);
+  border-radius: 6px;
+  background: var(--p-chip);
   cursor: pointer;
+}
+
+.app-lv2-head[aria-expanded="true"] {
+  border-color: var(--p-lv2-line);
+  background: var(--p-peach);
 }
 
 .app-lv2-arrow {
   width: 10px;
-  color: #4b5b6b;
+  color: var(--p-muted);
   font-size: 9px;
   line-height: 1;
+  text-align: center;
 }
 
 .app-lv2-title {
-  color: var(--w-chip-fg);
+  color: var(--p-muted);
   font-size: 12.5px;
   font-weight: 600;
 }
 
+.app-lv2-head[aria-expanded="true"] .app-lv2-arrow,
+.app-lv2-head[aria-expanded="true"] .app-lv2-title {
+  color: var(--p-ink);
+}
+
+.app-lv2-head[aria-expanded="true"] .app-lv2-arrow {
+  font-size: 12px;
+}
+
+/* 话术行：[临时序号] [纸飞机] [序号.] 红色标题 + 灰色答案，每行同一个样子、1px 分隔线。
+   纸飞机和序号都占固定宽度，所以每一行的标题从同一个 x 开始。 */
 .app-row {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 9px 6px 5px;
-  border-bottom: 1px solid var(--w-line);
+  align-items: flex-start;
+  gap: 4px;
+  padding: 4px 8px 4px 6px;
+  border-bottom: 1px solid var(--p-sep);
   cursor: pointer;
 }
 
 .app-row-send {
-  flex: 0 0 auto;
+  flex: 0 0 18px;
   width: 18px;
   height: 18px;
   padding: 2px;
   border: none;
   border-radius: 4px;
   background: none;
-  color: var(--w-cloud);
-  opacity: 0.38;
+  color: var(--p-rust);
   cursor: pointer;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .app-row-send svg {
+  display: block;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -685,53 +767,69 @@
   stroke-linejoin: round;
 }
 
-.app-row:hover .app-row-send,
-.app-row--selected .app-row-send {
-  opacity: 1;
+.app-row-send:hover {
+  background: var(--p-peach);
+  color: var(--p-ink);
 }
 
-.app-row-send:hover {
-  background: var(--w-selection);
+.app-row-num {
+  flex: 0 0 1.6em;
+  color: var(--w-title-fg);
+  font-size: 12.5px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .app-row-body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 
 .app-row:hover {
-  background: var(--w-hover);
+  background: var(--p-hover);
 }
 
-.app-row--selected {
-  border-bottom-color: var(--w-selection-border);
-  background: var(--w-selection);
+.app-row--selected,
+.app-row--selected:hover {
+  background: var(--p-peach);
+}
+
+.app-row--selected .app-row-title,
+.app-row--selected .app-row-num {
+  color: var(--p-ink);
+  font-weight: 700;
 }
 
 .app-row--sending {
-  background: #fff5e0;
+  background: var(--p-sending);
 }
 
 .app-row-main {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  min-width: 0;
+  line-height: 18px;
 }
 
-/* 吸附栏结果行前面的临时序号：1–9、0 直接发送对应命中。 */
+/* 按过 Tab 后的临时序号：1–9、0 直接发送对应命中（客户端是奶油底 + 深墨描边的小方块）。 */
 .app-row-digit {
   display: grid;
+  flex: 0 0 auto;
   place-items: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  background: var(--w-chip-bg);
-  color: var(--w-chip-fg);
+  width: 17px;
+  height: 18px;
+  border: 2px solid var(--p-ink);
+  border-radius: 5px;
+  background: var(--p-paper);
+  color: var(--p-ink);
   font-size: 11px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .app-row-icon {
@@ -741,57 +839,102 @@
 }
 
 .app-row-title {
-  color: var(--w-title-fg);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.app-row-count {
-  margin-left: auto;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--w-hover);
-  color: var(--w-muted);
-  font-size: 11px;
-}
-
-.app-row-text {
   overflow: hidden;
-  color: var(--w-answer-fg);
+  color: var(--w-title-fg);
   font-size: 12.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.app-row-path {
-  color: var(--w-muted);
+.app-row-count {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-left: 6px;
+  color: var(--p-answer);
   font-size: 11px;
+}
+
+.app-row-text {
+  overflow: hidden;
+  color: var(--p-answer);
+  font-size: 12.5px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-row-path {
+  color: var(--p-muted);
+  font-size: 11px;
+}
+
+/* 面板够宽（窄屏堆叠后的主界面、吸附栏）就和客户端一样一行排开：标题后面隔一段接答案，计数靠右 */
+@container (min-width: 420px) {
+  .app-row-body {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+  }
+
+  .app-row-main {
+    display: contents;
+  }
+
+  .app-row-title {
+    order: 1;
+    flex: 0 1 auto;
+    max-width: 45%;
+    line-height: 18px;
+  }
+
+  .app-row-icon {
+    order: 2;
+    margin-left: 4px;
+  }
+
+  .app-row-text {
+    order: 3;
+    flex: 1 1 0;
+    min-width: 0;
+    margin-left: 2.5em;
+  }
+
+  .app-row-count {
+    order: 4;
+  }
+
+  .app-row-path {
+    order: 5;
+    flex-basis: 100%;
+  }
 }
 
 /* 搜索结果卡表头：「搜索结果 · N」+ 下一步提示，与指南短片 .gf-results-head 同值 */
 .app-results-head {
   position: sticky;
-  top: 0;
+  top: -3px;
   z-index: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 8px;
+  margin: -3px -3px 0;
   padding: 5px 8px 4px;
-  border-bottom: 1px solid var(--w-border);
-  background: var(--w-content);
+  border-bottom: 1px solid var(--p-sep);
+  background: var(--p-paper);
 }
 
 .app-results-title {
   flex: 0 0 auto;
-  color: #c0392b;
+  color: var(--p-hot);
   font-size: 13px;
   font-weight: 700;
 }
 
 /* 主界面比指南短片窄：放不下就整句换到标题下一行，不截成省略号 */
 .app-results-hint {
-  color: var(--w-muted);
+  color: var(--p-muted);
   font-size: 11.5px;
 }
 
@@ -816,18 +959,28 @@
   text-align: center;
 }
 
+.app .app-empty {
+  color: var(--p-muted);
+}
+
+/* 常用短语位置：客户端主界面这里只有一个 ⊕（短语条在吸附栏里） */
 .app-common {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 7px;
+  margin-top: 6px;
   padding: 0 2px;
 }
 
 .app-search {
   display: flex;
-  margin-top: 7px;
+  margin-top: 6px;
+  border: 1px solid var(--p-base);
+  border-radius: 6px;
+  background: var(--p-paper);
+}
+
+.app-search:focus-within {
+  border-color: var(--p-focus);
 }
 
 .app-search-input {
@@ -835,20 +988,19 @@
   min-width: 0;
   height: 28px;
   padding: 4px 8px;
-  border: 1px solid var(--w-border);
+  border: none;
   border-radius: 6px 0 0 6px;
-  background: var(--w-content);
-  color: var(--w-text);
+  background: transparent;
+  color: var(--p-ink);
   font: inherit;
   font-size: 12.5px;
 }
 
 .app-search-input::placeholder {
-  color: #9aa3ae;
+  color: #948b85;
 }
 
 .app-search-input:focus {
-  border-color: var(--w-selection-border);
   outline: none;
 }
 
@@ -859,11 +1011,9 @@
 
 @keyframes app-search-hit {
   0% {
-    border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(255, 107, 44, 0.35);
   }
   100% {
-    border-color: var(--w-selection-border);
     box-shadow: 0 0 0 0 rgba(255, 107, 44, 0);
   }
 }
@@ -878,11 +1028,11 @@
   display: grid;
   place-items: center;
   padding: 0 8px;
-  border: 1px solid var(--w-border);
-  border-left: none;
+  border: none;
+  border-left: 1px solid var(--p-chip-line);
   border-radius: 0 6px 6px 0;
-  background: var(--w-content);
-  color: var(--w-muted);
+  background: transparent;
+  color: var(--p-ink);
   font: inherit;
   font-size: 11.5px;
   white-space: nowrap;
@@ -891,8 +1041,7 @@
 }
 
 .app-range:hover {
-  background: var(--w-hover);
-  color: var(--w-text);
+  background: var(--p-hover);
 }
 
 .app-foot {
@@ -904,7 +1053,7 @@
 
 .app-brand {
   flex: 1;
-  color: var(--w-text);
+  color: var(--p-ink);
   font-size: 12.5px;
 }
 
@@ -1146,6 +1295,8 @@
 .attached-list {
   max-height: 190px;
   overflow-y: auto;
+  /* 结果行按宽度排版（够宽就标题、答案一行排开），见 .app-row 的 @container */
+  container-type: inline-size;
 }
 
 .attached-phrases {

@@ -1399,24 +1399,26 @@ const previewText = (item) =>
     .map((segment) => segment.text + "[图片]".repeat(segment.images?.length ?? 0))
     .join("") + filesOf(item).map((file) => `[文件]${file.name}`).join("");
 
-/* 话术行标记：首页首屏静态 HTML 与运行时渲染共用（数字序号只有数字选择态才传）。 */
-const rowHtml = (item, key, path, shortcut = "") => `
+/* 话术行标记：首页首屏静态 HTML 与运行时渲染共用（数字序号只有数字选择态才传）。
+   排列照客户端：[临时序号] [纸飞机] [行号.] 标题 答案；纸飞机与行号占固定宽度，标题都从同一列开始。
+   行号只在分类树里有（num），搜索结果和客户端一样不带行号。 */
+const rowHtml = (item, key, path, shortcut = "", num = "") => `
     <div class="app-row" role="button" tabindex="0" data-key="${key}" title="双击贴进输入框，点左侧纸飞机直接发送">
+      ${shortcut ? `<span class="app-row-digit">${shortcut}</span>` : ""}
       <button class="app-row-send" type="button" data-send="${key}" aria-label="直接发送这条话术" title="直接发送（粘贴 + 回车）">
         <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg>
       </button>
+      ${num ? `<span class="app-row-num">${num}.</span>` : ""}
       <span class="app-row-body">
         <span class="app-row-main">
-          ${shortcut ? `<span class="app-row-digit">${shortcut}</span>` : ""}
-          ${typeTag(item) ? `<img class="app-row-icon" src="${TYPE_ICONS[typeTag(item)]}" alt="" />` : ""}
           <span class="app-row-title">${esc(item.title)}</span>
+          ${typeTag(item) ? `<img class="app-row-icon" src="${TYPE_ICONS[typeTag(item)]}" alt="" />` : ""}
           ${typeof item.count === "number" ? `<span class="app-row-count">${item.count}</span>` : ""}
         </span>
         <span class="app-row-text">${esc(previewText(item))}</span>
         ${path ? `<span class="app-row-path">${esc(path)}</span>` : ""}
       </span>
     </div>`;
-
 
 /* 一级分类 → 二级分类 → 话术行。返回 { html, items }：items 是当前展开的话术，
    数字选择态与点行发送按这个顺序取第 N 条。 */
@@ -1426,14 +1428,14 @@ const treeHtml = (category) => {
   const parts = category.sections.map((section, sectionIndex) => {
     const head = `<div class="app-lv2">
       <div class="app-lv2-head" role="button" tabindex="0" data-section="${sectionIndex}" aria-expanded="${section.open ? "true" : "false"}" title="点一下展开或收起这一组">
-        <span class="app-lv2-arrow" aria-hidden="true">${section.open ? "▼" : "▶"}</span>
+        <span class="app-lv2-arrow" aria-hidden="true">${section.open ? "▾" : "▶"}</span>
         <span class="app-lv2-title">${esc(section.title)}</span>
       </div>`;
     const body = section.open
       ? section.items
-          .map((item) => {
+          .map((item, itemIndex) => {
             items.push(item);
-            return rowHtml(item, items.length - 1, "");
+            return rowHtml(item, items.length - 1, "", "", itemIndex + 1);
           })
           .join("")
       : "";
