@@ -28,31 +28,22 @@
   --w-chip-action-fg: #8e1b1b;
   --w-cloud: #4c8dff;
   --w-accent-border: #d0a030;
-  /* 聊天窗口 token：默认是微信皮肤，其余平台在 .chat[data-platform] 里覆盖同一组变量。
-     配色取自各平台品牌色，只做「一眼能看出是哪个平台」的示意，不追求像素级复刻。 */
+  /* 聊天窗口 token：五个平台标签卡共用这一套中性皮肤，切标签只换标题里的平台名。
+     自己发出的气泡与发送键用品牌橙（与「怎么用」短片同一套），不模仿任何平台的配色。 */
   --wx-bg: #ededed;
   --wx-head: #f7f7f7;
   --wx-head-fg: #1a1a1a;
   --wx-sub: #8a8a8a;
   --wx-line: #e3e3e3;
   --wx-in: #ffffff;
-  --wx-out: #95ec69;
-  --wx-online: #07c160;
+  --wx-out: var(--accent);
+  --wx-out-fg: #ffffff;
   --wx-avatar-bg: #d7e2f2;
   --wx-avatar-fg: #33506e;
-  --wx-avatar-radius: 4px;
-  --wx-focus: #95c95f;
-  --wx-focus-ring: rgba(149, 201, 95, 0.2);
-  /* 标题栏顶部品牌条（商家工具常见的做法）；微信桌面版没有，所以默认 0。
-     颜色默认跟平台主色，拼多多例外：它头栏是白的，紫罗兰 #615B8A 来自客户端顶部标签栏。 */
-  --wx-strip: 0;
-  --wx-strip-color: var(--wx-online);
-  /* 发送键底色默认跟平台主色；京东例外：它的发送键是靛蓝 #4960F4，品牌红只在价格/标签上 */
-  --wx-send-bg: var(--wx-online);
-  /* 左侧竖条的宽与色：千牛是左侧蓝色导航栏（截图 #3D7FFF），其余平台就是普通边框 */
-  --wx-rail-w: 1px;
-  --wx-rail: var(--w-edge);
-  --wx-send-fg: #1a1a1a;
+  --wx-focus: var(--accent);
+  --wx-focus-ring: var(--accent-soft);
+  --wx-send-bg: var(--accent);
+  --wx-send-fg: #ffffff;
 
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -62,7 +53,7 @@
   line-height: 1.5;
 }
 
-/* ---------- 左：客服聊窗（默认微信皮肤，可切平台） ---------- */
+/* ---------- 左：客服聊窗（五个平台标签共用一套中性皮肤） ---------- */
 /* 标签卡在网站背景上，跟着网站主题走；下面的聊天窗与主界面是客户端复刻，两种主题都保持原样。 */
 .chat-tabs {
   /* 跨整个演示区一行（不在聊天窗那一栏里），这样聊天窗与话术精灵主界面才能顶底平齐 */
@@ -77,10 +68,6 @@
   --tab-hover-line: #3d3d3d;
   --tab-hover-fg: #e6e6e6;
   --tab-on-bg: #1a1a1a;
-  --tab-wechat: #7ee2a8;
-  --tab-jd: #ff9c93;
-  --tab-pdd: #ff9d8a;
-  --tab-blue: #8fb4ff;
 }
 
 [data-theme="light"] .chat-tabs {
@@ -90,10 +77,6 @@
   --tab-hover-line: #c4bcb2;
   --tab-hover-fg: #1a1714;
   --tab-on-bg: #fff;
-  --tab-wechat: #067d3f;
-  --tab-jd: #c8202f;
-  --tab-pdd: #b8241b;
-  --tab-blue: #1d4fd8;
 }
 
 .chat-tab {
@@ -113,122 +96,11 @@
   color: var(--tab-hover-fg);
 }
 
-/* 选中的标签卡用该平台品牌色，一眼能看出切到哪家了 */
+/* 选中的标签卡：五家同一个样式，用网站强调色 */
 .chat-tab[aria-selected="true"] {
+  border-color: var(--accent);
   background: var(--tab-on-bg);
-}
-
-.chat-tab[data-platform="wechat"][aria-selected="true"] {
-  border-color: #07c160;
-  color: var(--tab-wechat);
-}
-
-.chat-tab[data-platform="jd"][aria-selected="true"] {
-  border-color: #f33b50;
-  color: var(--tab-jd);
-}
-
-.chat-tab[data-platform="pdd"][aria-selected="true"] {
-  border-color: #e02e24;
-  color: var(--tab-pdd);
-}
-
-.chat-tab[data-platform="qianniu"][aria-selected="true"] {
-  border-color: #3d7fff;
-  color: var(--tab-blue);
-}
-
-.chat-tab[data-platform="douyin"][aria-selected="true"] {
-  border-color: #2f6df9;
-  color: var(--tab-blue);
-}
-
-/* 各平台皮肤：同一组变量换个值，聊天窗的行为完全不变。
-   京东、拼多多、千牛、抖音四家都按作者提供的真实截图取样（微信 #07C160 仍是经典桌面版配色）；
-   千牛（天猫/淘宝卖家工作台）按作者提供的真实截图取样：蓝 #3D7FFF、聊天底 #F0F2F5、头栏白、提示条 #D8E4FF。
-   头像形状也按各家习惯：微信是圆角方形，商家工具（京东/拼多多/千牛/抖音）是圆形。 */
-.chat[data-platform="jd"] {
-  /* 京东（咚咚/京麦）按作者提供的真实截图取样：
-     对方气泡 #F7F7F7、自家气泡 #D9E8FF（东东的卖家消息是浅蓝）、发送键靛蓝 #4960F4、
-     价格红 #F33B50、状态标签蓝 #D6E3FD/#102D68、头栏浅灰 #F7F7F7、消息区白底。 */
-  --wx-head: #f7f7f7;
-  --wx-head-fg: #1a1a1a;
-  --wx-sub: #8a8f99;
-  --wx-line: #e8e8e8;
-  --wx-bg: #ffffff;
-  --wx-in: #f7f7f7;
-  --wx-out: #d9e8ff;
-  --wx-online: #f33b50;
-  --wx-avatar-bg: #d6e3fd;
-  --wx-avatar-fg: #102d68;
-  --wx-avatar-radius: 50%;
-  --wx-focus: #4960f4;
-  --wx-focus-ring: rgba(73, 96, 244, 0.16);
-  --wx-strip: 0;
-  --wx-send-bg: #4960f4;
-  --wx-send-fg: #ffffff;
-}
-
-.chat[data-platform="pdd"] {
-  /* 拼多多（商家版客服）按作者提供的真实截图取样：
-     聊天底 #FFFFFF、自家气泡 #D4E9FE、买家头像玫红 #F564B3、客户端顶部标签栏紫 #615B8A、底栏警示黄 #FFF3C2。
-     客户消息在真实界面里是「无气泡的纯文字」，我们保留气泡结构，用浅灰 #F2F3F5 代表对方气泡。 */
-  --wx-head: #ffffff;
-  --wx-head-fg: #1a1a1a;
-  --wx-sub: #8a8f99;
-  --wx-line: #ececec;
-  --wx-bg: #ffffff;
-  --wx-in: #f2f3f5;
-  --wx-out: #d4e9fe;
-  --wx-online: #e02e24;
-  --wx-avatar-bg: #f564b3;
-  --wx-avatar-fg: #ffffff;
-  --wx-avatar-radius: 50%;
-  --wx-focus: #e02e24;
-  --wx-focus-ring: rgba(224, 46, 36, 0.16);
-  --wx-strip: 2px;
-  --wx-strip-color: #615b8a;
-  --wx-send-fg: #ffffff;
-}
-
-.chat[data-platform="qianniu"] {
-  --wx-head: #ffffff;
-  --wx-line: #e3e6eb;
-  --wx-bg: #f0f2f5;
-  /* 千牛的真实消息区是端屏平铺、自己没有气泡色，这里用它的提示条色 #D8E4FF 代表自家消息 */
-  --wx-out: #d8e4ff;
-  --wx-online: #3d7fff;
-  --wx-avatar-bg: #d8e4ff;
-  --wx-avatar-fg: #1b4fc7;
-  --wx-avatar-radius: 50%;
-  --wx-focus: #3d7fff;
-  --wx-focus-ring: rgba(61, 127, 255, 0.18);
-  /* 千牛没有顶部品牌条（头栏就是白的），蓝色在左侧导航栏上 */
-  --wx-strip: 0;
-  --wx-rail-w: 3px;
-  --wx-rail: #3d7fff;
-  --wx-send-fg: #ffffff;
-}
-
-.chat[data-platform="douyin"] {
-  /* 抖音（飞鸽客服工作台）按作者提供的真实截图取样：
-     主调是蓝色不是粉色 —— 发送键 #2F6DF9、自家气泡 #E3EFFE、聊天底 #F5F6FA、对方头像青 #35A29B、头栏浅灰。 */
-  --wx-head: #f5f6fa;
-  --wx-head-fg: #1a1a1a;
-  --wx-sub: #8a8f99;
-  --wx-line: #e9ebf0;
-  --wx-bg: #f5f6fa;
-  --wx-out: #e3effe;
-  --wx-online: #2f6df9;
-  --wx-avatar-bg: #35a29b;
-  --wx-avatar-fg: #ffffff;
-  --wx-avatar-radius: 50%;
-  --wx-focus: #2f6df9;
-  --wx-focus-ring: rgba(47, 109, 249, 0.18);
-  --wx-strip: 0;
-  --wx-rail-w: 3px;
-  --wx-rail: #2f6df9;
-  --wx-send-fg: #ffffff;
+  color: var(--accent);
 }
 
 .chat {
@@ -236,8 +108,6 @@
   flex-direction: column;
   height: 620px;
   border: 1px solid var(--w-edge);
-  border-left-width: var(--wx-rail-w);
-  border-left-color: var(--wx-rail);
   border-radius: 8px;
   background: var(--wx-bg);
   overflow: hidden;
@@ -248,8 +118,6 @@
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  /* 顶部品牌条：商家工具（京东/拼多多/千牛/抖音）标题栏都带品牌色，微信桌面版没有 */
-  border-top: var(--wx-strip) solid var(--wx-strip-color);
   border-bottom: 1px solid var(--wx-line);
   background: var(--wx-head);
 }
@@ -259,7 +127,7 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  border-radius: var(--wx-avatar-radius);
+  border-radius: 4px;
   background: var(--wx-avatar-bg);
   color: var(--wx-avatar-fg);
   font-size: 13px;
@@ -280,20 +148,9 @@
 }
 
 .chat-who em {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   color: var(--wx-sub);
   font-size: 11.5px;
   font-style: normal;
-}
-
-.chat-who em::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--wx-online);
 }
 
 .chat-log {
@@ -366,6 +223,7 @@
 
 .msg--out .bubble {
   background: var(--wx-out);
+  color: var(--wx-out-fg);
 }
 
 .msg--out .bubble::before {

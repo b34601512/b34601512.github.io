@@ -91,7 +91,7 @@ export const indexPage = {
       <div class="chat-wrap">
 
         <!-- 底部吸附搜索栏：贴在聊天窗口底边，结果向上展开、常用短语与最近搜索向下展开（对应客户端 attached_search_bar）。 -->
-        <div class="chat" id="demo-chat" data-platform="wechat">
+        <div class="chat" id="demo-chat">
           <div class="chat-head">
             <span class="chat-avatar">晓</span>
             <span class="chat-who"><strong>客户 晓明</strong><em id="demo-chat-platform">微信 · 在线</em></span>
