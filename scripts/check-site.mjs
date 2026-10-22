@@ -4,8 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
-import { extraPages, sitePages } from "../src/site/pages.mjs";
-import { pageUrl, siteData } from "../src/site/site-data.mjs";
+import { allPages, canonicalUrl, sitePages, sitemapPages } from "../src/site/pages.mjs";
 
 const errors = [];
 const warnings = [];
@@ -13,6 +12,14 @@ const warnings = [];
 const CLASS_TOKEN = /^[a-z][a-z0-9]*(?:--?[a-z0-9]+)*$/;
 const uniq = (values) => [...new Set(values)];
 const matchAll = (text, pattern, group = 1) => [...text.matchAll(pattern)].map((match) => match[group]);
+// 站内地址转成仓库里的文件路径：去掉 ?v= 指纹与 #锚点；根路径 /… 去掉开头的 /；以 / 结尾的目录指向其中的 index.html。
+const isRootRelative = (target) => target.startsWith("/") && !target.startsWith("//");
+function localFile(target) {
+  const path = target.split(/[?#]/)[0];
+  if (!isRootRelative(path)) return path;
+  const file = path.slice(1);
+  return file === "" || file.endsWith("/") ? `${file}index.html` : file;
+}
 
 // CSS 里定义的类名（先去掉注释，避免注释文字被当成类名）。
 function classesInCss(css) {
@@ -49,7 +56,7 @@ const definedClasses = new Set();
 const usedClasses = new Set();
 const mentionedClasses = new Set();
 
-for (const page of [...sitePages, ...extraPages]) {
+for (const page of allPages) {
   const file = page.outputFile;
   const html = await readFile(file, "utf8").catch(() => null);
 
@@ -67,7 +74,8 @@ for (const page of [...sitePages, ...extraPages]) {
 
   for (const target of matchAll(html, /(?:src|href)="([^"]+)"/g)) {
     // 带内容指纹的 CSS/JS 要去掉 ?v= 查询串再判断文件是否存在。
-    if (target.startsWith("assets/") && !existsSync(target.split("?")[0])) {
+    // 子目录页面（博客）用根路径 /assets/…、/blog/…，同样要核对文件真的存在。
+    if ((target.startsWith("assets/") || isRootRelative(target)) && !existsSync(localFile(target))) {
       errors.push(`${file} 引用了不存在的资源：${target}`);
     }
   }
@@ -75,7 +83,7 @@ for (const page of [...sitePages, ...extraPages]) {
   const stylesheets = matchAll(html, /<link rel="stylesheet" href="([^"]+)"/g);
   // 样式表引用带内容指纹（?v=哈希），读文件时去掉查询串。
   const css = (
-    await Promise.all(stylesheets.map((href) => readFile(href.split("?")[0], "utf8").catch(() => "")))
+    await Promise.all(stylesheets.map((href) => readFile(localFile(href), "utf8").catch(() => "")))
   ).join("\n");
   classesInCss(css).forEach((name) => definedClasses.add(name));
   usedClassesInHtml(html).forEach((name) => usedClasses.add(name));
@@ -91,7 +99,7 @@ for (const page of [...sitePages, ...extraPages]) {
 
   for (const script of scripts) {
     // 脚本 src 可能带内容指纹（?v=哈希），读文件时要去掉查询串。
-    const js = script.code ?? (await readFile(script.src.split("?")[0], "utf8"));
+    const js = script.code ?? (await readFile(localFile(script.src), "utf8"));
     usedClassesInJs(js).forEach((name) => usedClasses.add(name));
     mentionedClassesInJs(js).forEach((name) => mentionedClasses.add(name));
 
@@ -122,23 +130,22 @@ for (const name of definedClasses) {
 
 const sitemap = await readFile("sitemap.xml", "utf8").catch(() => "");
 const sitemapLocs = matchAll(sitemap, /<loc>([^<]+)<\/loc>/g);
-for (const page of sitePages) {
-  const loc = page.outputFile === "index.html" ? siteData.siteUrl : pageUrl(page.outputFile);
+for (const page of sitemapPages) {
+  const loc = canonicalUrl(page);
   if (!sitemap.includes(`<loc>${loc}</loc>`)) errors.push(`sitemap.xml 缺少 ${loc}`);
 }
 // sitemap 只能列页面清单里的地址：多列、重复、或 lastmod 不是 YYYY-MM-DD 都报错，
 // 否则错一个字符搜索引擎就当成无效条目静默丢掉。
 for (const loc of sitemapLocs) {
-  const known =
-    loc === siteData.siteUrl || sitePages.some((page) => pageUrl(page.outputFile) === loc);
+  const known = sitemapPages.some((page) => canonicalUrl(page) === loc);
   if (!known) errors.push(`sitemap.xml 里有页面清单之外的地址：${loc}`);
 }
 if (new Set(sitemapLocs).size !== sitemapLocs.length) errors.push("sitemap.xml 里有重复的 <loc>");
 for (const value of matchAll(sitemap, /<lastmod>([^<]*)<\/lastmod>/g)) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) errors.push(`sitemap.xml 的 lastmod 不是 YYYY-MM-DD：${value}`);
 }
-if (sitemapLocs.length !== sitePages.length) {
-  errors.push(`sitemap.xml 的地址数量是 ${sitemapLocs.length}，页面清单是 ${sitePages.length}`);
+if (sitemapLocs.length !== sitemapPages.length) {
+  errors.push(`sitemap.xml 的地址数量是 ${sitemapLocs.length}，页面清单是 ${sitemapPages.length}`);
 }
 
 warnings.forEach((message) => console.warn(`[warn] ${message}`));
@@ -146,6 +153,6 @@ errors.forEach((message) => console.error(`[error] ${message}`));
 console.log(
   errors.length
     ? `自检未通过：${errors.length} 个错误，${warnings.length} 个提示`
-    : `自检通过：${sitePages.length} 个页面，${warnings.length} 个提示`,
+    : `自检通过：${sitemapPages.length} 个页面，${warnings.length} 个提示`,
 );
 process.exitCode = errors.length ? 1 : 0;

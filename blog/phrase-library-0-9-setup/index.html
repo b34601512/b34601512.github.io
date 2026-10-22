@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#faf8f5" />
+<meta name="author" content="黎路遥" />
+<script>
+try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
+</script>
+<title>客服话术库怎么建才不乱？0–9 模块分法实操 - 话术精灵</title>
+<meta name="description" content="话术库乱，通常不是因为话术不够多，是因为没有分层的规则。三个原则，照着做基本就不乱了" />
+<meta name="keywords" content="客服话术软件,话术软件,话术管理软件,客服话术管理软件,微信销售话术软件,客户话术软件,电商客服话术软件,快捷回复软件,团队话术共享,话术精灵" />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="https://luyao2089.cc/blog/phrase-library-0-9-setup/" />
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="话术精灵 SoftTalk" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:title" content="客服话术库怎么建才不乱？0–9 模块分法实操 - 话术精灵" />
+<meta property="og:description" content="话术库乱，通常不是因为话术不够多，是因为没有分层的规则。三个原则，照着做基本就不乱了" />
+<meta property="og:url" content="https://luyao2089.cc/blog/phrase-library-0-9-setup/" />
+<meta property="og:image" content="https://luyao2089.cc/assets/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="客服话术库怎么建才不乱？0–9 模块分法实操 - 话术精灵" />
+<meta name="twitter:description" content="话术库乱，通常不是因为话术不够多，是因为没有分层的规则。三个原则，照着做基本就不乱了" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "headline": "客服话术库怎么建才不乱？0–9 模块分法实操",
+      "description": "话术库乱，通常不是因为话术不够多，是因为没有分层的规则。三个原则，照着做基本就不乱了",
+      "datePublished": "2026-10-18",
+      "dateModified": "2026-10-18",
+      "inLanguage": "zh-CN",
+      "author": {
+        "@type": "Person",
+        "name": "黎路遥"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "话术精灵 SoftTalk",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://luyao2089.cc/assets/og.png"
+        }
+      },
+      "image": "https://luyao2089.cc/assets/og.png",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://luyao2089.cc/blog/phrase-library-0-9-setup/"
+      },
+      "url": "https://luyao2089.cc/blog/phrase-library-0-9-setup/"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://luyao2089.cc/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "博客",
+          "item": "https://luyao2089.cc/blog/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "客服话术库怎么建才不乱？0–9 模块分法实操",
+          "item": "https://luyao2089.cc/blog/phrase-library-0-9-setup/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+<link rel="icon" href="/assets/favicon.png" />
+<link rel="stylesheet" href="/assets/css/site.css?v=3fa5e961" />
+<script src="/assets/js/theme.js?v=292ea05c" defer></script>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/index.html">
+      <img class="brand-logo" src="/assets/logo-small.png" alt="" />
+      <span>话术精灵 SoftTalk</span>
+    </a>
+    <nav class="nav-links" aria-label="站点导航">
+      <a class="nav-link" href="/index.html">首页</a>
+      <a class="nav-link" href="/guide.html">怎么用</a>
+      <a class="nav-link" href="/why.html">解决什么问题</a>
+      <a class="nav-link" href="/pricing.html">定价</a>
+      <a class="nav-link" href="/faq.html">常见问题</a>
+      <a class="nav-link" href="/blog/">博客</a>
+      <a class="nav-link" href="/contact.html">联系</a>
+      <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">下载</a>
+    </nav>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到白天模式" title="切换到白天模式">
+      <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.55 1.55M17.15 17.15l1.55 1.55M5.3 18.7l1.55-1.55M17.15 6.85l1.55-1.55" /></svg>
+      <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+<div class="wrap post">
+  <nav class="crumbs" aria-label="面包屑">
+    <a href="/index.html">首页</a> / <a href="/blog/">博客</a> / <span aria-current="page">客服话术库怎么建才不乱？0–9 模块分法实操</span>
+  </nav>
+  <h1>客服话术库怎么建才不乱？0–9 模块分法实操</h1>
+  <p class="post-meta"><time datetime="2026-10-18">2026 年 10 月 18 日</time></p>
+  <article class="post-body">
+<h2>结论先说</h2>
+<p>话术库乱，通常不是因为话术不够多，是因为<strong>没有分层的规则</strong>。三个原则，照着做基本就不乱了：</p>
+<ol>
+<li value="1"><strong>按「客户走到哪一步」分大类，不按「话题」分</strong>——客户在问价、在下单、还是已经收到货了，这三类话术永远不该混在一起。</li>
+<li value="2"><strong>一层不超过 9 个</strong>——超过就说明你该先分第二层，而不是继续往下堆。</li>
+<li value="3"><strong>新话术先问「谁能用」再问「放哪」</strong>——团队共用的进团队库，只有自己习惯的进个人库。混着放，两周就乱。</li>
+</ol>
+<p>下面是一套可以直接照搬的分法。</p>
+<h2>一、为什么「话术多」不是问题，「找不到」才是</h2>
+<p>先看一个很常见的场景：</p>
+<p>店铺从 1 个变成 5 个，客服从 2 个变成 8 个。这时候通常会做三件事：把话术整理成 Excel、发群里让大家用、有人自己另存一份。</p>
+<p>三周后会出现两个后果：</p>
+<ul>
+<li><strong>改一句要改 N 遍</strong>：平台自带的快捷短语是按店铺存的，20 个店铺就是 20 次后台操作。改漏一个，就有一家店在说旧话。</li>
+<li><strong>客服开始手打</strong>：话术太多、翻目录比打字还慢，最后大家凭记忆打。话术库变成了「给人看的文档」，不再是被使用的工具。</li>
+</ul>
+<p>所以问题不在数量，在<strong>定位成本</strong>：一个客服要在一屏里找到那句对的话，需要多长时间。</p>
+<p>我们的做法是把话术拆成 <strong>30 套</strong>：团队、个人、离线三个库，每个库各拆 0–9 共 10 套，加起来 30 套。搜索的时候可以把范围锁在其中某一套里，不用在全部话术里翻。</p>
+<p>这个机制好用不好用，取决于你有没有<strong>用同一套逻辑去填这 10 套</strong>。下面就是这套逻辑。</p>
+<h2>二、10 套怎么分：按客户旅程，不按话题</h2>
+<p>0–9 这十个位置，我建议这样用（这是分法建议，不是产品限制——十套你也可以用自己的分法，关键是<strong>全团队用同一套</strong>）：</p>
+<div class="post-table"><table>
+<thead><tr><th>编号</th><th>放什么</th><th>典型话术举例</th></tr></thead>
+<tbody>
+<tr><td><strong>0</strong></td><td>开场与欢迎</td><td>亲在的、您好、稍等我帮您查一下</td></tr>
+<tr><td><strong>1</strong></td><td>产品与规格咨询</td><td>尺码怎么选、材质是什么、和另一款的区别</td></tr>
+<tr><td><strong>2</strong></td><td>价格与优惠</td><td>现在有什么活动、能不能便宜、优惠券怎么用</td></tr>
+<tr><td><strong>3</strong></td><td>发货与物流</td><td>什么时候发、发什么快递、到哪儿了</td></tr>
+<tr><td><strong>4</strong></td><td>下单与支付</td><td>怎么下单、支付失败、改地址改规格</td></tr>
+<tr><td><strong>5</strong></td><td>售后与退换</td><td>怎么退货、运费谁出、换货流程</td></tr>
+<tr><td><strong>6</strong></td><td>问题排查与安抚</td><td>客户不满、物流异常、少发漏发</td></tr>
+<tr><td><strong>7</strong></td><td>催付与挽单</td><td>未付款提醒、犹豫客户跟进</td></tr>
+<tr><td><strong>8</strong></td><td>评价与复购</td><td>求好评、老客回访、复购推荐</td></tr>
+<tr><td><strong>9</strong></td><td>兜底与其他</td><td>转人工、投诉升级、说不清归哪类的</td></tr>
+</tbody>
+</table></div>
+<p><strong>为什么按客户旅程分，不按「衣服/鞋子/配件」分？</strong></p>
+<p>因为客服找话术的时候，脑子里想的是「他现在卡在哪一步」，不是「这是哪个品类」。按品类分，一件毛衣既可能问尺码（1）、又问价格（2）、又问发货（3），你得分三处放，找的时候还是得翻三个地方。</p>
+<p>按旅程分，所有「问尺码」的话术永远在 1 号位，不管什么品类。找的动作变成一次，而且新人三天就能记住。</p>
+<h2>三、团队库 / 个人库 / 离线库：谁能用，先分这个</h2>
+<p>30 套＝三个库各 10 套。分错库是话术库混乱的第一原因。</p>
+<div class="post-table"><table>
+<thead><tr><th>库</th><th>放什么</th><th>判断标准</th></tr></thead>
+<tbody>
+<tr><td><strong>团队库</strong></td><td>全团队共用的标准说法</td><td>客户看到的这句话，换谁来回都应该一样</td></tr>
+<tr><td><strong>个人库</strong></td><td>自己的习惯用语、口头禅、简写</td><td>只有你在用，别人用了反而别扭</td></tr>
+<tr><td><strong>离线库</strong></td><td>留在本机、不参与同步的话术</td><td>敏感的、临时的、只给自己看的</td></tr>
+</tbody>
+</table></div>
+<p><strong>一个常见的错误</strong>：客服把团队话术复制到自己个人库里。</p>
+<p>原因不是他想改措辞，是团队话术太多、不好定位，而自己存的那份他知道在哪。这个问题的解法不是要求他「别复制」，而是<strong>把团队库的分层做清楚，让他能一秒定位</strong>——这正是第二节那 10 个编号的作用。</p>
+<blockquote>
+<p>反过来说：如果你发现团队里有人在大量复制团队话术到个人库，那是个信号，说明分层没做好。</p>
+</blockquote>
+<h2>四、一条话术怎么拆成 0–9 个模块</h2>
+<p>这是「话术精灵」跟「一堆快捷短语」最不一样的地方：<strong>一条话术可以拆成 0–9 十个独立模块</strong>，按客户情况只发其中几段。</p>
+<p>举个真实场景：客户问「我买的这个什么时候能到」。</p>
+<p>一段式写法（大多数快捷短语工具只能这样）：</p>
+<blockquote>
+<p>亲，您的订单我们已经安排发货了，预计 2-3 天到达，请您耐心等待，有问题随时联系我们哦～</p>
+</blockquote>
+<p>模块化写法：</p>
+<div class="post-table"><table>
+<thead><tr><th>模块</th><th>内容</th><th>什么时候发</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>亲，您的订单已安排发货</td><td>永远发</td></tr>
+<tr><td>1</td><td>发出的是中通快递</td><td>客户问快递时发</td></tr>
+<tr><td>2</td><td>预计 2-3 天到达</td><td>永远发</td></tr>
+<tr><td>3</td><td>因为您那边今天下雨，可能延迟半天</td><td>有异常时发</td></tr>
+<tr><td>4</td><td>到货后有任何问题随时找我</td><td>永远发</td></tr>
+</tbody>
+</table></div>
+<p>好处是：</p>
+<ul>
+<li>客户只问「发什么快递」的时候，不用把整段客套话都发出去；</li>
+<li>遇到天气/疫情这类异常，只加一个模块，不用重写整条；</li>
+<li>一条话术最多能装 10 段文字、9 张图片、9 个附件——图片（比如尺码表）和附件（比如说明书 PDF）也能按模块挂在对应位置。日常客服话术一般 2–4 段就够，这个容量是给情况复杂的场景留的余量。</li>
+</ul>
+<p><strong>什么时候不该模块化？</strong> 短话术不用拆。「亲在的」拆成三段只是给自己找麻烦。判断标准：<strong>这条话术会不会因为客户情况不同而需要增减内容</strong>——会，就拆；不会，就一句话。</p>
+<h2>五、建库的实操顺序（第一次做，按这个来）</h2>
+<h3>第 1 步：先收集，不整理</h3>
+<p>把现在手头所有话术倒出来：群里的聊天记录、个人存的文档、Excel、平台后台的快捷短语。<strong>这一步只做收集，不判断好坏</strong>。</p>
+<h3>第 2 步：按旅程归类，不按话题</h3>
+<p>逐条问一句「客户在哪个阶段会需要这句」，往 0–9 里放。放不进去的，先扔到 9 号位（兜底），后面再处理。</p>
+<h3>第 3 步：删重复，留最好的那句</h3>
+<p>同一个意思有三四种说法，只留一种。留哪个？<strong>留客户反馈最好的那个</strong>，不是留写得最客气的那个。</p>
+<h3>第 4 步：能模块化的模块化</h3>
+<p>按第四节的判断标准过一遍。这一步最花时间，但对后面效率提升最大。</p>
+<h3>第 5 步：分库</h3>
+<p>逐条问「这句话换谁来回都应该一样吗」，是 → 团队库；不是 → 个人库。</p>
+<h3>第 6 步：导入，别手工录</h3>
+<p>话术精灵支持导入 Excel（.xlsx）。<strong>正确做法是先在客户端里点「下载模板」，拿到官方空模板，把内容填进去，再导入</strong>——自己新建一个 Excel 手打表头基本都会失败：表头必须一字不差（含括号里的字、全角半角都要对），差一个字就会提示「不认识的格式」。</p>
+<p>模板第一行的四列是固定的：一级分类、二级分类、话术标题、话术内容。要是想分套（0–9），前面再加一列套话术编号。</p>
+<h3>第 7 步：跑两周，再改</h3>
+<p>不要一次想把它做完美。先上线跑两周，看客服实际在用哪些、哪些从来没用过。<strong>从来没用过的话术，要么是分层放错了，要么是这句话根本不需要</strong>。</p>
+<h2>六、几个常见坑</h2>
+<p><strong>坑 1：按品类分层</strong> 「衣服一套、鞋子一套、配件一套」——听着合理，实际每条话术都会跨类。改按客户旅程分。</p>
+<p><strong>坑 2：一层塞二十个</strong> 10 套已经够用。如果某个位置塞不下，说明它该拆成两层（用「二级分类」），不是继续堆。</p>
+<p><strong>坑 3：把话术写成小作文</strong> 客户没耐心看 200 字。一条话术控制在屏幕上能一眼看完的长度；长内容拆成模块，需要哪段发哪段。</p>
+<p><strong>坑 4：只建不改</strong> 话术库是活的。建议每周固定花 20 分钟，看一遍本周新出现的问题，该补的补、该改的改。<strong>没人维护的话术库，三个月就没人用了。</strong></p>
+<p><strong>坑 5：新人来了只给文档</strong> 新人拿到话术文档还是会手打。正确做法是让新人装工具、导入同一套话术表，用三天就形成肌肉记忆了。</p>
+<h2>七、一句话总结</h2>
+<p>话术库乱不乱的差别，不在话术多少，在这三件事有没有做： <strong>按客户旅程分层、一层不超过 9 个、分库前先问「谁能用」。</strong></p>
+<p>这三件事做完，30 套话术的位置就是固定的，新人三天能记住，改一句全员同步。</p>
+  </article>
+  <nav class="post-nav" aria-label="上一篇与下一篇">
+    <a class="post-nav-prev" href="/blog/softtalk-name-confusion/">← 上一篇：话术精灵 SoftTalk 是什么软件？和日本的 SofTalk、印度的 SoftTalk 有关系吗？</a>
+  </nav>
+  <p class="post-back"><a href="/blog/">← 回到博客列表</a></p>
+</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2025–2026 黎路遥 · 话术精灵 SoftTalk</p>
+  </div>
+</footer>
+
+
+</body>
+</html>

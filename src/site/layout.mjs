@@ -10,7 +10,11 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
 </script>`;
 
 // 页面定义需要提供：outputFile、navLabel、head、main、可选 styles 与 bodyEnd。
+// 可选 root：站内地址前缀。根目录页面默认 ""（相对路径）；blog/ 下的页面在子目录里，设 "/" 改用根路径。
+// styles 由这里加前缀；bodyEnd 是页面自己写的 HTML，子目录页面要自己写根路径。
+// 可选 navHref：导航里的地址（默认 outputFile），如博客列表页写 "blog/"。
 export function renderPage(page, sitePages) {
+  const root = page.root ?? "";
   return `<!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
 <head>
@@ -21,9 +25,9 @@ export function renderPage(page, sitePages) {
 <meta name="author" content="${siteData.authorName}" />
 ${THEME_BOOT}
 ${page.head.trim()}
-<link rel="icon" href="assets/favicon.png" />
-<link rel="stylesheet" href="assets/css/site.css" />${renderPageStyles(page)}
-<script src="assets/js/theme.js" defer></script>
+<link rel="icon" href="${root}assets/favicon.png" />
+<link rel="stylesheet" href="${root}assets/css/site.css" />${renderPageStyles(page)}
+<script src="${root}assets/js/theme.js" defer></script>
 </head>
 <body>
 ${renderNav(page, sitePages)}
@@ -32,21 +36,22 @@ ${renderNav(page, sitePages)}
 ${page.main.trim()}
 </main>
 
-${renderFooter()}${renderBodyEnd(page)}
+${renderFooter(root)}${renderBodyEnd(page)}
 </body>
 </html>
 `;
 }
 
 function renderPageStyles(page) {
-  return (page.styles ?? []).map((href) => `\n<link rel="stylesheet" href="${href}" />`).join("");
+  return (page.styles ?? []).map((href) => `\n<link rel="stylesheet" href="${page.root ?? ""}${href}" />`).join("");
 }
 
 function renderNav(page, sitePages) {
+  const root = page.root ?? "";
   const links = sitePages
     .map((item) => ({
       label: item.navLabel,
-      href: item.outputFile,
+      href: `${root}${item.navHref ?? item.outputFile}`,
       current: item.outputFile === page.outputFile,
     }))
     .concat(DOWNLOAD_LINK)
@@ -55,8 +60,8 @@ function renderNav(page, sitePages) {
 
   return `<header class="nav">
   <div class="nav-inner">
-    <a class="brand" href="index.html">
-      <img class="brand-logo" src="assets/logo-small.png" alt="" />
+    <a class="brand" href="${root}index.html">
+      <img class="brand-logo" src="${root}assets/logo-small.png" alt="" />
       <span>${siteData.siteName}</span>
     </a>
     <nav class="nav-links" aria-label="站点导航">
@@ -84,7 +89,7 @@ function renderNavLink(link) {
   return `<a ${attributes.join(" ")}>${link.label}</a>`;
 }
 
-function renderFooterRecords() {
+function renderFooterRecords(root) {
   // 备案条目可选：某个字段置 null 就不渲染那一条，不留下空链接或空 <p>。
   const links = [];
   if (siteData.icp) {
@@ -92,15 +97,15 @@ function renderFooterRecords() {
   }
   if (siteData.police) {
     links.push(`<a class="footer-link" href="${siteData.police.url}" target="_blank" rel="noopener">
-        <img class="footer-icon" src="${siteData.police.icon}" alt="" />${siteData.police.text}
+        <img class="footer-icon" src="${root}${siteData.police.icon}" alt="" />${siteData.police.text}
       </a>`);
   }
   return links.length ? `<p class="footer-records">${links.join("\n      ")}</p>` : "";
 }
 
-function renderFooter() {
+function renderFooter(root) {
   // 备案段为空时连换行一起省掉，不在页脚留空行。
-  const records = renderFooterRecords();
+  const records = renderFooterRecords(root);
   const recordsLine = records ? `\n    ${records}` : "";
   return `<footer class="footer">
   <div class="footer-inner">

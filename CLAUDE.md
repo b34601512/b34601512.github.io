@@ -50,13 +50,17 @@
 D:\SoftTalk官网
 ├─ src\site\
 │  ├─ site-data.mjs          全站唯一数据源：域名、产品名、下载/教程链接、联系方式、版权、备案
-│  ├─ pages.mjs              页面清单（导航与 sitemap 顺序），构建与自检共用
+│  ├─ pages.mjs              页面清单：sitePages（导航+sitemap）/ blogPages / extraPages / allPages / sitemapPages
+│  ├─ blog\
+│  │  ├─ markdown.mjs        博客用的 Markdown 子集解析（零依赖）
+│  │  └─ posts.mjs           读 content/blog/ + slugs.json，解析文章头、摘要、排序
 │  ├─ seo.mjs                每页 head 的 SEO/分享元数据与 JSON-LD（对象经 JSON.stringify 输出，不手拼 JSON）
 │  ├─ layout.mjs             公共骨架：head 基础项、首屏主题脚本、导航（含主题切换按钮）、页脚
 │  └─ pages\
 │     ├─ index.mjs           首页 head（SEO/JSON-LD）+ 主体 + 演示脚本引用
 │     ├─ why.mjs             解决什么问题页（短页：三条问题 + 十套模块解法 + 对比表）
 │     ├─ pricing.mjs         定价页 head + 价格表
+│     ├─ blog.mjs            博客列表页 + 文章页模板（root: "/"，站内链接走根路径）
 │     └─ contact.mjs         联系页 head + 复制脚本
 ├─ scripts\
 │  ├─ build-site.mjs         生成根目录四张 HTML 与 sitemap.xml
@@ -81,6 +85,8 @@ D:\SoftTalk官网
 │  ├─ type-pdf.png           28×28 话术类型角标（带文件）
 │  ├─ og.png                 1200×630 微信/QQ 分享缩略图（96 KB）
 │  └─ beian.png              公安备案图标（16px 显示）
+├─ content\blog\            博客原稿 .md + slugs.json（文件名→slug）+ README.md（给钟灵的说明）
+├─ blog\                    构建产物：blog/index.html 与 blog/<slug>/index.html
 ├─ index.html / why.html / pricing.html / contact.html   构建产物
 ├─ sitemap.xml               构建产物，由页面清单生成
 ├─ robots.txt                抓取规则，指向 sitemap
@@ -266,7 +272,8 @@ D:\SoftTalk官网
 1. `scripts/build-site.mjs` 依次读取 `indexPage`、`pricingPage`、`contactPage`。
 2. 每个页面模块从 `site-data.mjs` 取公共数据，拼出自己的 `head` 与 `main`。
 3. `layout.mjs` 用页面清单生成导航（当前页高亮 `aria-current="page"`）、页脚与完整 HTML。
-4. 构建脚本写出三张 HTML，并按页面清单生成 `sitemap.xml`（首页用站点根地址，其余用绝对地址）。
+4. 构建脚本写出 `allPages` 的全部 HTML，并按 `sitemapPages` 生成 `sitemap.xml`（首页用站点根地址，其余用绝对地址）。
+5. 博客：`posts.mjs` 读 `content/blog/slugs.json` 登记的 md → 标题到第一条 `---` 之间是内部备注（只取日期/摘要，不发布）→ `markdown.mjs` 渲染正文 → `pages/blog.mjs` 生成列表页与文章页 → 作为 `blogPages` 进 sitemap。博客页面在子目录里，带 `root: "/"`，`layout.mjs` 给站内地址加根前缀。
 
 浏览器运行时（没有任何后端请求）：
 
