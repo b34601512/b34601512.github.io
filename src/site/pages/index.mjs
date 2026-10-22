@@ -112,12 +112,12 @@ export const indexPage = {
               <span class="attached-title" id="demo-attached-title">搜索结果 · 0</span>
               <button class="attached-close" id="demo-attached-close" type="button" title="关闭搜索结果（Esc）" aria-label="关闭搜索结果">×</button>
             </div>
-            <p class="attached-hint">按 Tab键，再按数字直接发送话术。</p>
+            <p class="attached-hint" id="demo-attached-hint" hidden></p>
             <div class="attached-list" id="demo-attached-list"></div>
           </div>
           <div class="attached-row">
             <span class="attached-field">
-              <input class="attached-input" id="demo-attached-input" type="search" aria-label="吸附栏搜索话术" placeholder="按 Tab键，再按数字直接发送话术。" autocomplete="off" />
+              <input class="attached-input" id="demo-attached-input" type="search" aria-label="吸附栏搜索话术" placeholder="Alt+Q 定位搜索栏" autocomplete="off" />
               <button class="attached-clear" id="demo-attached-clear" type="button" title="清空搜索" aria-label="清空搜索" hidden>×</button>
             </span>
             <button class="attached-range" id="demo-attached-range" type="button">全部</button>

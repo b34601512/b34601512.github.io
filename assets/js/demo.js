@@ -91,6 +91,7 @@
     bar: $("demo-attached"),
     barResults: $("demo-attached-results"),
     barTitle: $("demo-attached-title"),
+    barHint: $("demo-attached-hint"),
     barClose: $("demo-attached-close"),
     barList: $("demo-attached-list"),
     barInput: $("demo-attached-input"),
@@ -230,9 +231,11 @@
       hits.forEach((hit) => rows.push(hit.item));
       // 按过 Tab 才显示 1–9、0 临时序号（客户端 Tab 前不显示）。
       const digits = digitMode("panel");
+      // 结果卡表头与指南短片同一套：「搜索结果 · N」+ 下一步该按什么；没有结果就不提示。
       paint(
         hits.length
-          ? hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
+          ? `<div class="app-results-head"><span class="app-results-title">搜索结果 · ${hits.length}</span><span class="app-results-hint">${resultHint("panel", hits.length)}</span></div>` +
+              hits.map((hit, index) => rowHtml(hit.item, index, hit.path, digits && index < 10 ? RESULT_DIGITS[index] : "")).join("")
           : `<p class="app-empty">没有匹配结果</p>`,
       );
       return;
@@ -247,6 +250,21 @@
   // 对应客户端 search_result_digit_selection：先在有搜索词的搜索框里按 Tab 冻结前十条结果，
   // 显示 1–9、0 临时序号，再按数字直接发送对应话术；继续编辑或按 Esc 退出数字态。
   const RESULT_DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+
+  // 提示语照客户端（#3661）：一次只教下一步。未聚焦教 Alt+Q，聚焦空框教输入，
+  // 有结果教 Tab，按过 Tab 教数字与 Esc。文案与指南短片（guide-film.js 的 HINT）一字不差。
+  const HINT = {
+    idle: "Alt+Q 定位搜索栏",
+    empty: "输入关键词搜索",
+    tab: `按 <span class="app-hint-cap">Tab</span> 固定结果 → 按数字发送`,
+    digits: "按数字直接发送 · Esc 退出",
+  };
+
+  const resultHint = (surface, count) => (count ? (digitMode(surface) ? HINT.digits : HINT.tab) : "");
+
+  // 有搜索词且有结果才能进数字态；空框或没有命中时按 Tab 什么都不做。
+  const surfaceHasHits = (surface) =>
+    surface === "panel" ? Boolean(state.query) && panelHits.length > 0 : el.barInput.value.trim() !== "" && barHits.length > 0;
 
   const digitMode = (surface) => state.digitSurface === surface;
 
@@ -305,10 +323,9 @@
   const bindSearchKeys = (input, surface) => {
     input.addEventListener("keydown", (event) => {
       if (event.isComposing || event.keyCode === 229) return;
-      if (event.key === "Tab") {
-        if (!input.value.trim()) return;
+      if (event.key === "Tab" && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey) {
         event.preventDefault();
-        enterDigitMode(surface);
+        if (surfaceHasHits(surface) && !digitMode(surface)) enterDigitMode(surface);
         return;
       }
       if (event.key === "Escape") {
@@ -344,14 +361,13 @@
     });
   };
 
-  // 主搜索栏提示语跟着焦点换（客户端：未聚焦提示 Alt+Q，聚焦后提示 Tab 数字发送）。
+  // 两个搜索框的占位提示跟着焦点换：未聚焦提示 Alt+Q，聚焦后提示输入关键词。
   const bindSearchPlaceholder = (input) => {
-    const idle = input.placeholder;
     input.addEventListener("focus", () => {
-      input.placeholder = "按 Tab键，再按数字直接发送话术。";
+      input.placeholder = HINT.empty;
     });
     input.addEventListener("blur", () => {
-      input.placeholder = idle;
+      input.placeholder = HINT.idle;
     });
   };
 
@@ -404,6 +420,8 @@
     el.barResults.hidden = raw === "";
     if (raw) {
       el.barTitle.textContent = `搜索结果 · ${hits.length}`;
+      el.barHint.innerHTML = resultHint("bar", hits.length);
+      el.barHint.hidden = hits.length === 0;
       // 按过 Tab 才显示临时序号：1–9、0 对应第一到第十条。
       const digits = digitMode("bar");
       el.barList.innerHTML = hits.length
@@ -967,6 +985,7 @@
   bindSearchKeys(el.search, "panel");
   bindSearchKeys(el.barInput, "bar");
   bindSearchPlaceholder(el.search);
+  bindSearchPlaceholder(el.barInput);
 
   // 范围按钮可点：全部 → 当前话术域 → 当前套，循环切换后主界面与吸附栏都立即重算命中。
   const cycleRange = () => {

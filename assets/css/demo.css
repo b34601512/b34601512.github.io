@@ -910,6 +910,46 @@
   font-size: 11px;
 }
 
+/* 搜索结果卡表头：「搜索结果 · N」+ 下一步提示，与指南短片 .gf-results-head 同值 */
+.app-results-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  padding: 5px 8px 4px;
+  border-bottom: 1px solid var(--w-border);
+  background: var(--w-content);
+}
+
+.app-results-title {
+  flex: 0 0 auto;
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* 主界面比指南短片窄：放不下就整句换到标题下一行，不截成省略号 */
+.app-results-hint {
+  color: var(--w-muted);
+  font-size: 11.5px;
+}
+
+/* 提示语里的 Tab 画成键帽（与 .gf-hint-cap 同值）；在客户端窗口里，颜色固定，不跟网站主题 */
+.app-hint-cap {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #c2410c;
+  color: #ffffff;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
 .app-empty {
   margin: 0;
   padding: 18px 10px;
@@ -1139,6 +1179,10 @@
   line-height: 1;
   cursor: pointer;
   transform: translateY(-50%);
+}
+
+.attached-clear[hidden] {
+  display: none;
 }
 
 .attached-clear:hover {
