@@ -5,13 +5,13 @@ import { escapeHtml } from "../blog/markdown.mjs";
 import { breadcrumb, ogImageUrl, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";
 
-const listUrl = pageUrl("blog/index.html");
+const listUrl = pageUrl("blog/");
 const listTitle = "话术精灵博客_客服话术库与平台考核实操 - 话术精灵";
 const listDescription =
   "话术精灵 SoftTalk 官方博客：话术库怎么建、淘宝客服响应时长怎么考核、品牌同名怎么分辨。每篇都给结论和官方原文对照，都是能直接照着做的操作步骤。";
 
 const postPath = (post) => `/blog/${post.slug}/`;
-const postUrl = (post) => pageUrl(`blog/${post.slug}/index.html`);
+const postUrl = (post) => pageUrl(`blog/${post.slug}/`);
 
 // 2026-10-18 → 2026 年 10 月 18 日（不补零）。
 function chineseDate(date) {
@@ -26,6 +26,7 @@ export const blogPage = {
   navHref: "blog/",
   navLabel: "博客",
   root: "/",
+  canonicalUrl: listUrl,
   sitemap: { priority: "0.6", changefreq: "weekly" },
   head: seoHead({
     title: listTitle,
@@ -95,6 +96,7 @@ function postPage(post, index) {
     outputFile: `blog/${post.slug}/index.html`,
     navLabel: post.title,
     root: "/",
+    canonicalUrl: url,
     sitemap: { priority: "0.5", changefreq: "monthly" },
     head: seoHead({
       title: escapeHtml(title),

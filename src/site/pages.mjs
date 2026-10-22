@@ -7,6 +7,7 @@ import { indexPage } from "./pages/index.mjs";
 import { notFoundPage } from "./pages/not-found.mjs";
 import { pricingPage } from "./pages/pricing.mjs";
 import { whyPage } from "./pages/why.mjs";
+import { pageUrl, siteData } from "./site-data.mjs";
 
 export const sitePages = [indexPage, guidePage, whyPage, pricingPage, faqPage, blogPage, contactPage];
 
@@ -19,3 +20,10 @@ export const extraPages = [notFoundPage];
 // 构建与自检遍历的全部页面；sitemap 由 sitemapPages 生成、也按它核对。
 export const allPages = [...sitePages, ...blogPages, ...extraPages];
 export const sitemapPages = [...sitePages, ...blogPages];
+
+// 页面的规范地址：canonical、og:url 与 sitemap 的 <loc> 都用它。首页是站点根地址；
+// 页面自带 canonicalUrl 时以它为准（博客用 /blog/、/blog/<slug>/ 这种带斜杠的目录地址，和站内链接同一个写法）。
+export function canonicalUrl(page) {
+  if (page.canonicalUrl) return page.canonicalUrl;
+  return page.outputFile === "index.html" ? siteData.siteUrl : pageUrl(page.outputFile);
+}

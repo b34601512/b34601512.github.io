@@ -4,8 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
-import { allPages, sitePages, sitemapPages } from "../src/site/pages.mjs";
-import { pageUrl, siteData } from "../src/site/site-data.mjs";
+import { allPages, canonicalUrl, sitePages, sitemapPages } from "../src/site/pages.mjs";
 
 const renderedByFile = new Map();
 
@@ -44,7 +43,7 @@ function lastmodFor(outputFile, rendered) {
 // 优先级：导航页面按顺序 1.0、0.9…递减；页面自带 sitemap 设置（博客列表 0.6、文章 0.5）时以它为准。
 const entries = sitemapPages
   .map((page) => {
-    const loc = page.outputFile === "index.html" ? siteData.siteUrl : pageUrl(page.outputFile);
+    const loc = canonicalUrl(page);
     const priority = page.sitemap?.priority ?? (1 - sitePages.indexOf(page) * 0.1).toFixed(1);
     return `  <url>
     <loc>${loc}</loc>

@@ -13,13 +13,13 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
 <meta name="description" content="话术库乱，通常不是因为话术不够多，是因为没有分层的规则。三个原则，照着做基本就不乱了：" />
 <meta name="keywords" content="客服话术软件,话术软件,话术管理软件,客服话术管理软件,微信销售话术软件,客户话术软件,电商客服话术软件,快捷回复软件,团队话术共享,话术精灵" />
 <meta name="robots" content="index,follow" />
-<link rel="canonical" href="https://luyao2089.cc/blog/phrase-library-0-9-setup/index.html" />
+<link rel="canonical" href="https://luyao2089.cc/blog/phrase-library-0-9-setup/" />
 <meta property="og:type" content="article" />
 <meta property="og:site_name" content="话术精灵 SoftTalk" />
 <meta property="og:locale" content="zh_CN" />
 <meta property="og:title" content="客服话术库怎么建才不乱？0–9 模块分法实操 - 话术精灵" />
 <meta property="og:description" content="话术库乱，通常不是因为话术不够多，是因为没有分层的规则。三个原则，照着做基本就不乱了：" />
-<meta property="og:url" content="https://luyao2089.cc/blog/phrase-library-0-9-setup/index.html" />
+<meta property="og:url" content="https://luyao2089.cc/blog/phrase-library-0-9-setup/" />
 <meta property="og:image" content="https://luyao2089.cc/assets/og.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="客服话术库怎么建才不乱？0–9 模块分法实操 - 话术精灵" />
@@ -50,9 +50,9 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
       "image": "https://luyao2089.cc/assets/og.png",
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": "https://luyao2089.cc/blog/phrase-library-0-9-setup/index.html"
+        "@id": "https://luyao2089.cc/blog/phrase-library-0-9-setup/"
       },
-      "url": "https://luyao2089.cc/blog/phrase-library-0-9-setup/index.html"
+      "url": "https://luyao2089.cc/blog/phrase-library-0-9-setup/"
     },
     {
       "@type": "BreadcrumbList",
@@ -67,13 +67,13 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
           "@type": "ListItem",
           "position": 2,
           "name": "博客",
-          "item": "https://luyao2089.cc/blog/index.html"
+          "item": "https://luyao2089.cc/blog/"
         },
         {
           "@type": "ListItem",
           "position": 3,
           "name": "客服话术库怎么建才不乱？0–9 模块分法实操",
-          "item": "https://luyao2089.cc/blog/phrase-library-0-9-setup/index.html"
+          "item": "https://luyao2089.cc/blog/phrase-library-0-9-setup/"
         }
       ]
     }
@@ -220,24 +220,6 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
 <h2>七、一句话总结</h2>
 <p>话术库乱不乱的差别，不在话术多少，在这三件事有没有做： <strong>按客户旅程分层、一层不超过 9 个、分库前先问「谁能用」。</strong></p>
 <p>这三件事做完，30 套话术的位置就是固定的，新人三天能记住，改一句全员同步。</p>
-<h2>八、发布前检查（自查，发布时删掉）</h2>
-<div class="post-table"><table>
-<thead><tr><th>检查项</th><th>结果</th></tr></thead>
-<tbody>
-<tr><td>「外挂/机器人/自动回复/自动群发/批量私信」</td><td>无</td></tr>
-<tr><td>「自动」（其他用法）</td><td>无</td></tr>
-<tr><td>讲本地运行、不碰账号</td><td>本文侧重方法，未涉及数据安全（适合时可在结尾补一句）</td></tr>
-<tr><td>编造数字</td><td>无（30 套＝团队/个人/离线各 0–9；10 段文字/9 图/9 附件＝产品实际上限）</td></tr>
-<tr><td>竞品贬损</td><td>仅写「多数快捷短语工具只能一段式」这类事实差异，未点名、未贬损</td></tr>
-<tr><td>版本号/内测</td><td>无</td></tr>
-<tr><td>无产品事实待核</td><td>分法建议部分是我的方法论，不是产品限制，文中已写明</td></tr>
-</tbody>
-</table></div>
-<p><strong>产品事实已核（程灵素 2026-10-18）</strong>：</p>
-<ul>
-<li>「10 段文字/9 张图片/9 个附件」实码核过三处：phrase_sequence.py:16 MAX_MESSAGE_COUNT=10、phrase_assets.py:25 MAX_IMAGE_COUNT=9、:30 MAX_FILE_COUNT=9 → <strong>对外可写</strong></li>
-<li>「表头一字不差、先下载模板再填」→ 可外写（是客户端本来就有的功能，不是内部细节）；<strong>「很容易」已改成「基本都会失败」</strong>，因为表头是全串精确匹配，差一字必然失败，不是概率问题</li>
-</ul>
   </article>
   <nav class="post-nav" aria-label="上一篇与下一篇">
     <a class="post-nav-prev" href="/blog/softtalk-name-confusion/">← 上一篇：话术精灵 SoftTalk 是什么软件？和日本的 SofTalk、印度的 SoftTalk 有关系吗？</a>

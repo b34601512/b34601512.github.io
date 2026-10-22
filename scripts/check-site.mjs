@@ -4,8 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
-import { allPages, sitePages, sitemapPages } from "../src/site/pages.mjs";
-import { pageUrl, siteData } from "../src/site/site-data.mjs";
+import { allPages, canonicalUrl, sitePages, sitemapPages } from "../src/site/pages.mjs";
 
 const errors = [];
 const warnings = [];
@@ -132,14 +131,13 @@ for (const name of definedClasses) {
 const sitemap = await readFile("sitemap.xml", "utf8").catch(() => "");
 const sitemapLocs = matchAll(sitemap, /<loc>([^<]+)<\/loc>/g);
 for (const page of sitemapPages) {
-  const loc = page.outputFile === "index.html" ? siteData.siteUrl : pageUrl(page.outputFile);
+  const loc = canonicalUrl(page);
   if (!sitemap.includes(`<loc>${loc}</loc>`)) errors.push(`sitemap.xml 缺少 ${loc}`);
 }
 // sitemap 只能列页面清单里的地址：多列、重复、或 lastmod 不是 YYYY-MM-DD 都报错，
 // 否则错一个字符搜索引擎就当成无效条目静默丢掉。
 for (const loc of sitemapLocs) {
-  const known =
-    loc === siteData.siteUrl || sitemapPages.some((page) => pageUrl(page.outputFile) === loc);
+  const known = sitemapPages.some((page) => canonicalUrl(page) === loc);
   if (!known) errors.push(`sitemap.xml 里有页面清单之外的地址：${loc}`);
 }
 if (new Set(sitemapLocs).size !== sitemapLocs.length) errors.push("sitemap.xml 里有重复的 <loc>");

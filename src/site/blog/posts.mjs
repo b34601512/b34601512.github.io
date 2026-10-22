@@ -2,12 +2,14 @@
 // 所以两边拿到的文章、顺序、正文完全一致。
 // 文章头格式（见 content/blog/README.md）：第一行「# 标题」；标题到第一条单独的 --- 之间是内部备注，
 // 一个字都不发布，只从里面取日期（第一条「> YYYY-MM-DD」）和可选的「> 摘要：…」；--- 之后才是正文。
+// 正文里第一个文字含「发布前检查」的 ##/### 小标题起到文末是内部区（自查表、待核事实），同样不发布。
 import { readdirSync, readFileSync } from "node:fs";
 import { parseBlocks, plainInline, renderBlocks } from "./markdown.mjs";
 
 const BLOG_DIR = new URL("../../../content/blog/", import.meta.url);
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const SUMMARY_LIMIT = 80;
+const INTERNAL_HEADING = /^#{2,3}\s+.*发布前检查/;
 
 // JSON.parse 遇到重复键会静默留下后一个，所以先从原文里把键挑出来查重。
 function readSlugs() {
@@ -68,7 +70,14 @@ export function parsePost(file, source) {
   }
 
   const where = `content/blog/${file}`;
-  const blocks = parseBlocks(lines.slice(ruleIndex + 1).join("\n"), where);
+  let body = lines.slice(ruleIndex + 1);
+  const internalIndex = body.findIndex((line) => INTERNAL_HEADING.test(line));
+  if (internalIndex >= 0) {
+    const count = body.slice(internalIndex).filter((line) => INTERNAL_HEADING.test(line)).length;
+    console.log(`[blog] 跳过内部区：${file.replace(/\.md$/, "")}（发布前检查起 ${count} 处）`);
+    body = body.slice(0, internalIndex);
+  }
+  const blocks = parseBlocks(body.join("\n"), where);
   const summaryLine = meta.find((line) => /^>\s*摘要[：:]/.test(line));
   const summarySource = summaryLine ? summaryLine.replace(/^>\s*摘要[：:]\s*/, "") : firstParagraph(blocks);
   if (!summarySource) throw new Error(`${where}：正文里没有段落，没法生成摘要（可在备注区写「> 摘要：…」）`);
