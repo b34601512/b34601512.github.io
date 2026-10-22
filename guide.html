@@ -98,7 +98,8 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
 </script>
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css?v=648bb318" />
-<link rel="stylesheet" href="assets/css/guide.css?v=2a139743" />
+<link rel="stylesheet" href="assets/css/guide.css?v=745a6d7a" />
+<link rel="stylesheet" href="assets/css/guide-film.css?v=7efad1b6" />
 <script src="assets/js/theme.js?v=292ea05c" defer></script>
 </head>
 <body>
@@ -129,12 +130,12 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
   <section class="hero">
     <p class="eyebrow">怎么用</p>
     <h1>45 秒看懂<span class="hl">话术精灵</span>怎么用</h1>
-    <p class="lead">一段自动播放的手绘动画：分类、双击贴入、纸飞机直发、搜索加数字、吸附搜索栏。看完想自己动手，首页有能直接点的演示。</p>
+    <p class="lead">一段自动播放的操作演示：分类、双击贴入、纸飞机直发、搜索加数字、吸附搜索栏。看完想自己动手，首页有能直接点的演示。</p>
   </section>
 
   <section class="section">
     <figure class="film">
-      <canvas class="film-canvas" id="guide-film" width="960" height="540" role="img" aria-label="手绘动画：演示话术精灵的分类、双击贴入、纸飞机发送、搜索加数字发送和吸附搜索栏"></canvas>
+      <div class="film-stage" id="guide-film" role="img" aria-label="操作演示：鼠标在话术精灵主界面切换团队、个人、离线话术和套号，双击一条话术贴进聊天输入框再回车发送，点话术左侧纸飞机直接发送，按 Alt+Q 搜索后按 Tab 再按数字发送，最后用吸附在聊天窗口下面的搜索栏搜索并发送"></div>
       <figcaption class="film-bar">
         <button class="film-play" id="guide-play" type="button" aria-label="播放" data-playing="false">
           <svg class="film-icon film-icon--play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.6 8Z" /></svg>
@@ -195,7 +196,7 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
   </div>
 </footer>
 
-<script src="assets/js/guide-film.js?v=36ca6cfc" defer></script>
+<script src="assets/js/guide-film.js?v=0864a1fe" defer></script>
 
 </body>
 </html>

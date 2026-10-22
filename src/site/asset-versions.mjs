@@ -9,6 +9,7 @@ const VERSIONED_ASSETS = [
   "assets/css/site.css",
   "assets/css/demo.css",
   "assets/css/guide.css",
+  "assets/css/guide-film.css",
   "assets/js/guide-film.js",
   "assets/js/demo-data.js",
   "assets/js/demo.js",

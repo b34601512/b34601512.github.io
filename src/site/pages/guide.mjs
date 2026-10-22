@@ -1,4 +1,4 @@
-// guide.html：45 秒手绘动画教程 + 同样五步的文字版。文字步骤也是动画的章节按钮，点哪步就跳到哪段。
+// guide.html：45 秒操作演示短片 + 同样五步的文字版。文字步骤也是动画的章节按钮，点哪步就跳到哪段。
 import { breadcrumb, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";
 
@@ -6,6 +6,10 @@ const url = pageUrl("guide.html");
 const title = "话术精灵怎么用_客服话术软件动画教程 - 话术精灵";
 const share =
   "45 秒手绘动画教你用话术精灵：团队、个人、离线话术分类，双击贴进聊天输入框，点纸飞机直接发送，Alt+Q 搜索后按 Tab 再按数字发送，吸附搜索栏贴在聊天窗口下面。";
+
+// 演示短片里聊天窗的真实截图：放进 assets/img/ 后把路径填在这里（例如 "assets/img/film-chat.png"），
+// 短片就用截图当聊天窗的底，气泡和输入框里的字照常叠在上面；留空就是代码画的（样式见 guide-film.css）。
+const filmShots = { chat: "" };
 
 // 顺序与 assets/js/guide-film.js 的 SCENES 第 1–5 段一一对应（data-chapter 就是段号）。
 const steps = [
@@ -34,7 +38,7 @@ const steps = [
 export const guidePage = {
   outputFile: "guide.html",
   navLabel: "怎么用",
-  styles: ["assets/css/guide.css"],
+  styles: ["assets/css/guide.css", "assets/css/guide-film.css"],
   head: seoHead({
     title,
     description: share,
@@ -63,12 +67,12 @@ export const guidePage = {
   <section class="hero">
     <p class="eyebrow">怎么用</p>
     <h1>45 秒看懂<span class="hl">话术精灵</span>怎么用</h1>
-    <p class="lead">一段自动播放的手绘动画：分类、双击贴入、纸飞机直发、搜索加数字、吸附搜索栏。看完想自己动手，首页有能直接点的演示。</p>
+    <p class="lead">一段自动播放的操作演示：分类、双击贴入、纸飞机直发、搜索加数字、吸附搜索栏。看完想自己动手，首页有能直接点的演示。</p>
   </section>
 
   <section class="section">
     <figure class="film">
-      <canvas class="film-canvas" id="guide-film" width="960" height="540" role="img" aria-label="手绘动画：演示话术精灵的分类、双击贴入、纸飞机发送、搜索加数字发送和吸附搜索栏"></canvas>
+      <div class="film-stage" id="guide-film"${filmShots.chat ? ` data-chat-shot="${filmShots.chat}"` : ""} role="img" aria-label="操作演示：鼠标在话术精灵主界面切换团队、个人、离线话术和套号，双击一条话术贴进聊天输入框再回车发送，点话术左侧纸飞机直接发送，按 Alt+Q 搜索后按 Tab 再按数字发送，最后用吸附在聊天窗口下面的搜索栏搜索并发送"></div>
       <figcaption class="film-bar">
         <button class="film-play" id="guide-play" type="button" aria-label="播放" data-playing="false">
           <svg class="film-icon film-icon--play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.6 8Z" /></svg>

@@ -1,0 +1,848 @@
+/* ==========================================================================
+   「怎么用」页的演示短片：DOM 舞台，画面就是首页演示同款的聊天窗与话术精灵主界面。
+   窗口里的配色、圆角、字号、内边距全部照抄 assets/css/demo.css（客户端白色主题复刻），
+   两种网站主题下保持原样；只有舞台底色、字幕、按键提示、标注跟着网站主题走。
+   舞台按 800×450 设计，assets/js/guide-film.js 用 transform 缩放到容器宽度。
+   ========================================================================== */
+
+.film-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--row-hover);
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 舞台里不少元素自己设了 display，hidden 要压得住它们 */
+.film-stage [hidden] {
+  display: none !important;
+}
+
+/* 舞台里的两层：screen 是「屏幕」（窄屏时镜头会推近跟着操作走），hud 是字幕与片头片尾（不跟镜头）。 */
+.gf-screen,
+.gf-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 800px;
+  height: 450px;
+  transform-origin: 0 0;
+}
+
+.gf-hud {
+  pointer-events: none;
+}
+
+/* ---------- 客户端窗口通用 ---------- */
+.gf-win {
+  /* 客户端白色主题 token（同 demo.css 的 .demo） */
+  --w-base: #fcfcfc;
+  --w-content: #ffffff;
+  --w-text: #000000;
+  --w-muted: #7a8695;
+  --w-border: #cfcfcf;
+  --w-edge: #d0d0d0;
+  --w-panel-border: #d0d8e2;
+  --w-line: #e8e8e8;
+  --w-hover: #f2f4f7;
+  --w-selection: #dceeff;
+  --w-selection-border: #8cb8d6;
+  --w-title-fg: #e53935;
+  --w-answer-fg: #26313a;
+  --w-lv2-bg: #e7f0fa;
+  --w-lv2-sep: #c8d4df;
+  --w-chip-bg: #e8eef5;
+  --w-chip-fg: #1f2a33;
+  --w-chip-mark: #8e1b1b;
+  --w-chip-action-bg: #ffefc2;
+  --w-chip-action-fg: #8e1b1b;
+  --w-cloud: #4c8dff;
+  --w-accent-border: #d0a030;
+  /* 微信皮肤（同 demo.css 默认值） */
+  --wx-bg: #ededed;
+  --wx-head: #f7f7f7;
+  --wx-head-fg: #1a1a1a;
+  --wx-sub: #8a8a8a;
+  --wx-line: #e3e3e3;
+  --wx-in: #ffffff;
+  --wx-out: #95ec69;
+  --wx-online: #07c160;
+  --wx-avatar-bg: #d7e2f2;
+  --wx-avatar-fg: #33506e;
+  --wx-focus: #95c95f;
+  --wx-focus-ring: rgba(149, 201, 95, 0.2);
+
+  position: absolute;
+  top: 48px;
+  height: 350px;
+  border: 1px solid var(--w-edge);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- 左：客服聊天窗口（微信皮肤） ---------- */
+.gf-chat {
+  left: 40px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--wx-bg);
+  overflow: hidden;
+}
+
+/* 截图模式：data-skin="shot" 时窗口外观换成 assets/img/ 下的真实截图，
+   只隐藏代码画的外框（标题栏、底栏的底色与边框），气泡与输入框里的字照常叠在上面。 */
+.gf-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gf-chat[data-skin="shot"],
+.gf-chat[data-skin="shot"] .gf-chat-log,
+.gf-chat[data-skin="shot"] .gf-chat-head,
+.gf-chat[data-skin="shot"] .gf-chat-foot,
+.gf-chat[data-skin="shot"] .gf-chat-input,
+.gf-chat[data-skin="shot"] .gf-chat-send {
+  border-color: transparent;
+  background: transparent;
+}
+
+.gf-chat[data-skin="shot"] .gf-chat-head > *,
+.gf-chat[data-skin="shot"] .gf-chat-send {
+  visibility: hidden;
+}
+
+.gf-chat-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--wx-line);
+  background: var(--wx-head);
+}
+
+.gf-chat-avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  background: var(--wx-avatar-bg);
+  color: var(--wx-avatar-fg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gf-chat-who {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gf-chat-who strong {
+  color: var(--wx-head-fg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gf-chat-who em {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--wx-sub);
+  font-size: 11.5px;
+  font-style: normal;
+}
+
+.gf-chat-who em::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wx-online);
+}
+
+/* 新消息从底部进来、旧消息往上顶（聊天软件的样子），超出的部分直接裁掉 */
+.gf-chat-log {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 12px;
+  background: var(--wx-bg);
+  overflow: hidden;
+}
+
+.gf-msg {
+  display: flex;
+}
+
+.gf-msg--in {
+  justify-content: flex-start;
+}
+
+.gf-msg--out {
+  justify-content: flex-end;
+}
+
+.gf-bubble {
+  position: relative;
+  max-width: 78%;
+  margin: 0;
+  padding: 8px 11px;
+  border-radius: 4px;
+  color: #1a1a1a;
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.gf-bubble::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  border: 5px solid transparent;
+}
+
+.gf-msg--in .gf-bubble {
+  border: 1px solid #e2e2e2;
+  background: var(--wx-in);
+}
+
+.gf-msg--in .gf-bubble::before {
+  left: -9px;
+  border-right-color: var(--wx-in);
+}
+
+.gf-msg--out .gf-bubble {
+  background: var(--wx-out);
+}
+
+.gf-msg--out .gf-bubble::before {
+  right: -9px;
+  border-left-color: var(--wx-out);
+}
+
+.gf-typing {
+  display: inline-flex;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid #e2e2e2;
+  border-radius: 4px;
+  background: var(--wx-in);
+}
+
+.gf-typing-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #9a9a9a;
+}
+
+.gf-chat-foot {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px;
+  border-top: 1px solid var(--wx-line);
+  background: var(--wx-head);
+}
+
+.gf-chat-input {
+  flex: 1;
+  height: 70px;
+  padding: 7px 9px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  background: var(--wx-in);
+  color: #1a1a1a;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+.gf-chat-input--focus {
+  border-color: var(--wx-focus);
+  box-shadow: 0 0 0 2px var(--wx-focus-ring);
+}
+
+.gf-placeholder {
+  color: #9a9a9a;
+}
+
+/* 输入框里闪的光标 */
+.gf-caret {
+  display: inline-block;
+  width: 1px;
+  height: 1.15em;
+  margin-left: 1px;
+  background: #1a1a1a;
+  vertical-align: -0.2em;
+}
+
+.gf-chat-send {
+  flex: 0 0 auto;
+  padding: 7px 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  background: #f2f2f2;
+  color: #333333;
+  font-size: 13px;
+}
+
+.gf-chat-send--ready {
+  border-color: var(--wx-online);
+  background: var(--wx-online);
+}
+
+/* ---------- 右：话术精灵主界面（同 demo.css 的 .app） ---------- */
+.gf-app {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 4px 8px 6px;
+  background: var(--w-base);
+  color: var(--w-text);
+}
+
+.gf-app-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 1px 0 3px 28px;
+}
+
+.gf-app-tag {
+  padding: 1px 7px;
+  border: 1px solid var(--w-accent-border);
+  border-radius: 999px;
+  background: var(--w-chip-action-bg);
+  color: var(--w-chip-action-fg);
+  font-size: 11px;
+}
+
+.gf-app-wins {
+  display: flex;
+  gap: 2px;
+}
+
+.gf-app-win {
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 6px;
+  color: #3c3c3c;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+
+.gf-app-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 0 2px;
+  border-bottom: 1px solid var(--w-cloud);
+}
+
+.gf-app-tab {
+  padding: 5px 10px;
+  border: 1px solid var(--w-border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: var(--w-content);
+  color: var(--w-muted);
+  font-size: 12px;
+}
+
+.gf-app-tab--active {
+  border-color: var(--w-cloud);
+  background: var(--w-base);
+  color: var(--w-text);
+  font-weight: 600;
+}
+
+.gf-app-digits {
+  display: flex;
+  gap: 6px;
+  padding: 6px 2px 5px;
+}
+
+.gf-app-digit {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 2px;
+  border-radius: 6px;
+  color: var(--w-muted);
+  font-size: 12.5px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.gf-app-digit--active {
+  background: var(--w-selection);
+  color: var(--w-text);
+  font-weight: 700;
+}
+
+.gf-app-lv1 {
+  display: flex;
+  gap: 6px;
+  padding: 5px 6px;
+  border: 1px solid var(--w-panel-border);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  background: var(--w-content);
+}
+
+.gf-app-chip {
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--w-chip-bg);
+  color: var(--w-chip-fg);
+  font-size: 12px;
+}
+
+.gf-app-chip--active {
+  box-shadow: inset 0 -2px 0 var(--w-chip-mark);
+  color: var(--w-chip-mark);
+  font-weight: 700;
+}
+
+.gf-app-tree {
+  flex: 1;
+  margin-top: 7px;
+  border: 1px solid var(--w-panel-border);
+  border-radius: 6px;
+  background: var(--w-content);
+  overflow: hidden;
+}
+
+.gf-app-lv2 {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--w-lv2-sep);
+  background: var(--w-lv2-bg);
+}
+
+.gf-app-lv2-arrow {
+  width: 10px;
+  color: #4b5b6b;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.gf-app-lv2-title {
+  color: var(--w-chip-fg);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.gf-app-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px 6px 5px;
+  border-bottom: 1px solid var(--w-line);
+}
+
+.gf-app-row-send {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 2px;
+  border-radius: 4px;
+  color: var(--w-cloud);
+  opacity: 0.38;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gf-app-row.gf-hover {
+  background: var(--w-hover);
+}
+
+.gf-app-row.gf-hover .gf-app-row-send,
+.gf-app-row--selected .gf-app-row-send {
+  opacity: 1;
+}
+
+.gf-app-row-send.gf-hover {
+  background: var(--w-selection);
+}
+
+/* 选中、正在发送压过悬停（同 demo.css 的先后） */
+.gf-app-row.gf-app-row--selected {
+  border-bottom-color: var(--w-selection-border);
+  background: var(--w-selection);
+}
+
+.gf-app-row.gf-app-row--sending {
+  background: #fff5e0;
+}
+
+.gf-app-row-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gf-app-row-main {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gf-app-row-digit {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--w-chip-bg);
+  color: var(--w-chip-fg);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.gf-app-row-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.gf-app-row-title {
+  color: var(--w-title-fg);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.gf-app-row-text {
+  overflow: hidden;
+  color: var(--w-answer-fg);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gf-app-row-path {
+  color: var(--w-muted);
+  font-size: 11px;
+}
+
+.gf-app-search {
+  display: flex;
+  margin-top: 7px;
+}
+
+.gf-app-search-input {
+  flex: 1;
+  height: 28px;
+  padding: 4px 8px;
+  border: 1px solid var(--w-border);
+  border-radius: 6px 0 0 6px;
+  background: var(--w-content);
+  color: var(--w-text);
+  font-size: 12.5px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.gf-app-search-input .gf-placeholder {
+  color: #9aa3ae;
+}
+
+.gf-app-search-input--focus {
+  border-color: var(--w-selection-border);
+}
+
+/* Alt+Q 定位到搜索框时的短高亮（同 demo.css 的 app-search-hit 起点） */
+.gf-app-search-input--hit {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 107, 44, 0.35);
+}
+
+.gf-app-range {
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+  border: 1px solid var(--w-border);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  background: var(--w-content);
+  color: var(--w-muted);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+/* 鼠标停在可点的东西上：同 demo.css 各控件的 :hover */
+.gf-app-tab.gf-hover,
+.gf-app-digit.gf-hover:not(.gf-app-digit--active) {
+  background: var(--w-hover);
+}
+
+.gf-app-chip.gf-hover {
+  background: #dbe6f2;
+}
+
+.gf-chat-input.gf-hover {
+  border-color: #c4c4c4;
+}
+
+/* ---------- 底部吸附搜索栏（同 demo.css 的 .attached） ---------- */
+.gf-attached {
+  position: absolute;
+  top: 398px;
+  left: 40px;
+  width: 400px;
+  border: 1px solid var(--w-border);
+  background: var(--w-content);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.gf-attached-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: var(--w-content);
+}
+
+.gf-attached-row--focus {
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--w-selection-border);
+}
+
+.gf-attached-input {
+  flex: 1;
+  height: 26px;
+  padding: 2px 6px;
+  color: var(--w-text);
+  font-size: 13px;
+  line-height: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.gf-attached-input .gf-placeholder {
+  color: #9aa3ae;
+}
+
+.gf-attached-range {
+  min-width: 38px;
+  height: 26px;
+  padding: 0 5px;
+  border-left: 1px solid var(--w-panel-border);
+  color: var(--w-text);
+  font-size: 12px;
+  line-height: 26px;
+  text-align: center;
+}
+
+.gf-attached-toggle {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--w-panel-border);
+  border-radius: 6px;
+  background: var(--w-content);
+  color: var(--w-muted);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.gf-attached-results {
+  position: absolute;
+  right: -1px;
+  bottom: 100%;
+  left: -1px;
+  border: 1px solid var(--w-border);
+  border-bottom: none;
+  background: var(--w-content);
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.gf-attached-title {
+  display: block;
+  padding: 3px 4px 0 6px;
+  color: #c0392b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gf-attached-hint {
+  margin: 0;
+  padding: 1px 6px 4px;
+  border-bottom: 1px solid var(--w-border);
+  color: var(--w-muted);
+  font-size: 13px;
+}
+
+/* 吸附到聊天窗口底边那一下：顶边亮一道 */
+.gf-snap {
+  position: absolute;
+  top: -2px;
+  right: -1px;
+  left: -1px;
+  height: 3px;
+  background: var(--w-cloud);
+}
+
+/* ---------- 鼠标、点击涟漪、按键提示、标注 ---------- */
+.gf-pointer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  width: 14px;
+  height: 21px;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+  transform-origin: 0 0;
+}
+
+.gf-pointer svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.gf-ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 2px solid var(--w-cloud);
+  border-radius: 50%;
+  background: rgba(76, 141, 255, 0.18);
+}
+
+.gf-key {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.gf-cap {
+  min-width: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--bg);
+  box-shadow: 0 3px 0 var(--line-strong);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.gf-cap--down {
+  box-shadow: 0 1px 0 var(--line-strong);
+  transform: translateY(2px);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.gf-note {
+  position: absolute;
+  z-index: 3;
+  padding: 4px 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- 字幕与片头片尾（hud 层，跟着网站主题） ---------- */
+.gf-caption {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  left: 0;
+  color: var(--fg);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+
+.film-stage[data-zoom] .gf-caption {
+  top: 0;
+  padding: 8px 12px;
+  background: var(--row-hover);
+  font-size: 26px;
+  line-height: 34px;
+}
+
+.gf-caption b {
+  margin-right: 8px;
+  color: var(--accent);
+}
+
+.gf-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--row-hover);
+  color: var(--fg);
+  text-align: center;
+}
+
+.gf-title img {
+  width: 56px;
+  height: auto;
+}
+
+.gf-title strong {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.gf-title span {
+  color: var(--fg-muted);
+  font-size: 18px;
+}
+
+.gf-title span b {
+  color: var(--accent);
+  font-weight: 600;
+}
