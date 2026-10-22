@@ -30,6 +30,6 @@ export function seoHead({ title, description, url, ogType = "website", robots = 
 <meta name="twitter:title" content="${title}" />
 <meta name="twitter:description" content="${description}" />
 <script type="application/ld+json">
-${JSON.stringify({ "@context": "https://schema.org", "@graph": jsonLd }, null, 2).replace(/</g, "\\u003c")}
+${JSON.stringify({ "@context": "https://schema.org", "@graph": jsonLd }, null, 2)}
 </script>`;
 }

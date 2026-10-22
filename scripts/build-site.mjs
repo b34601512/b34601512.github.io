@@ -1,20 +1,23 @@
 // 从模块化源文件生成 GitHub Pages 可直接托管的静态 HTML 与 sitemap.xml。
 import { execSync } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { writeFile } from "node:fs/promises";
 import { withAssetVersions } from "../src/site/asset-versions.mjs";
 import { renderPage } from "../src/site/layout.mjs";
-import { allPages, canonicalUrl, sitePages, sitemapPages } from "../src/site/pages.mjs";
+import { extraPages, sitePages } from "../src/site/pages.mjs";
+import { pageUrl, siteData } from "../src/site/site-data.mjs";
 
-const renderedByFile = new Map();
+const orderedEntries = [];
 
-for (const page of allPages) {
+for (const [index, page] of sitePages.entries()) {
   const rendered = withAssetVersions(renderPage(page, sitePages));
-  // 博客页面在 blog/ 与 blog/<slug>/ 下，目录要先建出来。
-  await mkdir(dirname(page.outputFile), { recursive: true });
   await writeFile(page.outputFile, rendered, "utf8");
   console.log(`[build-site] 生成 ${page.outputFile}`);
-  renderedByFile.set(page.outputFile, rendered);
+  orderedEntries.push({ page, index, rendered });
+}
+
+for (const page of extraPages) {
+  await writeFile(page.outputFile, withAssetVersions(renderPage(page, sitePages)), "utf8");
+  console.log(`[build-site] 生成 ${page.outputFile}`);
 }
 
 // sitemap.xml 由页面清单生成，避免手写清单与页面不同步。
@@ -40,16 +43,14 @@ function lastmodFor(outputFile, rendered) {
   }
 }
 
-// 优先级：导航页面按顺序 1.0、0.9…递减；页面自带 sitemap 设置（博客列表 0.6、文章 0.5）时以它为准。
-const entries = sitemapPages
-  .map((page) => {
-    const loc = canonicalUrl(page);
-    const priority = page.sitemap?.priority ?? (1 - sitePages.indexOf(page) * 0.1).toFixed(1);
+const entries = orderedEntries
+  .map(({ page, index, rendered }) => {
+    const loc = page.outputFile === "index.html" ? siteData.siteUrl : pageUrl(page.outputFile);
     return `  <url>
     <loc>${loc}</loc>
-    <lastmod>${lastmodFor(page.outputFile, renderedByFile.get(page.outputFile))}</lastmod>
-    <changefreq>${page.sitemap?.changefreq ?? "weekly"}</changefreq>
-    <priority>${priority}</priority>
+    <lastmod>${lastmodFor(page.outputFile, rendered)}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>${(1 - index * 0.1).toFixed(1)}</priority>
   </url>`;
   })
   .join("\n");
