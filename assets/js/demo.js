@@ -23,7 +23,7 @@
 
   const OPENING_MESSAGE = "老板，这款产品质量怎么样，是正品吗？";
 
-  // 聊天窗平台皮肤：只换外观与标题写法（头像、标题栏、气泡色），行为完全一样。
+  // 聊天窗平台标签：五家共用同一套中性皮肤，只换标题里的平台名，行为完全一样。
   // 客户端源码里没有平台白名单：吸附栏认的是「前台外部窗口」本身，所以微信、京东、拼多多、千牛、抖音都能贴。
   const CHAT_PLATFORMS = {
     wechat: "微信 · 在线",
@@ -52,7 +52,7 @@
     // 还没回复的条数：连发多条时排队回复，避免「只有第一条得到回复」。
     replyQueue: 0,
     epoch: 0,
-    // 聊天窗皮肤（页面静态预渲染时就是微信，JS 起来后保持一致）
+    // 当前平台标签（页面静态预渲染时就是微信，JS 起来后保持一致）
     platform: "wechat",
     // 双击贴进输入框、还没发出去的图片与附件：{ images: [名称], files: [{ name, size }] } 或 null。
     staged: null,
@@ -777,11 +777,10 @@
     render();
   };
 
-  // 切平台皮肤：只动聊天窗的 data-platform（CSS 里换同一组变量）与标题文字，消息、输入框、吸附栏全都照旧。
+  // 切平台标签：只换标题里的平台名，聊天窗外观、消息、输入框、吸附栏全都照旧。
   const setChatPlatform = (name) => {
     if (!el.chat || !CHAT_PLATFORMS[name]) return;
     state.platform = name;
-    el.chat.dataset.platform = name;
     if (el.chatPlatform) el.chatPlatform.textContent = CHAT_PLATFORMS[name];
     el.chatTabs.querySelectorAll(".chat-tab").forEach((tab) => {
       const on = tab.dataset.platform === name;
