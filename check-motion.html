@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#faf8f5" />
+<meta name="author" content="黎路遥" />
+<script>
+try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
+</script>
+<title>动效自检 - 话术精灵</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="assets/favicon.png" />
+<link rel="stylesheet" href="assets/css/site.css?v=e6c9d10f" />
+<script src="assets/js/theme.js?v=68ce5473" defer></script>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo-small.png" alt="" />
+      <span>话术精灵 SoftTalk</span>
+    </a>
+    <nav class="nav-links" aria-label="站点导航">
+      <a class="nav-link" href="index.html">首页</a>
+      <a class="nav-link" href="guide.html">怎么用</a>
+      <a class="nav-link" href="why.html">解决什么问题</a>
+      <a class="nav-link" href="pricing.html">定价</a>
+      <a class="nav-link" href="contact.html">联系</a>
+      <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">下载</a>
+    </nav>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到白天模式" title="切换到白天模式">
+      <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.55 1.55M17.15 17.15l1.55 1.55M5.3 18.7l1.55-1.55M17.15 6.85l1.55-1.55" /></svg>
+      <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">自检</p>
+    <h1>主题切换<span class="hl">动效自检</span></h1>
+    <p class="lead">切换主题没有圆形铺开时，把这一页的三块内容截图发给我们。</p>
+    <h2>动效偏好</h2>
+    <pre id="motion-prefs">读取中…</pre>
+    <h2>视图过渡</h2>
+    <pre id="motion-support">读取中…</pre>
+    <h2>点按测试</h2>
+    <div class="actions">
+      <button class="btn btn--primary" type="button" id="motion-test">跑一次切换</button>
+    </div>
+    <pre id="motion-log">还没跑。</pre>
+  </section>
+</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2025–2026 黎路遥 · 话术精灵 SoftTalk</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const prefs = document.getElementById("motion-prefs");
+  const support = document.getElementById("motion-support");
+  const log = document.getElementById("motion-log");
+  const reducedQuery = matchMedia("(prefers-reduced-motion: reduce)");
+  const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+
+  function showPrefs() {
+    prefs.textContent = [
+      "prefers-reduced-motion: " + (reducedQuery.matches ? "reduce" : "no-preference"),
+      "prefers-color-scheme: " + (darkQuery.matches ? "dark" : "light"),
+    ].join("\n");
+  }
+
+  function showSupport() {
+    support.textContent = [
+      "typeof document.startViewTransition: " + typeof document.startViewTransition,
+      "document.visibilityState: " + document.visibilityState,
+      "navigator.userAgent: " + navigator.userAgent,
+    ].join("\n");
+  }
+
+  reducedQuery.addEventListener("change", showPrefs);
+  darkQuery.addEventListener("change", showPrefs);
+  document.addEventListener("visibilitychange", showSupport);
+  showPrefs();
+  showSupport();
+
+  const LABEL = {
+    start: "开始",
+    ready: "ready 成功",
+    "ready-failed": "ready 失败",
+    fallback: "兜底触发：140ms 淡入",
+    "finished-failed": "finished 失败",
+  };
+
+  document.getElementById("motion-test").addEventListener("click", () => {
+    const theme = window.softtalkTheme;
+    if (!theme || !theme.toggle) {
+      log.textContent = "theme.js 没加载，无法测试。";
+      return;
+    }
+    const lines = [];
+    let fellBack = false;
+    const write = () => {
+      log.textContent = lines.concat("兜底是否触发：" + (fellBack ? "是" : "否")).join("\n");
+    };
+    const supported = typeof document.startViewTransition === "function";
+    lines.push("判据：" + theme.pickMotion(supported, reducedQuery.matches));
+    theme.toggle((step, detail) => {
+      let line = LABEL[step] || step;
+      if (step === "ready") line += "（" + detail + " ms）";
+      if (detail instanceof Error || (detail && detail.name)) line += "：" + detail.name + " / " + detail.message;
+      if (step === "fallback") fellBack = true;
+      lines.push(line);
+      write();
+    });
+    write();
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -117,7 +117,7 @@ D:\SoftTalk官网
 - `<html data-theme="light">` 是静态默认值；`layout.mjs` 在 head 里用一行内联脚本在首屏绘制前按「手动选择 → 系统深色」改成 `dark`，避免闪白。`theme.js`（defer）只管按钮、文案、`theme-color` 和系统变化。
 - 两套颜色都只在 `site.css` 顶部的 `[data-theme="dark"]` / `[data-theme="light"]` 变量里定义，组件里不写死颜色；新增颜色要两套都给值。白天的橙压深为 `#c2410c`，保证小字 4.5:1。
 - 演示区只有平台标签卡（在网站背景上）跟着主题变；聊天窗与话术精灵主界面是客户端复刻，两种主题下保持原样。
-- 支持 View Transitions 的浏览器从按钮位置圆形铺开新主题；`prefers-reduced-motion` 或不支持时直接切换。
+- 支持 View Transitions 的浏览器从按钮位置圆形铺开新主题；`prefers-reduced-motion`、不支持、或过渡被浏览器 abort（`ready` reject）时退化为 140ms 淡入（`theme.js` 的 `pickMotion` 判据）。自检页 `check-motion.html`（`extraPages`，noindex）能看偏好、支持情况和一次真实切换的 ready 结果。
 
 下表是黑夜主题的值（白天的值见 `site.css`）：
 
