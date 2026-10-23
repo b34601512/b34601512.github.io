@@ -21,7 +21,23 @@ for (const page of extraPages) {
 }
 
 // sitemap.xml 由页面清单生成，避免手写清单与页面不同步。
-const today = new Date().toISOString().slice(0, 10);
+// lastmod 一律按 UTC 日期写：「今天」和「沿用的提交日期」必须走同一个换算，
+// 否则本地时区与 UTC 不在同一天时（如北京时间早上 8 点前），构建→提交→再构建会在两天之间来回翻。
+// 不用 git 的 %cs：它是提交者本地时区的日期；改取 %ct（Unix 秒，与时区无关）再按 UTC 换算。
+function utcDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function commitDateUtc(file) {
+  const seconds = execSync(`git log -1 --format=%ct -- "${file}"`, {
+    stdio: ["ignore", "pipe", "ignore"],
+  })
+    .toString()
+    .trim();
+  return seconds ? utcDate(new Date(Number(seconds) * 1000)) : "";
+}
+
+const today = utcDate(new Date());
 
 // lastmod 不能写死「今天」：那样每次构建都会假装四个页面刚更新过，搜索引擎会当成噪声。
 // 规则：内容相对上一次提交真的变了才写今天，否则沿用这个文件上次发布的日期。
@@ -32,12 +48,7 @@ function lastmodFor(outputFile, rendered) {
       maxBuffer: 32 * 1024 * 1024,
     }).toString();
     if (published !== rendered) return today;
-    const date = execSync(`git log -1 --format=%cs -- "${outputFile}"`, {
-      stdio: ["ignore", "pipe", "ignore"],
-    })
-      .toString()
-      .trim();
-    return date || today;
+    return commitDateUtc(outputFile) || today;
   } catch {
     return today;
   }
