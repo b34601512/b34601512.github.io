@@ -25,9 +25,11 @@
     if (themeColorMeta) themeColorMeta.content = THEME_COLOR[theme];
   }
 
-  function apply(theme) {
+  // persist=false 是给自检页用的：只改这次显示，不写访客记住的主题。
+  function apply(theme, persist = true) {
     root.dataset.theme = theme;
     render(theme);
+    if (!persist) return;
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {
@@ -36,26 +38,26 @@
   }
 
   // 先换主题，再让整页从淡到实。
-  function fadeIn(theme) {
-    if (current() !== theme) apply(theme);
+  function fadeIn(theme, persist = true) {
+    if (current() !== theme) apply(theme, persist);
     root.animate({ opacity: [0.55, 1] }, FADE);
   }
 
   // log(step, detail) 只给自检页用：start / ready / ready-failed / fallback / finished-failed。
-  function reveal(theme, log) {
+  function reveal(theme, log, persist = true) {
     const rect = button.getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
     const fallback = (error) => {
       log("ready-failed", error);
-      fadeIn(theme);
+      fadeIn(theme, persist);
       log("fallback");
     };
     const startedAt = performance.now();
     let transition;
     try {
-      transition = document.startViewTransition(() => apply(theme));
+      transition = document.startViewTransition(() => apply(theme, persist));
     } catch (error) {
       fallback(error);
       return;
@@ -74,14 +76,14 @@
     transition.finished.catch((error) => log("finished-failed", error));
   }
 
-  function toggle(log = () => {}) {
+  function toggle(log = () => {}, persist = true) {
     const next = current() === "dark" ? "light" : "dark";
     const supported = typeof document.startViewTransition === "function";
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (pickMotion(supported, reduced) === "view-transition") {
-      reveal(next, log);
+      reveal(next, log, persist);
     } else {
-      fadeIn(next);
+      fadeIn(next, persist);
       log("fallback");
     }
   }

@@ -73,6 +73,7 @@ export const checkMotionPage = {
     };
     const supported = typeof document.startViewTransition === "function";
     lines.push("判据：" + theme.pickMotion(supported, reducedQuery.matches));
+    // persist=false：自检页只改这次显示，不写访客记住的主题。
     theme.toggle((step, detail) => {
       let line = LABEL[step] || step;
       if (step === "ready") line += "（" + detail + " ms）";
@@ -80,7 +81,7 @@ export const checkMotionPage = {
       if (step === "fallback") fellBack = true;
       lines.push(line);
       write();
-    });
+    }, false);
     write();
   });
 })();

@@ -13,7 +13,7 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
 <meta name="robots" content="noindex" />
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css?v=e6c9d10f" />
-<script src="assets/js/theme.js?v=68ce5473" defer></script>
+<script src="assets/js/theme.js?v=46a65147" defer></script>
 </head>
 <body>
 <header class="nav">
@@ -113,6 +113,7 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
     };
     const supported = typeof document.startViewTransition === "function";
     lines.push("判据：" + theme.pickMotion(supported, reducedQuery.matches));
+    // persist=false：自检页只改这次显示，不写访客记住的主题。
     theme.toggle((step, detail) => {
       let line = LABEL[step] || step;
       if (step === "ready") line += "（" + detail + " ms）";
@@ -120,7 +121,7 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
       if (step === "fallback") fellBack = true;
       lines.push(line);
       write();
-    });
+    }, false);
     write();
   });
 })();
