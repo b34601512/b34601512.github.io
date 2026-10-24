@@ -7,7 +7,7 @@ import { pricingPage } from "./pages/pricing.mjs";
 import { promoPage } from "./pages/promo.mjs";
 import { whyPage } from "./pages/why.mjs";
 
-export const sitePages = [indexPage, guidePage, whyPage, pricingPage, contactPage];
+export const sitePages = [indexPage, promoPage, guidePage, whyPage, pricingPage, contactPage];
 
 // 要生成但不进导航、不进 sitemap 的页面。
-export const extraPages = [notFoundPage, promoPage];
+export const extraPages = [notFoundPage];
