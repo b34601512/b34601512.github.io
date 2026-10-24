@@ -178,7 +178,7 @@
     return ev.filter((e) => e.at + TAIL[e.type] < DURATION - 0.3).sort((a, b) => a.at - b.at);
   }
 
-  // 特效（只在没开「减少动态效果」时出现）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
+  // 特效（默认跟系统「减少动态效果」走，访客可在舞台右上角「特效」上手动开关）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
   // 白闪每段只有一次（≤120ms），两次之间至少隔 6 秒。
   const FLASH_LEN = 0.12;
   const SWEEP_LEN = 0.6;
@@ -541,14 +541,14 @@
       const s = SCENES[scene];
       setHtml(R.caption, `<b>${NUMS[scene]}</b> ${s.caption}`);
       R.caption.style.opacity = String(fadeWin(t, s.start, s.end, 0.35));
-      R.caption.style.transform = calm ? "" : `scale(${lerp(0.85, 1, easeOutBack(clamp((t - s.start) / 0.4, 0, 1)))})`;
+      R.caption.style.transform = !fx ? "" : `scale(${lerp(0.85, 1, easeOutBack(clamp((t - s.start) / 0.4, 0, 1)))})`;
     }
     show(R.intro, t < 4);
     if (t < 4) {
       R.intro.style.opacity = String(1 - sm(3.4, 4, t));
       [...R.intro.children].forEach((el, i) => {
         el.style.opacity = String(sm(0.2 + i * 0.5, 0.8 + i * 0.5, t));
-        el.style.transform = calm ? "" : `scale(${lerp(0.5, 1, easeOutBack(clamp((t - 0.2 - i * 0.5) / 0.5, 0, 1)))})`;
+        el.style.transform = !fx ? "" : `scale(${lerp(0.5, 1, easeOutBack(clamp((t - 0.2 - i * 0.5) / 0.5, 0, 1)))})`;
       });
     }
     show(R.outro, t >= 41);
@@ -556,7 +556,7 @@
       R.outro.style.opacity = String(sm(41, 41.6, t));
       [...R.outro.children].forEach((el, i) => {
         el.style.opacity = String(sm(41.4 + i * 0.5, 42 + i * 0.5, t));
-        el.style.transform = calm ? "" : `scale(${lerp(i ? 0.6 : 0.3, 1, easeOutBack(clamp((t - 41.4 - i * 0.5) / 0.55, 0, 1)))})`;
+        el.style.transform = !fx ? "" : `scale(${lerp(i ? 0.6 : 0.3, 1, easeOutBack(clamp((t - 41.4 - i * 0.5) / 0.55, 0, 1)))})`;
       });
     }
   }
@@ -580,8 +580,10 @@
     return [Math.cos(ang) * dist, Math.sin(ang) * dist + gravity * d * d, spin ? rnd(seed, j + 7) * 360 + spin * d : 0];
   }
 
+  const fxEls = [FX.flash, FX.sweep, FX.streak, FX.glow, ...sparks, ...confetti];
   function renderFx(t) {
-    if (calm) return;
+    // 特效关着：上一帧可能还亮着的全部收掉（关掉那一下就停，不等这一拍放完）
+    if (!fx) return fxEls.forEach((el) => show(el, false));
     // 换段：≤120ms 的一下白闪 + 一道从左到右的扫光（同一时刻只有一次，不会连闪）
     const turn = TURNS.filter((at) => t >= at && t < at + SWEEP_LEN).at(-1);
     const flash = turn !== undefined && t < turn + FLASH_LEN;
@@ -674,7 +676,7 @@
     }
     // 节拍上的镜头推近：100ms 推进去，再慢慢退回来；同时往被操作的元素那边偏一点
     let z = zoomed ? ZOOM : 1;
-    if (!calm) {
+    if (fx) {
       for (const [at, amount, target, len] of PUNCH) {
         const d = t - at;
         if (d < 0 || d >= len) continue;
@@ -956,6 +958,7 @@
   }
 
   // ---------- 播放器 ----------
+  // calm：系统开了「减少动态效果」。它只决定默认值——不自动播、停在 16.8 秒那一帧、特效默认关。
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const STILL = 16.8;
   let time = calm ? STILL : 0;
@@ -966,30 +969,60 @@
   let lastNow = 0;
   let raf = 0;
 
-  // 声音：默认开，选择记在 localStorage。浏览器只许在用户点过之后出声，所以页面打开时一定是静的：
-  // 自动播放的画面没有声音，访客第一次点播放 / 舞台 / 章节 / 进度条 / 声音键之后才建 AudioContext。
-  // 静音、或者开了「减少动态效果」时，一个音频节点都不建（静音时连 AudioContext 都关掉）。
-  const soundButton = document.getElementById("guide-sound");
+  // 访客的选择记在 localStorage；读不到、写不了（隐私模式）就只管这一次。
   const SOUND_KEY = "softtalk-guide-sound";
-  const AC = window.AudioContext || window.webkitAudioContext;
-  const canSound = Boolean(AC) && !calm;
-  let soundOn = true;
-  try {
-    soundOn = localStorage.getItem(SOUND_KEY) !== "off";
-  } catch {
-    /* 隐私模式读不到就当默认 */
+  const FX_KEY = "softtalk-guide-fx";
+  const load = (key) => {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+  const save = (key, on) => {
+    try {
+      localStorage.setItem(key, on ? "on" : "off");
+    } catch {
+      /* 存不了就只管这一次 */
+    }
+  };
+
+  // 特效（换段白闪与扫光、粒子、拖尾、命中光圈、彩纸、节拍推镜、字幕弹出）：
+  // 默认跟系统（减少动态效果 → 关）；访客在舞台右上角「特效」上点过以后以访客为准——
+  // 点开了，即使系统要求减少动态效果也照样放；点关了，一点特效都没有。和声音互不影响。
+  const fxButton = document.getElementById("guide-fx");
+  const fxSaved = load(FX_KEY);
+  let fx = fxSaved ? fxSaved === "on" : !calm;
+
+  function syncFxUi() {
+    if (!fxButton) return;
+    fxButton.hidden = false;
+    fxButton.setAttribute("aria-pressed", String(fx));
+    fxButton.setAttribute("aria-label", fx ? "特效：开" : "特效：关");
   }
-  let unlocked = false; // 用户点过了没有
+
+  // 声音：默认开，选择记在 localStorage。浏览器只许在用户有过一次操作之后出声，所以页面打开时一定是静的：
+  // 自动播放的画面没有声音，访客在页面任何地方第一次点一下 / 按一个键之后才建 AudioContext，
+  // 从短片当时的位置接着响（不重放画面，不补已经过去的音）。
+  // 还没放行时舞台左上角挂一个「点一下打开声音」，放行或静音后就收起来。
+  // 静音时一个音频节点都不建（连 AudioContext 都关掉）。声音不跟「减少动态效果」走——那是画面的事。
+  const soundButton = document.getElementById("guide-sound");
+  const hint = document.getElementById("guide-hint");
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const canSound = Boolean(AC);
+  let soundOn = load(SOUND_KEY) !== "off";
+  let unlocked = false; // 用户操作过了没有
   let audio = null;
   let suspendTimer = 0;
 
   function syncSoundUi() {
+    if (hint) hint.hidden = !(canSound && soundOn && !unlocked);
     if (!soundButton) return;
     soundButton.hidden = !canSound;
     const state = !soundOn ? "off" : unlocked ? "on" : "locked";
     soundButton.dataset.sound = state;
     soundButton.setAttribute("aria-pressed", String(state === "on"));
-    soundButton.setAttribute("aria-label", state === "on" ? "静音" : "打开声音");
+    soundButton.setAttribute("aria-label", { on: "声音：开", off: "声音：关", locked: "声音：关，点一下打开" }[state]);
   }
 
   function audioStart() {
@@ -1019,12 +1052,23 @@
       suspendTimer = setTimeout(() => ctx.state === "running" && ctx.suspend().catch(() => {}), 150);
     }
   }
+  // 只在浏览器认的「用户操作」里放行（触屏的 pointerdown 不算，要等 pointerup），否则建出来的 AudioContext 是挂起的。
   function unlock() {
     if (unlocked || !canSound) return;
+    if (navigator.userActivation && !navigator.userActivation.isActive) return;
     unlocked = true;
+    GESTURES.forEach((type) => document.removeEventListener(type, onGesture, true));
     syncSoundUi();
     if (playing) audioStart();
   }
+  // 页面任何地方的第一下操作都算放行。舞台上的开关与提示自己处理（不然按下时提示先消失、声音键先被放行，
+  // 松开时就点到了下面的舞台或把声音又关掉）。
+  const GESTURES = ["pointerdown", "pointerup", "keydown"];
+  function onGesture(event) {
+    if (event.target instanceof Element && event.target.closest("[data-film-ctl]")) return;
+    unlock();
+  }
+  if (canSound) GESTURES.forEach((type) => document.addEventListener(type, onGesture, { capture: true, passive: true }));
 
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
@@ -1099,6 +1143,7 @@
     scale = width / W;
     zoomed = width < 560;
     stage.toggleAttribute("data-zoom", zoomed);
+    stage.parentElement.toggleAttribute("data-zoom", zoomed); // .film-frame：开关挪到舞台上方
     draw();
   }
 
@@ -1116,14 +1161,19 @@
     }
     unlock();
     soundOn = !soundOn;
-    try {
-      localStorage.setItem(SOUND_KEY, soundOn ? "on" : "off");
-    } catch {
-      /* 存不了就只管这一次 */
-    }
+    save(SOUND_KEY, soundOn);
     syncSoundUi();
     if (!soundOn) audioStop(true);
     else if (playing) audioStart();
+  });
+  hint?.addEventListener("click", unlock);
+
+  fxButton?.addEventListener("click", () => {
+    unlock();
+    fx = !fx;
+    save(FX_KEY, fx);
+    syncFxUi();
+    draw(); // 当场换：关掉时正在闪的、飞的立刻收掉，暂停时也一样
   });
 
   track?.addEventListener("pointerdown", (event) => {
@@ -1167,5 +1217,6 @@
   document.addEventListener("visibilitychange", autoPlay);
   new ResizeObserver(resize).observe(stage);
   syncSoundUi();
+  syncFxUi();
   resize();
 })();

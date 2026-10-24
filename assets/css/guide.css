@@ -44,32 +44,88 @@
   display: none;
 }
 
-/* 声音开关：细描边圆钮。静音、或浏览器还没放行声音（用户还没点过）时显示带叉的喇叭 */
-.film-sound {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
+/* 舞台上的开关层：右上角「声音」「特效」，左上角「点一下打开声音」提示。
+   都放在舞台外面一层（舞台点一下是播放/暂停，内容也会被脚本整块重写），绝对定位叠在画面上，不挤动任何东西。
+   宽屏时落在窗口上方那条空白里（窗口从舞台 48/450 处开始），字幕居中、不和它们重叠；
+   窄屏镜头推近时字幕是顶上一整条，开关就挪到舞台正上方。 */
+.film-frame {
+  position: relative;
+}
+
+.film-toggles,
+.film-hint {
+  position: absolute;
+  top: 8px;
+  z-index: 1;
+}
+
+.film-toggles {
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.film-hint {
+  left: 8px;
+}
+
+/* 窄屏：镜头推近后画面里没有空白，顶上又是一整条字幕，开关改放在舞台正上方贴着它的一条里 */
+.film-frame[data-zoom] {
+  padding-top: 32px;
+}
+
+.film-frame[data-zoom] .film-toggles,
+.film-frame[data-zoom] .film-hint {
+  top: 0;
+}
+
+.film-frame[data-zoom] .film-toggles {
+  right: 0;
+}
+
+.film-frame[data-zoom] .film-hint {
+  left: 0;
+}
+
+.film-toggle,
+.film-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px 0 8px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
-  background: none;
+  background: var(--surface);
   color: var(--fg-muted);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition: border-color 0.18s ease, color 0.18s ease;
 }
 
-.film-sound:hover {
+.film-toggle[aria-pressed="true"],
+.film-toggle:hover,
+.film-hint {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.film-sound[hidden] {
+.film-hint:hover {
+  background: var(--accent-soft);
+}
+
+.film-toggle[hidden],
+.film-hint[hidden] {
   display: none;
 }
 
-.film-sound .film-icon {
+.film-toggle .film-icon,
+.film-hint .film-icon {
+  width: 14px;
+  height: 14px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -77,8 +133,8 @@
   stroke-linejoin: round;
 }
 
-.film-sound[data-sound="on"] .film-icon--mute,
-.film-sound:not([data-sound="on"]) .film-icon--sound {
+.film-toggle[data-sound="on"] .film-icon--mute,
+.film-toggle[data-sound]:not([data-sound="on"]) .film-icon--sound {
   display: none;
 }
 
@@ -222,6 +278,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .film-play,
+  .film-toggle,
+  .film-hint,
   .step-jump,
   .step-no {
     transition: none;
