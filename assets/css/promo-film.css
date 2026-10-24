@@ -78,51 +78,6 @@
   margin-top: 12px;
 }
 
-.promo-btn {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--fg);
-  cursor: pointer;
-  transition: border-color 0.18s ease, color 0.18s ease;
-}
-
-.promo-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.promo-btn--play {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
-}
-
-.promo-btn--play:hover {
-  background: var(--accent-hover);
-  color: var(--on-accent);
-}
-
-.promo-btn svg {
-  width: 15px;
-  height: 15px;
-  fill: currentColor;
-}
-
-.promo-btn .promo-wave {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .promo-track {
   position: relative;
   flex: 1;
@@ -196,11 +151,6 @@
 @media (max-width: 520px) {
   .promo-bar {
     gap: 8px;
-  }
-
-  .promo-btn {
-    width: 32px;
-    height: 32px;
   }
 
   .promo-time {
