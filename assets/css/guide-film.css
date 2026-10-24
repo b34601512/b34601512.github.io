@@ -942,7 +942,7 @@
   font-weight: 600;
 }
 
-/* ---------- 节拍特效（guide-film.js 的 renderFx；开了「减少动态效果」时一个都不出现） ---------- */
+/* ---------- 节拍特效（guide-film.js 的 renderFx；开了「减少动态效果」时只留不扩散的命中高亮 .gf-glow） ---------- */
 /* 粒子与拖尾在 screen 层（跟着镜头），白闪、扫光、片尾彩纸在 hud 层（盖住整个画面）。 */
 .gf-spark,
 .gf-confetti {

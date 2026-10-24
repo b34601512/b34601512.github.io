@@ -108,7 +108,7 @@ D:\SoftTalk官网
 - 舞台按 800×450 设计、`transform` 缩放到容器；舞台窄于 560px 时镜头推近 1.5 倍、按 `CAMERA` 关键帧跟着操作走，否则手机上字太小。
 - 所有状态都是时间 T 的纯函数（窗口、气泡、输入框文字、鼠标、悬停、涟漪、键帽），拖到哪一秒都能还原同一帧。鼠标轨迹写目标元素的 `data-ref`，位置每帧现量，所以窗口在动时也停在按钮正中；悬停高亮按鼠标尖是否落在 `[data-hov]` 元素里算。打字每字 60–110ms（固定伪随机）。
 - 聊天窗可换成真实截图：把图放进 `assets/img/`，在 `src/site/pages/guide.mjs` 的 `filmShots.chat` 填路径，舞台带上 `data-chat-shot`，聊天窗切到 `data-skin="shot"`（代码画的外框隐藏，气泡与输入框文字照常叠在上面）。
-- 只在进入视野（≥35%）且标签页可见时播放；访客自己按了暂停就不再自动续播。`prefers-reduced-motion` 时不自动播，停在 16.8 秒那一帧。**headless Chrome 默认报 reduce**，探针要先 `Emulation.setEmulatedMedia` 设成 `no-preference`，否则会以为动画没播。
+- 只在进入视野（≥35%）且标签页可见时播放；访客自己按了暂停就不再自动续播。`prefers-reduced-motion` 只去动效（白闪、扫光、粒子、拖尾、彩纸、镜头推近与平移、弹入缩放；命中光圈改成原地淡出的高亮），照常自动播、照常有声音和声音键 —— 减少动态效果不是静音。**headless Chrome 默认报 reduce**，探针要先 `Emulation.setEmulatedMedia` 设成 `no-preference`，否则会以为动画没播。
 - 文案必须和客户端一致（双击只贴不发、纸飞机＝贴入 + 回车、Tab 后数字直接发送、吸附栏不用切回主界面），与首页演示同一套事实。
 
 ### 白天 / 黑夜主题

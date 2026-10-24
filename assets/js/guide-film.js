@@ -178,7 +178,7 @@
     return ev.filter((e) => e.at + TAIL[e.type] < DURATION - 0.3).sort((a, b) => a.at - b.at);
   }
 
-  // 特效（只在没开「减少动态效果」时出现）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
+  // 特效（开了「减少动态效果」时只留命中高亮，见 renderGlow）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
   // 白闪每段只有一次（≤120ms），两次之间至少隔 6 秒。
   const FLASH_LEN = 0.12;
   const SWEEP_LEN = 0.6;
@@ -580,7 +580,24 @@
     return [Math.cos(ang) * dist, Math.sin(ang) * dist + gravity * d * d, spin ? rnd(seed, j + 7) * 360 + spin * d : 0];
   }
 
+  // 减少动态效果：白闪、扫光、粒子、拖尾、彩纸全部不出；只有命中光圈换成原地淡出的一圈高亮（不扩散），
+  // 保证「叮」那一声在画面上仍有对应。节拍时刻不变，声音和画面照样对得上。
+  function renderGlow(t) {
+    const glow = GLOWS.find(([at]) => within(t, at, at + 0.7));
+    show(FX.glow, Boolean(glow));
+    if (!glow) return;
+    const r = rectOf(ref(glow[1]));
+    const k = (t - glow[0]) / 0.7;
+    const grow = calm ? 2 : 2 + 10 * easeOut(k);
+    FX.glow.style.left = `${r.x - grow}px`;
+    FX.glow.style.top = `${r.y - grow}px`;
+    FX.glow.style.width = `${r.w + grow * 2}px`;
+    FX.glow.style.height = `${r.h + grow * 2}px`;
+    FX.glow.style.opacity = String(1 - k);
+  }
+
   function renderFx(t) {
+    renderGlow(t);
     if (calm) return;
     // 换段：≤120ms 的一下白闪 + 一道从左到右的扫光（同一时刻只有一次，不会连闪）
     const turn = TURNS.filter((at) => t >= at && t < at + SWEEP_LEN).at(-1);
@@ -634,20 +651,6 @@
       FX.streak.style.opacity = String(1 - sm(0.7, 1, k));
     }
 
-    // 搜索命中：结果卡外面亮一圈，向外扩散后消失
-    const glow = GLOWS.find(([at]) => within(t, at, at + 0.7));
-    show(FX.glow, Boolean(glow));
-    if (glow) {
-      const r = rectOf(ref(glow[1]));
-      const k = (t - glow[0]) / 0.7;
-      const grow = 2 + 10 * easeOut(k);
-      FX.glow.style.left = `${r.x - grow}px`;
-      FX.glow.style.top = `${r.y - grow}px`;
-      FX.glow.style.width = `${r.w + grow * 2}px`;
-      FX.glow.style.height = `${r.h + grow * 2}px`;
-      FX.glow.style.opacity = String(1 - k);
-    }
-
     // 片尾：小精灵弹出来那一下，撒一把彩纸（只撒一次）
     const d = t - CONFETTI_AT;
     const party = d >= 0 && d < 1.6;
@@ -668,7 +671,8 @@
       if (i === -1) i = CAMERA.length - 1;
       const b = CAMERA[i];
       const a = CAMERA[Math.max(0, i - 1)];
-      const f = b[0] === a[0] ? 1 : easeIO(clamp((t - a[0]) / (b[0] - a[0]), 0, 1));
+      // 减少动态效果：镜头不平移，直接切到下一个落点（1.5 倍不变，否则手机上字太小）
+      const f = b[0] === a[0] || calm ? 1 : easeIO(clamp((t - a[0]) / (b[0] - a[0]), 0, 1));
       x = lerp(a[1], b[1], f);
       y = lerp(a[2], b[2], f);
     }
@@ -957,10 +961,10 @@
 
   // ---------- 播放器 ----------
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const STILL = 16.8;
-  let time = calm ? STILL : 0;
+  // 「减少动态效果」只管动效（见 renderFx / renderCamera / renderHud），不停播、不关声音
+  let time = 0;
   let playing = false;
-  let userPaused = calm;
+  let userPaused = false;
   let ended = false;
   let onScreen = false;
   let lastNow = 0;
@@ -968,11 +972,11 @@
 
   // 声音：默认开，选择记在 localStorage。浏览器只许在用户点过之后出声，所以页面打开时一定是静的：
   // 自动播放的画面没有声音，访客第一次点播放 / 舞台 / 章节 / 进度条 / 声音键之后才建 AudioContext。
-  // 静音、或者开了「减少动态效果」时，一个音频节点都不建（静音时连 AudioContext 都关掉）。
+  // 静音时一个音频节点都不建（连 AudioContext 都关掉）。「减少动态效果」是动效偏好，与声音无关。
   const soundButton = document.getElementById("guide-sound");
   const SOUND_KEY = "softtalk-guide-sound";
   const AC = window.AudioContext || window.webkitAudioContext;
-  const canSound = Boolean(AC) && !calm;
+  const canSound = Boolean(AC);
   let soundOn = true;
   try {
     soundOn = localStorage.getItem(SOUND_KEY) !== "off";
