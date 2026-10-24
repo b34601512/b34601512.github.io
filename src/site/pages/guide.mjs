@@ -1,4 +1,4 @@
-// guide.html：45 秒操作演示短片 + 同样五步的文字版。文字步骤也是动画的章节按钮，点哪步就跳到哪段。
+// guide.html：45 秒操作演示短片（带合成音效，右下角声音开关）+ 同样五步的文字版。文字步骤也是动画的章节按钮，点哪步就跳到哪段。
 import { breadcrumb, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";
 
@@ -82,6 +82,10 @@ export const guidePage = {
           <span class="film-fill" id="guide-fill"></span>
         </div>
         <span class="film-time" id="guide-time">0:00 / 0:45</span>
+        <button class="film-sound" id="guide-sound" type="button" aria-label="打开声音" aria-pressed="false" data-sound="locked" hidden>
+          <svg class="film-icon film-icon--sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12 3.8a6 6 0 0 1 0 8.4" /></svg>
+          <svg class="film-icon film-icon--mute" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path d="M10.5 6l4 4M14.5 6l-4 4" /></svg>
+        </button>
       </figcaption>
     </figure>
     <noscript><p class="note">动画需要浏览器执行 JavaScript，下面是同样的五个步骤。</p></noscript>

@@ -20,6 +20,7 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const easeOutBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
   const sm = (a, b, t, e = easeIO) => e(clamp((t - a) / (b - a), 0, 1));
   const within = (t, a, b) => t >= a && t < b;
   const fadeWin = (t, a, b, f = 0.25) => sm(a, a + f, t) * (1 - sm(b - f, b, t));
@@ -138,6 +139,78 @@
     [31.5, 240, 260], [35.4, 240, 260], [36.0, 300, 330], [41.0, 300, 330], [41.5, 400, 225],
   ];
 
+  // ---------- 节拍：声音与特效共用同一份时刻表 ----------
+  // 打字的每个字落下的时刻（与 typedCount 同一套伪随机），打字声和画面上的字一一对上。
+  function charTimes(text, start) {
+    const chars = [...text];
+    let at = start;
+    return chars.map((_, i) => (at += 0.06 + ((i * 37 + chars.length * 11) % 51) / 1000));
+  }
+  const SEARCH_HIT = charTimes("发货", 27.6).at(-1); // 「发货」打完、结果卡出现
+  const BAR_HIT_AT = charTimes("包邮", 37.4).at(-1); // 吸附栏「包邮」打完、结果弹出
+  const TURNS = SCENES.slice(1).map((s) => s.start); // 换段：白闪 + 扫光 + 翻页声
+  const SENDS = BUBBLES.map((b, i) => ({ ...b, i })).filter((b) => b.side === "out");
+
+  // 声音总谱：[秒, 音色, 参数]。全部由上面的剧本常量推出来，改剧本声音自动跟着走。
+  // 每个音色的拖尾（TAIL 秒）都算进去，保证没有声音响过片尾。
+  const TAIL = { turn: 0.3, click: 0.06, type: 0.06, key: 0.08, paste: 0.25, whoosh: 0.4, pop: 0.15, ding: 1.0, snap: 0.15, pluck: 0.3, chime: 1.3, shimmer: 1.0 };
+  function buildScore() {
+    const ev = [];
+    const add = (at, type, arg = {}) => ev.push({ at, type, arg });
+    add(0.2, "chime", { n: 76, v: 0.7 }); // 片头小精灵弹出
+    add(0.7, "pop", { n: 83 });
+    add(1.2, "pop", { n: 88 });
+    TURNS.forEach((at) => add(at, "turn"));
+    CLICKS.forEach(([at]) => add(at, "click"));
+    add(9.8, "whoosh", { len: 0.5, soft: 1 }); // 主界面滑到右边
+    add(13.95, "paste"); // 双击贴入
+    [[EDIT, 15.1], ["发货", 27.6], ["包邮", 37.4]].forEach(([text, start]) => charTimes(text, start).forEach((at) => add(at, "type")));
+    KEYS.forEach(([, press]) => add(press, "key"));
+    BUBBLES.forEach((b) => (b.side === "out" ? add(b.at - 0.14, "whoosh", { len: 0.32 }) : add(b.at, "pop", { n: 79 })));
+    add(SEARCH_HIT, "ding", { n: 84 });
+    add(35.8, "whoosh", { len: 0.45, soft: 1 }); // 吸附栏滑上来
+    add(36.3, "snap");
+    add(BAR_HIT_AT, "ding", { n: 86 });
+    // 片尾：一句上行的琶音 + 钟声 + 一点高频闪光，43.4 秒前全部收尾
+    [72, 76, 79, 84].forEach((n, i) => add(41.4 + i * 0.14, "pluck", { n }));
+    add(42.0, "chime", { n: 88 });
+    add(42.0, "shimmer");
+    return ev.filter((e) => e.at + TAIL[e.type] < DURATION - 0.3).sort((a, b) => a.at - b.at);
+  }
+
+  // 特效（只在没开「减少动态效果」时出现）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
+  // 白闪每段只有一次（≤120ms），两次之间至少隔 6 秒。
+  const FLASH_LEN = 0.12;
+  const SWEEP_LEN = 0.6;
+  // 粒子迸发：[秒, 原点（data-ref 或 msgN）, dx, dy, 个数, 款式]
+  const BURSTS = [
+    [13.95, "input", 0, 0, 16, "ink"],
+    ...SENDS.map((b) => [b.at, `msg${b.i}`, 0, 0, 10, "spark"]),
+    [SEARCH_HIT, "row0", 0, 0, 14, "star"],
+    [36.3, "snap", 0, 0, 12, "spark"],
+    [BAR_HIT_AT, "pop", 0, 0, 14, "star"],
+  ];
+  // 镜头推近：[秒, 倍数, 对准哪里, 时长]
+  const PUNCH = [
+    [13.95, 1.06, "input", 0.8],
+    ...SENDS.map((b) => [b.at, 1.025, `msg${b.i}`, 0.5]),
+    [27.0, 1.04, "search", 0.6],
+    [SEARCH_HIT, 1.06, "row0", 0.8],
+    [36.3, 1.05, "bar", 0.7],
+  ];
+  const GLOWS = [
+    [SEARCH_HIT, "tree"],
+    [BAR_HIT_AT, "pop"],
+  ];
+  const CONFETTI_AT = 42.0;
+  const SPARKS = 24;
+  const CONFETTI = 36;
+  const FX_COLORS = ["var(--accent)", "#fff", "#ffd166", "#7cc4ff"];
+  const rnd = (a, b) => {
+    const x = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
   // ---------- 舞台 ----------
   const PLANE = `<span class="gf-app-row-send" data-hov><svg viewBox="0 0 14 14"><path d="M1 7 L13 1 L7 7 L13 13 Z" /><path d="M7 7 L13 1" /></svg></span>`;
   // 同首页演示的行：[临时序号] [纸飞机] [行号.] 标题；行号只在分类列表里有，搜索结果不带。
@@ -206,12 +279,16 @@
   ${NOTES.map(() => `<span class="gf-note" hidden></span>`).join("")}
   ${KEYS.map((k) => `<span class="gf-key" hidden>${k[3].map((c) => `<span class="gf-cap">${c}</span>`).join("+")}</span>`).join("")}
   <span class="gf-ripple" hidden></span><span class="gf-ripple" hidden></span>
+  <span class="gf-glow" hidden></span><span class="gf-streak" hidden></span>
+  ${'<i class="gf-spark" hidden></i>'.repeat(SPARKS)}
   <span class="gf-pointer" data-ref="pointer" hidden><svg viewBox="0 0 14 21"><path d="M1 1v16.2l3.9-3.7 2.6 6.1 2.6-1.1-2.6-6H13Z" fill="#fff" stroke="#000" stroke-width="1" stroke-linejoin="round" /></svg></span>
 </div>
 <div class="gf-hud" aria-hidden="true">
   <p class="gf-caption" data-ref="caption"></p>
   <div class="gf-title" data-ref="intro"><img src="assets/logo.png" alt="" /><strong>话术精灵</strong><span>45 秒看懂怎么用</span></div>
   <div class="gf-title" data-ref="outro" hidden><img src="assets/logo.png" alt="" /><strong>装好就能用</strong><span>本地永久免费 · <b>luyao2089.cc</b></span></div>
+  ${'<i class="gf-confetti" hidden></i>'.repeat(CONFETTI)}
+  <span class="gf-sweep" hidden></span><span class="gf-flash" hidden></span>
 </div>`;
 
   const screen = stage.querySelector(".gf-screen");
@@ -227,6 +304,9 @@
   const notes = [...stage.querySelectorAll(".gf-note")];
   const keys = [...stage.querySelectorAll(".gf-key")];
   const ripples = [...stage.querySelectorAll(".gf-ripple")];
+  const sparks = [...stage.querySelectorAll(".gf-spark")];
+  const confetti = [...stage.querySelectorAll(".gf-confetti")];
+  const FX = Object.fromEntries(["glow", "streak", "sweep", "flash"].map((name) => [name, stage.querySelector(`.gf-${name}`)]));
   const tabs = [0, 1, 2].map((i) => ref(`tab${i}`));
   const digits = Array.from({ length: 10 }, (_, i) => ref(`digit${i}`));
 
@@ -268,6 +348,15 @@
     if (!target) return [dx, dy];
     const el = ref(target);
     if (!el) return [dx, dy];
+    const r = rectOf(el);
+    return [r.x + r.w / 2 + dx, r.y + r.h / 2 + dy];
+  }
+
+  // 第 N 个气泡的中心（舞台坐标）；特效要从刚发出去的那条气泡上迸出来。
+  // 元素还没出现（或藏着）时返回 null，特效就不画，免得从舞台左上角迸出来。
+  function fxPoint(name, dx = 0, dy = 0) {
+    const el = name.startsWith("msg") ? msgs[Number(name.slice(3))]?.querySelector(".gf-bubble") : ref(name);
+    if (!el || el.closest("[hidden]")) return null;
     const r = rectOf(el);
     return [r.x + r.w / 2 + dx, r.y + r.h / 2 + dy];
   }
@@ -452,17 +541,123 @@
       const s = SCENES[scene];
       setHtml(R.caption, `<b>${NUMS[scene]}</b> ${s.caption}`);
       R.caption.style.opacity = String(fadeWin(t, s.start, s.end, 0.35));
+      R.caption.style.transform = calm ? "" : `scale(${lerp(0.85, 1, easeOutBack(clamp((t - s.start) / 0.4, 0, 1)))})`;
     }
     show(R.intro, t < 4);
     if (t < 4) {
       R.intro.style.opacity = String(1 - sm(3.4, 4, t));
-      [...R.intro.children].forEach((el, i) => (el.style.opacity = String(sm(0.2 + i * 0.5, 0.8 + i * 0.5, t))));
+      [...R.intro.children].forEach((el, i) => {
+        el.style.opacity = String(sm(0.2 + i * 0.5, 0.8 + i * 0.5, t));
+        el.style.transform = calm ? "" : `scale(${lerp(0.5, 1, easeOutBack(clamp((t - 0.2 - i * 0.5) / 0.5, 0, 1)))})`;
+      });
     }
     show(R.outro, t >= 41);
     if (t >= 41) {
       R.outro.style.opacity = String(sm(41, 41.6, t));
-      [...R.outro.children].forEach((el, i) => (el.style.opacity = String(sm(41.4 + i * 0.5, 42 + i * 0.5, t))));
+      [...R.outro.children].forEach((el, i) => {
+        el.style.opacity = String(sm(41.4 + i * 0.5, 42 + i * 0.5, t));
+        el.style.transform = calm ? "" : `scale(${lerp(i ? 0.6 : 0.3, 1, easeOutBack(clamp((t - 41.4 - i * 0.5) / 0.55, 0, 1)))})`;
+      });
     }
+  }
+
+  // 一次性特效：换段白闪 + 扫光、贴入墨点、发送拖尾、搜索命中的光圈与星星、片尾彩纸。
+  // 全部是 T 的纯函数（粒子方向用固定伪随机），拖进度条也是同一帧。
+  const PARTICLE = {
+    ink: { life: 0.65, speed: 120, size: [3, 7], gravity: 160, colors: ["var(--accent)", "var(--accent)", "#ffd166"] },
+    spark: { life: 0.5, speed: 140, size: [2, 4], gravity: 0, colors: ["var(--accent)", "#fff", "#ffd166"] },
+    star: { life: 0.7, speed: 110, size: [4, 7], gravity: -40, colors: ["#ffd166", "var(--accent)", "#fff"] },
+  };
+  function particle(el, seed, j, d, life, speed, size, gravity, colors, spin = 0) {
+    const ang = rnd(seed, j) * Math.PI * 2;
+    const v = speed * (0.45 + 0.55 * rnd(seed, j + 50));
+    const k = d / life;
+    const dist = v * life * (1 - (1 - k) * (1 - k)) * 0.5;
+    const s = lerp(size[0], size[1], rnd(seed, j + 99));
+    el.style.width = el.style.height = `${s.toFixed(1)}px`;
+    el.style.background = colors[j % colors.length];
+    el.style.opacity = String(1 - k * k);
+    return [Math.cos(ang) * dist, Math.sin(ang) * dist + gravity * d * d, spin ? rnd(seed, j + 7) * 360 + spin * d : 0];
+  }
+
+  function renderFx(t) {
+    if (calm) return;
+    // 换段：≤120ms 的一下白闪 + 一道从左到右的扫光（同一时刻只有一次，不会连闪）
+    const turn = TURNS.filter((at) => t >= at && t < at + SWEEP_LEN).at(-1);
+    const flash = turn !== undefined && t < turn + FLASH_LEN;
+    show(FX.flash, flash);
+    if (flash) FX.flash.style.opacity = String(0.55 * (1 - (t - turn) / FLASH_LEN));
+    show(FX.sweep, turn !== undefined);
+    if (turn !== undefined) {
+      const k = (t - turn) / SWEEP_LEN;
+      FX.sweep.style.transform = `translateX(${lerp(-260, W + 60, easeIO(k))}px) skewX(-18deg)`;
+      FX.sweep.style.opacity = String(Math.sin(k * Math.PI));
+    }
+
+    // 粒子：同一时刻活着的迸发依次分到粒子池里
+    let used = 0;
+    BURSTS.forEach(([at, origin, dx, dy, n, kind], b) => {
+      const p = PARTICLE[kind];
+      const d = t - at;
+      if (d < 0 || d >= p.life) return;
+      const o = fxPoint(origin, dx, dy);
+      if (!o) return;
+      const [ox, oy] = o;
+      const star = kind === "star";
+      for (let j = 0; j < n && used < sparks.length; j++, used++) {
+        const el = sparks[used];
+        const [x, y] = particle(el, b + 1, j, d, p.life, p.speed, p.size, p.gravity, p.colors);
+        el.classList.toggle("gf-spark--star", star);
+        el.style.transform = `translate(${(ox + x).toFixed(1)}px, ${(oy + y).toFixed(1)}px) rotate(${star ? 45 + d * 200 : 0}deg)`;
+        show(el, true);
+      }
+    });
+    for (let j = used; j < sparks.length; j++) show(sparks[j], false);
+
+    // 发送拖尾：从发送键划到刚出来的气泡，0.3 秒
+    const send = SENDS.find((b) => within(t, b.at - 0.18, b.at + 0.12));
+    // 气泡出现前（拖尾的前半段）先朝聊天记录底部飞，气泡一出来就对准它
+    const goal = send && (fxPoint(`msg${send.i}`) ?? pointOf("send", -140, -70));
+    show(FX.streak, Boolean(send));
+    if (send) {
+      const [x0, y0] = pointOf("send");
+      const [x1, y1] = goal;
+      const k = (t - (send.at - 0.18)) / 0.3;
+      const head = easeOut(clamp(k * 1.3, 0, 1));
+      const tail = easeIO(clamp(k * 1.3 - 0.4, 0, 1));
+      const ax = lerp(x0, x1, tail);
+      const ay = lerp(y0, y1, tail);
+      const bx = lerp(x0, x1, head);
+      const by = lerp(y0, y1, head);
+      FX.streak.style.width = `${Math.max(4, Math.hypot(bx - ax, by - ay)).toFixed(1)}px`;
+      FX.streak.style.transform = `translate(${ax.toFixed(1)}px, ${ay.toFixed(1)}px) rotate(${Math.atan2(by - ay, bx - ax)}rad)`;
+      FX.streak.style.opacity = String(1 - sm(0.7, 1, k));
+    }
+
+    // 搜索命中：结果卡外面亮一圈，向外扩散后消失
+    const glow = GLOWS.find(([at]) => within(t, at, at + 0.7));
+    show(FX.glow, Boolean(glow));
+    if (glow) {
+      const r = rectOf(ref(glow[1]));
+      const k = (t - glow[0]) / 0.7;
+      const grow = 2 + 10 * easeOut(k);
+      FX.glow.style.left = `${r.x - grow}px`;
+      FX.glow.style.top = `${r.y - grow}px`;
+      FX.glow.style.width = `${r.w + grow * 2}px`;
+      FX.glow.style.height = `${r.h + grow * 2}px`;
+      FX.glow.style.opacity = String(1 - k);
+    }
+
+    // 片尾：小精灵弹出来那一下，撒一把彩纸（只撒一次）
+    const d = t - CONFETTI_AT;
+    const party = d >= 0 && d < 1.6;
+    confetti.forEach((el, j) => {
+      show(el, party);
+      if (!party) return;
+      const [x, y, rot] = particle(el, 77, j, d, 1.6, 420, [5, 9], 260, FX_COLORS, 540);
+      el.style.height = `${(parseFloat(el.style.width) * 0.45).toFixed(1)}px`;
+      el.style.transform = `translate(${(W / 2 + x).toFixed(1)}px, ${(150 + y).toFixed(1)}px) rotate(${rot.toFixed(0)}deg)`;
+    });
   }
 
   function renderCamera(t) {
@@ -477,7 +672,21 @@
       x = lerp(a[1], b[1], f);
       y = lerp(a[2], b[2], f);
     }
-    const z = zoomed ? ZOOM : 1;
+    // 节拍上的镜头推近：100ms 推进去，再慢慢退回来；同时往被操作的元素那边偏一点
+    let z = zoomed ? ZOOM : 1;
+    if (!calm) {
+      for (const [at, amount, target, len] of PUNCH) {
+        const d = t - at;
+        if (d < 0 || d >= len) continue;
+        const k = d < 0.1 ? easeOut(d / 0.1) : 1 - easeIO((d - 0.1) / (len - 0.1));
+        const p = fxPoint(target);
+        if (p) {
+          x = lerp(x, p[0], 0.35 * k);
+          y = lerp(y, p[1], 0.35 * k);
+        }
+        z *= lerp(1, amount, k);
+      }
+    }
     const vw = W / z;
     const vh = 450 / z;
     cam = { x: clamp(x - vw / 2, 0, W - vw), y: clamp(y - vh / 2, 0, 450 - vh), z };
@@ -486,15 +695,264 @@
   }
 
   function render(t) {
-    renderCamera(t);
     renderApp(t);
     renderChat(t);
     renderBar(t);
+    // 镜头推近要对准刚画好的元素，所以放在状态之后
+    screenRect = null;
+    renderCamera(t);
     // 下面这些要量元素位置，放在所有状态写完之后
     screenRect = null;
     renderKeysAndNotes(t);
     renderPointer(t);
     renderHud(t);
+    renderFx(t);
+  }
+
+  // ---------- 声音 ----------
+  // 和宣传片（promo-film.js）同一路做法：Web Audio 现场合成，不加载任何音频文件。
+  // 节点图：每个音 → 自己的包络 gain/滤波 → bus（这一段播放专用，暂停/拖动时淡出并整个断开）→ master → 压缩器 → 扬声器。
+  // 声音跟着短片自己的时间 T 走：每帧由 tick 调 sync(T)，只把接下来 0.25 秒里的音交给 Web Audio。
+  const NOTE = (n) => 440 * Math.pow(2, (n - 69) / 12);
+  const LOOKAHEAD = 0.25;
+  class GuideAudio {
+    constructor(ctx) {
+      this.ctx = ctx;
+      this.master = ctx.createGain();
+      this.master.gain.value = 0.16; // 实测整片峰值约 −18 dBFS（headless Chrome 接分析器量的），当背景声
+      this.comp = ctx.createDynamicsCompressor();
+      this.comp.threshold.value = -20;
+      this.comp.ratio.value = 4;
+      this.master.connect(this.comp);
+      this.comp.connect(ctx.destination);
+      const len = ctx.sampleRate;
+      this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = this.noise.getChannelData(0);
+      let seed = 1;
+      for (let i = 0; i < len; i++) {
+        seed = (seed * 16807) % 2147483647;
+        d[i] = (seed / 2147483647) * 2 - 1;
+      }
+      this.score = buildScore();
+      this.bus = null;
+      this.voices = new Set();
+      this.anchor = null; // { t: 短片秒, c: 对应的 ctx.currentTime }
+      this.cursor = 0;
+    }
+    // 开一段新的播放：建 bus，下一次 sync 时按当时的 T 对齐时钟
+    begin() {
+      this.end();
+      this.bus = this.ctx.createGain();
+      this.bus.connect(this.master);
+      this.anchor = null;
+    }
+    // 结束这一段：bus 30ms 淡出，所有已排上的音立刻停掉并断开，不留任何还在响的振荡器
+    end() {
+      const bus = this.bus;
+      this.bus = null;
+      this.anchor = null;
+      if (!bus) return;
+      const now = this.ctx.currentTime;
+      bus.gain.cancelScheduledValues(now);
+      bus.gain.setValueAtTime(bus.gain.value, now);
+      bus.gain.linearRampToValueAtTime(0, now + 0.03);
+      this.voices.forEach((voice) => this.kill(voice, now + 0.04));
+      setTimeout(() => bus.disconnect(), 120);
+    }
+    sync(t) {
+      if (!this.bus || this.ctx.state !== "running") return;
+      const now = this.ctx.currentTime;
+      // 画面卡了一下（tick 每帧最多走 0.1 秒）或刚开始：重新对齐，跳过已经过去的音
+      if (!this.anchor || Math.abs(this.anchor.t + (now - this.anchor.c) - t) > 0.08) {
+        const fresh = !this.anchor;
+        this.anchor = { t, c: now + 0.02 };
+        if (fresh) {
+          // 留 40ms 余量：跳到章节开头时第一帧已经走过了一点，章节的翻页声不能因此漏掉
+          this.cursor = this.score.findIndex((e) => e.at >= t - 0.04);
+          if (this.cursor === -1) this.cursor = this.score.length;
+        }
+      }
+      while (this.cursor < this.score.length && this.score[this.cursor].at < t + LOOKAHEAD) {
+        const e = this.score[this.cursor++];
+        const at = this.anchor.c + (e.at - this.anchor.t);
+        if (at < now - 0.03) continue; // 来不及了就不响，绝不补一串
+        this.play(e, Math.max(at, now));
+      }
+    }
+    kill(voice, when) {
+      voice.sources.forEach((src) => {
+        try {
+          src.stop(when);
+        } catch {
+          /* 已经停了 */
+        }
+      });
+    }
+    // 一个音：记下它所有的节点，最后一个声源结束时全部 disconnect
+    play(e, t) {
+      const ctx = this.ctx;
+      const voice = { nodes: [], sources: [], live: 0 };
+      this.voices.add(voice);
+      const keep = (node) => (voice.nodes.push(node), node);
+      const gain = (out) => {
+        const g = keep(ctx.createGain());
+        g.connect(out);
+        return g;
+      };
+      const env = (g, at, a, peak, dec) => {
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(peak, at + a);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + a + dec);
+      };
+      const filter = (type, f, q, out) => {
+        const b = keep(ctx.createBiquadFilter());
+        b.type = type;
+        b.frequency.value = f;
+        b.Q.value = q;
+        b.connect(out);
+        return b;
+      };
+      const source = (node, at, end, offset) => {
+        keep(node);
+        voice.sources.push(node);
+        voice.live++;
+        node.onended = () => {
+          if (--voice.live > 0) return;
+          voice.nodes.forEach((n) => n.disconnect());
+          this.voices.delete(voice);
+        };
+        node.start(at, offset);
+        node.stop(end);
+        return node;
+      };
+      const osc = (type, f, at, end, out) => {
+        const o = ctx.createOscillator();
+        o.type = type;
+        o.frequency.setValueAtTime(f, at);
+        o.connect(out);
+        return source(o, at, end);
+      };
+      const noise = (at, end, out) => {
+        const n = ctx.createBufferSource();
+        n.buffer = this.noise;
+        n.loop = true;
+        n.connect(out);
+        return source(n, at, end, (e.at * 0.37) % 0.8);
+      };
+      const out = this.bus;
+      const a = e.arg;
+      const v = a.v ?? 1;
+      switch (e.type) {
+        case "turn": {
+          // 翻页：一下纸张擦过的噪声 + 很轻的低频「嗒」
+          const g = gain(out);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.35, t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+          const f = filter("bandpass", 1800, 0.9, g);
+          f.frequency.exponentialRampToValueAtTime(5200, t + 0.2);
+          noise(t, t + 0.26, f);
+          const th = gain(out);
+          env(th, t, 0.003, 0.3, 0.12);
+          const o = osc("sine", 160, t, t + 0.16, th);
+          o.frequency.exponentialRampToValueAtTime(70, t + 0.12);
+          break;
+        }
+        case "click": {
+          const g = gain(out);
+          env(g, t, 0.001, 0.3, 0.035);
+          noise(t, t + 0.05, filter("bandpass", 3200, 2.5, g));
+          break;
+        }
+        case "type":
+        case "key": {
+          const key = e.type === "key";
+          const g = gain(out);
+          env(g, t, 0.001, key ? 0.45 : 0.25, key ? 0.06 : 0.04);
+          noise(t, t + 0.07, filter("bandpass", key ? 2400 : 4200, 2, g));
+          const o = osc("square", key ? 180 : 320, t, t + 0.04, filter("lowpass", 800, 1, g));
+          o.frequency.exponentialRampToValueAtTime(80, t + 0.04);
+          break;
+        }
+        case "paste": {
+          // 贴入：「啪」一下落进输入框
+          const g = gain(out);
+          env(g, t, 0.002, 0.5, 0.18);
+          const o = osc("sine", 220, t, t + 0.22, g);
+          o.frequency.exponentialRampToValueAtTime(90, t + 0.15);
+          const n = gain(out);
+          env(n, t, 0.001, 0.25, 0.06);
+          noise(t, t + 0.08, filter("highpass", 2500, 0.7, n));
+          break;
+        }
+        case "whoosh": {
+          const len = a.len ?? 0.35;
+          const g = gain(out);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(a.soft ? 0.25 : 0.4, t + len * 0.6);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+          const f = filter("bandpass", a.soft ? 500 : 900, 1.4, g);
+          f.frequency.exponentialRampToValueAtTime(a.soft ? 2500 : 6000, t + len * 0.6);
+          f.frequency.exponentialRampToValueAtTime(900, t + len);
+          noise(t, t + len + 0.02, f);
+          break;
+        }
+        case "pop": {
+          const g = gain(out);
+          env(g, t, 0.002, 0.3 * v, 0.1);
+          const o = osc("sine", NOTE(a.n ?? 79), t, t + 0.13, g);
+          o.frequency.exponentialRampToValueAtTime(NOTE((a.n ?? 79) + 12), t + 0.05);
+          break;
+        }
+        case "ding": {
+          // 搜到了：两声上行的钟
+          [0, 0.09].forEach((d, i) => {
+            const g = gain(out);
+            env(g, t + d, 0.003, 0.28, 0.8);
+            [1, 2.01, 3.03].forEach((m, k) => {
+              const gi = gain(g);
+              gi.gain.value = [1, 0.35, 0.15][k];
+              osc("sine", NOTE(a.n + i * 7) * m, t + d, t + d + 0.85, gi);
+            });
+          });
+          break;
+        }
+        case "snap": {
+          const g = gain(out);
+          env(g, t, 0.001, 0.3, 0.12);
+          osc("square", 1800, t, t + 0.03, filter("highpass", 1000, 1, g));
+          const o = osc("sine", 140, t, t + 0.15, g);
+          o.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+          break;
+        }
+        case "pluck": {
+          const g = gain(out);
+          env(g, t, 0.003, 0.35, 0.25);
+          const f = filter("lowpass", 3600, 3, g);
+          f.frequency.exponentialRampToValueAtTime(700, t + 0.22);
+          osc("triangle", NOTE(a.n), t, t + 0.28, f);
+          break;
+        }
+        case "chime": {
+          const g = gain(out);
+          env(g, t, 0.003, 0.3 * v, 1.2);
+          [1, 2.01, 3.03].forEach((m, k) => {
+            const gi = gain(g);
+            gi.gain.value = [1, 0.4, 0.2][k];
+            osc("sine", NOTE(a.n) * m, t, t + 1.25, gi);
+          });
+          break;
+        }
+        case "shimmer": {
+          const g = gain(out);
+          env(g, t, 0.15, 0.08, 0.8);
+          noise(t, t + 0.98, filter("highpass", 8000, 1, g));
+          break;
+        }
+        default:
+          break;
+      }
+    }
   }
 
   // ---------- 播放器 ----------
@@ -503,9 +961,70 @@
   let time = calm ? STILL : 0;
   let playing = false;
   let userPaused = calm;
+  let ended = false;
   let onScreen = false;
   let lastNow = 0;
   let raf = 0;
+
+  // 声音：默认开，选择记在 localStorage。浏览器只许在用户点过之后出声，所以页面打开时一定是静的：
+  // 自动播放的画面没有声音，访客第一次点播放 / 舞台 / 章节 / 进度条 / 声音键之后才建 AudioContext。
+  // 静音、或者开了「减少动态效果」时，一个音频节点都不建（静音时连 AudioContext 都关掉）。
+  const soundButton = document.getElementById("guide-sound");
+  const SOUND_KEY = "softtalk-guide-sound";
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const canSound = Boolean(AC) && !calm;
+  let soundOn = true;
+  try {
+    soundOn = localStorage.getItem(SOUND_KEY) !== "off";
+  } catch {
+    /* 隐私模式读不到就当默认 */
+  }
+  let unlocked = false; // 用户点过了没有
+  let audio = null;
+  let suspendTimer = 0;
+
+  function syncSoundUi() {
+    if (!soundButton) return;
+    soundButton.hidden = !canSound;
+    const state = !soundOn ? "off" : unlocked ? "on" : "locked";
+    soundButton.dataset.sound = state;
+    soundButton.setAttribute("aria-pressed", String(state === "on"));
+    soundButton.setAttribute("aria-label", state === "on" ? "静音" : "打开声音");
+  }
+
+  function audioStart() {
+    if (!canSound || !soundOn || !unlocked) return;
+    if (!audio) {
+      try {
+        audio = new GuideAudio(new AC());
+      } catch {
+        audio = null;
+        return;
+      }
+    }
+    clearTimeout(suspendTimer);
+    if (audio.ctx.state === "suspended") audio.ctx.resume().catch(() => {});
+    audio.begin();
+  }
+  // 暂停：停掉这一段的音，再把 AudioContext 挂起（不占 CPU）；end=true 时整个关掉，所有节点随之释放
+  function audioStop(close = false) {
+    if (!audio) return;
+    audio.end();
+    clearTimeout(suspendTimer);
+    const ctx = audio.ctx;
+    if (close) {
+      audio = null;
+      setTimeout(() => ctx.close().catch(() => {}), 150);
+    } else {
+      suspendTimer = setTimeout(() => ctx.state === "running" && ctx.suspend().catch(() => {}), 150);
+    }
+  }
+  function unlock() {
+    if (unlocked || !canSound) return;
+    unlocked = true;
+    syncSoundUi();
+    if (playing) audioStart();
+  }
 
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
@@ -530,29 +1049,47 @@
     syncUi();
   }
 
+  // 播到片尾就停在最后一帧（不再循环），声音同时收尾；再按播放从头放。
   function tick(now) {
     raf = 0;
     if (!playing) return;
-    time = (time + Math.min(0.1, (now - lastNow) / 1000)) % DURATION;
+    time += Math.min(0.1, (now - lastNow) / 1000);
     lastNow = now;
+    if (time >= DURATION - 0.01) {
+      time = DURATION - 0.01;
+      ended = true;
+      setPlaying(false);
+      draw();
+      return;
+    }
+    audio?.sync(time);
     draw();
     raf = requestAnimationFrame(tick);
   }
 
   function setPlaying(next) {
+    if (next && ended) {
+      ended = false;
+      time = 0;
+    }
+    const was = playing;
     playing = next;
     if (playButton) {
       playButton.dataset.playing = String(next);
-      playButton.setAttribute("aria-label", next ? "暂停" : "播放");
+      playButton.setAttribute("aria-label", next ? "暂停" : ended ? "重新播放" : "播放");
     }
     if (next && !raf) {
       lastNow = performance.now();
       raf = requestAnimationFrame(tick);
     }
+    if (next && !was) audioStart();
+    if (!next && was) audioStop(ended);
   }
 
   function seek(t) {
     time = clamp(t, 0, DURATION - 0.01);
+    ended = false;
+    if (playing) audioStart(); // 停掉旧的、按新位置重新对齐
     draw();
   }
 
@@ -566,12 +1103,31 @@
   }
 
   playButton?.addEventListener("click", () => {
+    unlock();
     userPaused = playing;
     setPlaying(!playing);
   });
   stage.addEventListener("click", () => playButton?.click());
 
+  soundButton?.addEventListener("click", () => {
+    if (soundOn && !unlocked) {
+      unlock(); // 默认就是开着的，只是浏览器还没放行：这一下就是放行
+      return;
+    }
+    unlock();
+    soundOn = !soundOn;
+    try {
+      localStorage.setItem(SOUND_KEY, soundOn ? "on" : "off");
+    } catch {
+      /* 存不了就只管这一次 */
+    }
+    syncSoundUi();
+    if (!soundOn) audioStop(true);
+    else if (playing) audioStart();
+  });
+
   track?.addEventListener("pointerdown", (event) => {
+    unlock();
     const rect = track.getBoundingClientRect();
     const move = (e) => seek(((e.clientX - rect.left) / rect.width) * DURATION);
     move(event);
@@ -583,11 +1139,13 @@
     const step = { ArrowLeft: -5, ArrowRight: 5, Home: -DURATION, End: DURATION }[event.key];
     if (step === undefined) return;
     event.preventDefault();
+    unlock();
     seek(time + step);
   });
 
   stepButtons.forEach((button) => {
     button.addEventListener("click", () => {
+      unlock();
       seek(SCENES[Number(button.dataset.chapter)].start);
       userPaused = false;
       setPlaying(true);
@@ -595,17 +1153,19 @@
     });
   });
 
-  // 只在看得见的时候播：滚走或切到别的标签页就停，回来接着放（除非访客自己按了暂停）。
+  // 只在看得见的时候播：滚走或切到别的标签页就停，回来接着放（除非访客自己按了暂停，或已经播完）。
+  const autoPlay = () => {
+    if (!userPaused && !ended) setPlaying(onScreen && !document.hidden);
+  };
   new IntersectionObserver(
     ([entry]) => {
       onScreen = entry.isIntersecting;
-      if (!userPaused) setPlaying(onScreen && !document.hidden);
+      autoPlay();
     },
     { threshold: 0.35 },
   ).observe(stage);
-  document.addEventListener("visibilitychange", () => {
-    if (!userPaused) setPlaying(onScreen && !document.hidden);
-  });
+  document.addEventListener("visibilitychange", autoPlay);
   new ResizeObserver(resize).observe(stage);
+  syncSoundUi();
   resize();
 })();
