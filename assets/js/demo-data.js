@@ -928,27 +928,6 @@ const SCOPES = {
         name: "默认话术",
         categories: [
           {
-            label: "常见问题",
-            sections: [
-              {
-                title: "快捷问答",
-                open: true,
-                items: [
-                  { title: "发货时间", text: "当天 16 点前付款当天发货，之后的顺延到次日发出~" },
-                  { title: "是否包邮", text: "全场满 59 元包邮，偏远地区需补少量运费哦~" },
-                  { title: "发票说明", text: "支持开具电子发票，下单备注单位名称即可~", files: [{ name: "电子发票开具说明.pdf", size: "180 KB" }] },
-                ],
-              },
-              {
-                title: "配送相关",
-                items: [
-                  { title: "配送范围", text: "全国大部分地区可发，偏远地区需补运费~" },
-                  { title: "到货时效", text: "一般 3-5 天到货，偏远地区 5-7 天~" },
-                ],
-              },
-            ],
-          },
-          {
             label: "售后政策",
             sections: [
               {
@@ -1154,7 +1133,7 @@ const SCOPES = {
         ],
       },
       {
-        name: "常见问答",
+        name: "支付与地址",
         categories: [
           {
             label: "支付问题",

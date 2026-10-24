@@ -75,21 +75,21 @@
     personal: { chips: ["我的常用", "催单"], chip: 0, lv2: "我的常用", rows: [ROW.hi, ROW.off] },
     local: { chips: ["离线备用"], chip: 0, lv2: "离线备用", rows: [ROW.lag] },
     team3: { chips: ["欢迎", "售前", "售后", "物流"], chip: 0, lv2: "欢迎话术", rows: [ROW.welcome, ROW.busy] },
-    presale: { chips: ["欢迎", "售前", "售后", "物流"], chip: 1, lv2: "常见问题", rows: [ROW.real, ROW.ship, ROW.free] },
+    presale: { chips: ["欢迎", "售前", "售后", "物流"], chip: 1, lv2: "产品咨询", rows: [ROW.real, ROW.ship, ROW.free] },
     search: {
       results: true,
       chips: ["欢迎", "售前", "售后", "物流"],
       chip: 1,
       lv2: null,
       rows: [
-        { ...ROW.ship, path: "团队·第3套｜售前 > 常见问题" },
+        { ...ROW.ship, path: "团队·第3套｜售前 > 产品咨询" },
         { ...ROW.rush, path: "团队·第3套｜售后 > 物流跟进" },
         { ...ROW.addr, path: "团队·第3套｜物流 > 发货说明" },
       ],
     },
     located: { chips: ["欢迎", "售前", "售后", "物流"], chip: 2, lv2: "物流跟进", rows: [ROW.rush, ROW.swap] },
   };
-  const BAR_HIT = { ...ROW.free, path: "团队·第3套｜售前 > 常见问题" };
+  const BAR_HIT = { ...ROW.free, path: "团队·第3套｜售前 > 产品咨询" };
 
   const PASTED = ROW.real.text;
   const EDIT = "放心拍哦";
