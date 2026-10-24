@@ -44,6 +44,44 @@
   display: none;
 }
 
+/* 声音开关：细描边圆钮。静音、或浏览器还没放行声音（用户还没点过）时显示带叉的喇叭 */
+.film-sound {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.film-sound:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.film-sound[hidden] {
+  display: none;
+}
+
+.film-sound .film-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.film-sound[data-sound="on"] .film-icon--mute,
+.film-sound:not([data-sound="on"]) .film-icon--sound {
+  display: none;
+}
+
 /* 细线进度条：整条都能点、能拖，键盘左右键每次 5 秒 */
 .film-track {
   position: relative;

@@ -941,3 +941,62 @@
   color: var(--accent);
   font-weight: 600;
 }
+
+/* ---------- 节拍特效（guide-film.js 的 renderFx；开了「减少动态效果」时一个都不出现） ---------- */
+/* 粒子与拖尾在 screen 层（跟着镜头），白闪、扫光、片尾彩纸在 hud 层（盖住整个画面）。 */
+.gf-spark,
+.gf-confetti {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 6;
+  border-radius: 50%;
+  pointer-events: none;
+  translate: -50% -50%;
+}
+
+.gf-spark--star {
+  border-radius: 1px;
+}
+
+.gf-confetti {
+  border-radius: 1px;
+}
+
+.gf-streak {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 6;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, transparent, var(--accent) 55%, #fff);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
+.gf-glow {
+  position: absolute;
+  z-index: 6;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.gf-sweep {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  width: 200px;
+  height: 530px;
+  background: linear-gradient(90deg, transparent, rgba(255, 190, 140, 0.22) 35%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 190, 140, 0.22) 65%, transparent);
+  pointer-events: none;
+}
+
+.gf-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  pointer-events: none;
+}
