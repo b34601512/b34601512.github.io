@@ -47,7 +47,7 @@
 /* 舞台上的开关层：右上角「声音」「特效」，左上角「点一下打开声音」提示。
    都放在舞台外面一层（舞台点一下是播放/暂停，内容也会被脚本整块重写），绝对定位叠在画面上，不挤动任何东西。
    宽屏时落在窗口上方那条空白里（窗口从舞台 48/450 处开始），字幕居中、不和它们重叠；
-   窄屏镜头推近时字幕是顶上一整条，开关就挪到舞台正上方。 */
+   舞台窄了就挪到舞台正上方（见下面的 @container）。 */
 .film-frame {
   position: relative;
 }
@@ -55,39 +55,44 @@
 .film-toggles,
 .film-hint {
   position: absolute;
-  top: 8px;
   z-index: 1;
 }
 
 .film-toggles {
+  top: 8px;
   right: 8px;
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .film-hint {
+  top: 13px; /* 26px 高，和 36px 的圆按钮中线对齐 */
   left: 8px;
 }
 
-/* 窄屏：镜头推近后画面里没有空白，顶上又是一整条字幕，开关改放在舞台正上方贴着它的一条里 */
-.film-frame[data-zoom] {
-  padding-top: 32px;
+/* 舞台窄于 740px 时窗口上方那条空白放不下 36px 的圆按钮（8 + 36 > 48 × 舞台宽 / 800），
+   更窄时镜头推近、顶上又是一整条字幕——开关和提示都改放在舞台正上方贴着它的一条里。
+   按舞台的实际宽度判断（.film 是尺寸容器），不看视口。 */
+.film {
+  container-type: inline-size;
 }
 
-.film-frame[data-zoom] .film-toggles,
-.film-frame[data-zoom] .film-hint {
-  top: 0;
+@container (max-width: 740px) {
+  .film-frame {
+    padding-top: 42px; /* 36px 圆按钮 + 6px 空隙 */
+  }
+
+  .film-toggles {
+    top: 0;
+    right: 0;
+  }
+
+  .film-hint {
+    top: 5px;
+    left: 0;
+  }
 }
 
-.film-frame[data-zoom] .film-toggles {
-  right: 0;
-}
-
-.film-frame[data-zoom] .film-hint {
-  left: 0;
-}
-
-.film-toggle,
 .film-hint {
   display: inline-flex;
   align-items: center;
@@ -106,8 +111,6 @@
   transition: border-color 0.18s ease, color 0.18s ease;
 }
 
-.film-toggle[aria-pressed="true"],
-.film-toggle:hover,
 .film-hint {
   border-color: var(--accent);
   color: var(--accent);
@@ -117,12 +120,10 @@
   background: var(--accent-soft);
 }
 
-.film-toggle[hidden],
 .film-hint[hidden] {
   display: none;
 }
 
-.film-toggle .film-icon,
 .film-hint .film-icon {
   width: 14px;
   height: 14px;
@@ -133,6 +134,7 @@
   stroke-linejoin: round;
 }
 
+/* 开关本身是 site.css 的 .ctl-btn（和宣传片控制条同一套圆形按钮）；声音开关里两个图标只露当前那个 */
 .film-toggle[data-sound="on"] .film-icon--mute,
 .film-toggle[data-sound]:not([data-sound="on"]) .film-icon--sound {
   display: none;
@@ -278,7 +280,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .film-play,
-  .film-toggle,
   .film-hint,
   .step-jump,
   .step-no {

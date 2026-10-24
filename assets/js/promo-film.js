@@ -1280,10 +1280,10 @@
   const ICON = {
     play: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.6 8Z"/></svg>',
     pause: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3h2.4v10H4.5zM9.1 3h2.4v10H9.1z"/></svg>',
-    sound: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z"/><path class="promo-wave" d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12 3.8a6 6 0 0 1 0 8.4"/></svg>',
-    mute: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z"/><path class="promo-wave" d="M10.5 6l4 4M14.5 6l-4 4"/></svg>',
-    full: '<svg viewBox="0 0 16 16" aria-hidden="true"><path class="promo-wave" d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg>',
-    save: '<svg viewBox="0 0 16 16" aria-hidden="true"><path class="promo-wave" d="M8 2.5v8M4.8 7.4 8 10.6l3.2-3.2M3 13.5h10"/></svg>',
+    sound: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z"/><path class="ctl-btn__wave" d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12 3.8a6 6 0 0 1 0 8.4"/></svg>',
+    mute: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z"/><path class="ctl-btn__wave" d="M10.5 6l4 4M14.5 6l-4 4"/></svg>',
+    full: '<svg viewBox="0 0 16 16" aria-hidden="true"><path class="ctl-btn__wave" d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg>',
+    save: '<svg viewBox="0 0 16 16" aria-hidden="true"><path class="ctl-btn__wave" d="M8 2.5v8M4.8 7.4 8 10.6l3.2-3.2M3 13.5h10"/></svg>',
   };
 
   function el(tag, cls, html) {
@@ -1308,7 +1308,7 @@
     screen.append(canvas, cover);
 
     const bar = el("div", "promo-bar");
-    const playBtn = el("button", "promo-btn promo-btn--play", ICON.play);
+    const playBtn = el("button", "ctl-btn ctl-btn--solid", ICON.play);
     playBtn.type = "button";
     playBtn.setAttribute("aria-label", "播放");
     const track = el("div", "promo-track");
@@ -1320,14 +1320,14 @@
     const fill = el("span", "promo-fill");
     track.append(fill);
     const time = el("span", "promo-time");
-    const soundBtn = el("button", "promo-btn", ICON.sound);
+    const soundBtn = el("button", "ctl-btn", ICON.sound);
     soundBtn.type = "button";
     soundBtn.setAttribute("aria-label", "静音");
-    const saveBtn = el("button", "promo-btn", ICON.save);
+    const saveBtn = el("button", "ctl-btn", ICON.save);
     saveBtn.type = "button";
     saveBtn.setAttribute("aria-label", "导出视频文件（实时录制一遍，带声音）");
     saveBtn.title = "导出视频文件（实时录制一遍，带声音）";
-    const fullBtn = el("button", "promo-btn", ICON.full);
+    const fullBtn = el("button", "ctl-btn", ICON.full);
     fullBtn.type = "button";
     fullBtn.setAttribute("aria-label", "全屏");
     bar.append(playBtn, track, time, soundBtn);

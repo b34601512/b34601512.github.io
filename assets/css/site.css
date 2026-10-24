@@ -269,6 +269,65 @@ a {
   color: var(--accent);
 }
 
+/* 播放器上的圆形图标按钮：宣传片控制条与「怎么用」短片的声音/特效开关共用这一套。
+   图标 15px 实心，`ctl-btn__wave` 那几笔是 1.5px 描边；开关的「开」＝橙描边橙图标，主按钮（播放）是 `--solid` 橙底。 */
+.ctl-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.ctl-btn:hover,
+.ctl-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ctl-btn--solid {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.ctl-btn--solid:hover {
+  background: var(--accent-hover);
+  color: var(--on-accent);
+}
+
+.ctl-btn[hidden] {
+  display: none;
+}
+
+.ctl-btn svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.ctl-btn .ctl-btn__wave {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 520px) {
+  .ctl-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 .eyebrow {
   font-size: 12px;
   font-weight: 600;

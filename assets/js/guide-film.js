@@ -999,6 +999,7 @@
     fxButton.hidden = false;
     fxButton.setAttribute("aria-pressed", String(fx));
     fxButton.setAttribute("aria-label", fx ? "特效：开" : "特效：关");
+    fxButton.title = fxButton.getAttribute("aria-label"); // 图标按钮，悬停时把字说出来
   }
 
   // 声音：默认开，选择记在 localStorage。浏览器只许在用户有过一次操作之后出声，所以页面打开时一定是静的：
@@ -1023,6 +1024,7 @@
     soundButton.dataset.sound = state;
     soundButton.setAttribute("aria-pressed", String(state === "on"));
     soundButton.setAttribute("aria-label", { on: "声音：开", off: "声音：关", locked: "声音：关，点一下打开" }[state]);
+    soundButton.title = soundButton.getAttribute("aria-label");
   }
 
   function audioStart() {
@@ -1143,7 +1145,7 @@
     scale = width / W;
     zoomed = width < 560;
     stage.toggleAttribute("data-zoom", zoomed);
-    stage.parentElement.toggleAttribute("data-zoom", zoomed); // .film-frame：开关挪到舞台上方
+    stage.parentElement.toggleAttribute("data-zoom", zoomed); // .film-frame（开关挪到舞台上方现在由 guide.css 的 @container 按宽度决定）
     draw();
   }
 
