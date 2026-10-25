@@ -21,6 +21,16 @@
   aspect-ratio: 16 / 9;
 }
 
+/* 竖屏短片（why.html，1080×1920，给手机上刷短视频的人看）：桌面上不超过一屏高、最宽 460px，和标题一样靠左；控制条跟画面一样宽 */
+.promo--tall {
+  width: min(100%, 460px, calc((100vh - 160px) * 9 / 16));
+  min-width: min(100%, 300px);
+}
+
+.promo--tall .promo-canvas {
+  aspect-ratio: 9 / 16;
+}
+
 /* 封面：整块都是播放按钮 */
 .promo-cover {
   position: absolute;
@@ -180,6 +190,15 @@
   --fg: #f5f5f5;
   --fg-muted: #b8b8b8;
   --line-strong: #3f3f3f;
+}
+
+.promo--tall:fullscreen {
+  width: auto;
+}
+
+.promo--tall:fullscreen .promo-screen,
+.promo--tall:fullscreen .promo-bar {
+  width: min(100%, calc((100vh - 70px) * 9 / 16));
 }
 
 @media (max-width: 520px) {
