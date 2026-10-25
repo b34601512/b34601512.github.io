@@ -24,6 +24,7 @@ ${page.head.trim()}
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css" />${renderPageStyles(page)}
 <script src="assets/js/theme.js" defer></script>
+<script src="assets/js/nav.js" defer></script>
 </head>
 <body>
 ${renderNav(page, sitePages)}
@@ -42,19 +43,34 @@ function renderPageStyles(page) {
   return (page.styles ?? []).map((href) => `\n<link rel="stylesheet" href="${href}" />`).join("");
 }
 
+// 导航是一个竖排目录（GitHub issue #7：页面越来越多，横排放不下）：<details> 展开，没开 JS 也能用；
+// 页面按 navGroup 分组，组的先后按 sitePages 里第一次出现的顺序；「下载」挂在最后一组。
+// nav.js 只补「点外面 / 按 Esc / 点了链接就收起」。
 function renderNav(page, sitePages) {
-  // navUnder：挂在别的页面下的页面（经验分享的每一期）不单独进导航，打开时由上级页面显示为当前项。
-  const links = sitePages
+  const groups = new Map();
+  sitePages
     .filter((item) => !item.navUnder)
-    .map((item) => ({
-      label: item.navLabel,
-      href: item.outputFile,
-      // 上级页面不是「本页」，aria-current 用 true（当前所在的栏目）而不是 page
-      current: item.outputFile === page.outputFile ? "page" : item.outputFile === page.navUnder ? "true" : "",
-    }))
-    .concat(DOWNLOAD_LINK)
-    .map(renderNavLink)
-    .join("\n      ");
+    .forEach((item) => {
+      const name = item.navGroup ?? "";
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name).push({
+        label: item.navLabel,
+        href: item.outputFile,
+        // 上级页面不是「本页」，aria-current 用 true（当前所在的栏目）而不是 page
+        current: item.outputFile === page.outputFile ? "page" : item.outputFile === page.navUnder ? "true" : "",
+      });
+    });
+  [...groups.values()].at(-1).push(DOWNLOAD_LINK);
+
+  const here = sitePages.find((item) => item.outputFile === (page.navUnder ?? page.outputFile));
+  const sections = [...groups]
+    .map(
+      ([name, links]) => `<div class="nav-group">${name ? `
+          <p class="nav-group-name">${name}</p>` : ""}
+          ${links.map(renderNavLink).join("\n          ")}
+        </div>`,
+    )
+    .join("\n        ");
 
   return `<header class="nav">
   <div class="nav-inner">
@@ -62,9 +78,15 @@ function renderNav(page, sitePages) {
       <img class="brand-logo" src="assets/logo-small.png" alt="" />
       <span>${siteData.siteName}</span>
     </a>
-    <nav class="nav-links" aria-label="站点导航">
-      ${links}
-    </nav>
+    <details class="nav-menu" id="nav-menu">
+      <summary class="nav-menu-toggle">
+        <svg class="nav-menu-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" /></svg>
+        <span>目录</span>${here ? `<span class="nav-menu-here">${here.navLabel}</span>` : ""}
+      </summary>
+      <nav class="nav-links" aria-label="站点目录">
+        ${sections}
+      </nav>
+    </details>
     ${THEME_TOGGLE}
   </div>
 </header>`;

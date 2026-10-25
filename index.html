@@ -68,9 +68,10 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
 }
 </script>
 <link rel="icon" href="assets/favicon.png" />
-<link rel="stylesheet" href="assets/css/site.css?v=62eacba7" />
+<link rel="stylesheet" href="assets/css/site.css?v=2699b639" />
 <link rel="stylesheet" href="assets/css/demo.css?v=9f08ce99" />
 <script src="assets/js/theme.js?v=46a65147" defer></script>
+<script src="assets/js/nav.js?v=d5aeb647" defer></script>
 </head>
 <body>
 <header class="nav">
@@ -79,16 +80,32 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
       <img class="brand-logo" src="assets/logo-small.png" alt="" />
       <span>话术精灵 SoftTalk</span>
     </a>
-    <nav class="nav-links" aria-label="站点导航">
-      <a class="nav-link nav-link--current" href="index.html" aria-current="page">首页</a>
-      <a class="nav-link" href="promo.html">宣传片</a>
-      <a class="nav-link" href="guide.html">怎么用</a>
-      <a class="nav-link" href="experience.html">客服经验分享</a>
-      <a class="nav-link" href="why.html">解决什么问题</a>
-      <a class="nav-link" href="pricing.html">定价</a>
-      <a class="nav-link" href="contact.html">联系</a>
-      <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">下载</a>
-    </nav>
+    <details class="nav-menu" id="nav-menu">
+      <summary class="nav-menu-toggle">
+        <svg class="nav-menu-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" /></svg>
+        <span>目录</span><span class="nav-menu-here">首页</span>
+      </summary>
+      <nav class="nav-links" aria-label="站点目录">
+        <div class="nav-group">
+          <p class="nav-group-name">了解</p>
+          <a class="nav-link nav-link--current" href="index.html" aria-current="page">首页</a>
+          <a class="nav-link" href="promo.html">宣传片</a>
+          <a class="nav-link" href="why.html">解决什么问题</a>
+          <a class="nav-link" href="diff.html">有什么不同</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-group-name">上手</p>
+          <a class="nav-link" href="guide.html">怎么用</a>
+          <a class="nav-link" href="experience.html">客服经验分享</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-group-name">价格与联系</p>
+          <a class="nav-link" href="pricing.html">定价</a>
+          <a class="nav-link" href="contact.html">联系</a>
+          <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">下载</a>
+        </div>
+      </nav>
+    </details>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到白天模式" title="切换到白天模式">
       <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.55 1.55M17.15 17.15l1.55 1.55M5.3 18.7l1.55-1.55M17.15 6.85l1.55-1.55" /></svg>
       <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>

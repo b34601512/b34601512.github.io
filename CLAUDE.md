@@ -333,7 +333,7 @@ python -m http.server 8000
 
 ### 浏览器验收清单
 
-- 五张页面都能打开，导航互相跳转，当前页有下划线，图片与样式完整。
+- 所有页面都能打开，右上角「目录」展开是竖排分组清单（了解 / 上手 / 价格与联系，`navGroup`），当前页左侧一道橙线，Esc 与点外面都能收起；图片与样式完整。
 - SEO：每页恰一个 H1；title/description 各页互不重复且含各自主关键词；`meta keywords`、canonical、og:image（指向 `assets/og.png`）齐备；JSON-LD 能被 `JSON.parse` 解析且没有 `aggregateRating`；`sitemap.xml` 含五个页面；内链：`why.html` → 首页演示/定价/下载、`pricing.html` → `why.html`。
 - `why.html`：一个 H1、没有正文小节；竖屏短片封面停在问题帧，播放 40 秒到底变「再看一遍」，导出键能录出带声音的视频；桌面上短片不超过一屏高。
 - 聊天窗：真 `<textarea>`（回车发送、Shift+Enter 换行、多行气泡保留换行、输入法合成中的回车不发送、空输入与纯空格不发送、超长无空格文本换行不撑破窗口、消息变多时聊天窗高度不变只内部滚动并自动滚到底、连发多条每一条都有回复且不并发）

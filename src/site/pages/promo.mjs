@@ -11,6 +11,7 @@ const share =
 export const promoPage = {
   outputFile: "promo.html",
   navLabel: "宣传片",
+  navGroup: "了解",
   styles: ["assets/css/promo-film.css"],
   head: seoHead({ title, description: share, url, ogType: "video.other", jsonLd: [{ "@type": "WebPage", name: title, url, inLanguage: "zh-CN" }] }),
   main: `<div class="wrap">

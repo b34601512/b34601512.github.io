@@ -122,6 +122,7 @@ a {
 }
 
 .nav-inner {
+  position: relative;
   max-width: var(--width);
   margin: 0 auto;
   padding: 0 var(--pad);
@@ -150,41 +151,101 @@ a {
   object-fit: contain;
 }
 
-/* 放不下全部导航时横向滑动（任何宽度都一样），不折行、不挤掉主题按钮也不撑出页面 */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 26px;
+/* 目录：右上角一个「目录」按钮，点开是竖排的分组清单（页面多了以后横排放不下，issue #7）。
+   清单挂在 .nav-inner 上、右边缘对齐内容区；分组之间靠 1px 细线，当前页左侧一道橙线。 */
+.nav-menu {
   margin-left: auto;
-  min-width: 0;
-  /* 上下留出当前项下划线（text-underline-offset 7px）的位置，否则会被滚动容器裁掉 */
-  padding: 12px 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-  white-space: nowrap;
 }
 
-.nav-links::-webkit-scrollbar {
+.nav-menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 14px;
+  color: var(--fg);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  white-space: nowrap;
+  transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+}
+
+.nav-menu-toggle::-webkit-details-marker {
   display: none;
 }
 
+.nav-menu-toggle:hover,
+.nav-menu[open] .nav-menu-toggle {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.nav-menu-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* 按钮上带着当前所在的页面名，不打开目录也知道自己在哪 */
+.nav-menu-here {
+  padding-left: 9px;
+  border-left: 1px solid var(--line-strong);
+  color: var(--fg-muted);
+}
+
+.nav-links {
+  position: absolute;
+  top: calc(100% + 1px);
+  right: var(--pad);
+  width: 260px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 6px 0;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-top: none;
+}
+
+.nav-group + .nav-group {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+.nav-group-name {
+  margin: 0;
+  padding: 8px 18px 4px;
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+
 .nav-link {
-  font-size: 14px;
+  display: block;
+  padding: 9px 18px 9px 16px;
+  border-left: 2px solid transparent;
+  font-size: 15px;
   color: var(--fg-muted);
   text-decoration: none;
-  transition: color 0.18s ease;
+  transition: color 0.18s ease, background-color 0.18s ease;
 }
 
 .nav-link:hover {
+  background: var(--row-hover);
   color: var(--accent);
 }
 
 .nav-link--current {
+  border-left-color: var(--accent);
   color: var(--fg);
-  text-decoration: underline;
-  text-decoration-color: var(--accent);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 7px;
+  font-weight: 600;
 }
 
 /* ---------- 主题切换 ---------- */
@@ -722,12 +783,22 @@ a {
     display: none;
   }
 
-  .nav-links {
-    gap: 16px;
+  .nav-menu-toggle {
+    height: 30px;
+    padding: 0 12px 0 10px;
   }
 
-  .nav-link {
-    font-size: 13px;
+  /* 手机上目录铺满整行，按钮上不再挂当前页名（窄屏放不下） */
+  .nav-links {
+    left: 0;
+    right: 0;
+    width: auto;
+    border-left: none;
+    border-right: none;
+  }
+
+  .nav-menu-here {
+    display: none;
   }
 
   .episode {
@@ -760,6 +831,7 @@ a {
   }
 
   .nav-link,
+  .nav-menu-toggle,
   .crumb,
   .episode-still,
   .episode-title,
