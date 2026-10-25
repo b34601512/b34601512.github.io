@@ -173,7 +173,7 @@
     return ev.filter((e) => e.u + TAIL[e.type] < DURATION - 0.3).sort((a, b) => a.u - b.u);
   }
 
-  // 特效（默认跟系统「减少动态效果」走，访客可在舞台右上角「特效」上手动开关）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
+  // 特效（默认跟系统「减少动态效果」走，访客可在控制条的「特效」上手动开关）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
   // 白闪每段只有一次（≤120ms），两次之间至少隔 6 秒。
   const FLASH_LEN = 0.12;
   const SWEEP_LEN = 0.6;
@@ -917,7 +917,7 @@
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const STILL = 16.8;
   // 特效（换段白闪与扫光、粒子、拖尾、命中光圈、彩纸、节拍推镜、字幕弹出）：
-  // 默认跟系统（减少动态效果 → 关）；访客在舞台右上角「特效」上点过以后以访客为准——
+  // 默认跟系统（减少动态效果 → 关）；访客在控制条的「特效」上点过以后以访客为准——
   // 点开了，即使系统要求减少动态效果也照样放；点关了，一点特效都没有。和声音互不影响。
   let fx = !calm;
 
@@ -952,11 +952,10 @@
       scale = width / W;
       zoomed = width < 560;
       stage.toggleAttribute("data-zoom", zoomed);
-      stage.parentElement.toggleAttribute("data-zoom", zoomed); // .film-frame（开关挪到舞台上方现在由 guide.css 的 @container 按宽度决定）
     },
     score: buildScore(),
     createSynth: () => new GuideSynth(),
-    // 声音默认开；声音不跟「减少动态效果」走——那是画面的事。舞台上的开关与提示带 data-film-ctl，自己处理放行。
+    // 声音默认开；声音不跟「减少动态效果」走——那是画面的事。控制条上的两个开关与提示带 data-film-ctl，自己处理放行。
     sound: {
       button: document.getElementById("guide-sound"),
       hint: document.getElementById("guide-hint"),
