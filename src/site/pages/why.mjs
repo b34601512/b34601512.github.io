@@ -12,6 +12,7 @@ const share =
 export const whyPage = {
   outputFile: "why.html",
   navLabel: "解决什么问题",
+  navGroup: "了解",
   styles: ["assets/css/promo-film.css"],
   head: seoHead({
     title,

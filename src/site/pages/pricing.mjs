@@ -29,6 +29,7 @@ const cloud = [
 export const pricingPage = {
   outputFile: "pricing.html",
   navLabel: "定价",
+  navGroup: "价格与联系",
   head: seoHead({
     title,
     description: share,

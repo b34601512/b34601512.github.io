@@ -26,6 +26,7 @@ function renderEpisode(episode) {
 export const experiencePage = {
   outputFile: experienceListing.outputFile,
   navLabel: experienceListing.name,
+  navGroup: "上手",
   head: seoHead({
     title,
     description: share,

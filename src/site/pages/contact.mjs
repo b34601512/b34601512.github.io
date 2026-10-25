@@ -9,6 +9,7 @@ const share = `使用、账号、续费相关问题，可联系微信 ${siteData
 export const contactPage = {
   outputFile: "contact.html",
   navLabel: "联系",
+  navGroup: "价格与联系",
   head: seoHead({
     title,
     description: share,

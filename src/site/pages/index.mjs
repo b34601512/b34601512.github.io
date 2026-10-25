@@ -23,6 +23,7 @@ function noscriptOverview() {
 export const indexPage = {
   outputFile: "index.html",
   navLabel: "首页",
+  navGroup: "了解",
   styles: ["assets/css/demo.css"],
   head: seoHead({
     title,

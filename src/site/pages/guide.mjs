@@ -46,6 +46,7 @@ const steps = [
 export const guidePage = {
   outputFile: "guide.html",
   navLabel: "怎么用",
+  navGroup: "上手",
   styles: ["assets/css/guide.css", "assets/css/guide-film.css"],
   head: seoHead({
     title,
