@@ -12,6 +12,8 @@
 //   label,                        // 画布的 aria-label
 //   cover: { text, again },       // 封面文字、播完后的封面文字
 //   render(ctx, u),               // 画第 u 秒（剧本秒）
+//   camera(u) → { x, y, w, h },   // 可选：镜头。第 u 秒的取景框（设计坐标，比例 = width:height，不出画布），引擎把它放大铺满画布再调 render
+//   overlay(ctx, u, cam),         // 可选：镜头之外的一层（字幕、章节标题……），按画布坐标画，不跟着镜头缩放；cam 是这一帧的取景框
 //   createSynth() → { ctx: AudioContext, bus(), play(e, at, k, bus, skip), stream() }
 //   fullscreen: true,             // 可选：全屏按钮（浏览器支持才出现）
 //   record: { filename },         // 可选：导出视频按钮（MediaRecorder + captureStream 都有才出现）
@@ -204,8 +206,21 @@
 
     function draw() {
       size();
-      ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
-      o.render(ctx, started ? u : o.still);
+      const at = started ? u : o.still;
+      const sx = canvas.width / W;
+      const sy = canvas.height / H;
+      ctx.setTransform(sx, 0, 0, sy, 0, 0);
+      // 镜头：取景框（设计坐标里的一块 16:9）放大铺满画布；片子自己保证取景框不出画布、比例是 W:H
+      const cam = o.camera ? o.camera(at) : null;
+      if (cam) {
+        const z = W / cam.w;
+        ctx.transform(z, 0, 0, z, -cam.x * z, -cam.y * z);
+      }
+      o.render(ctx, at);
+      if (o.overlay) {
+        ctx.setTransform(sx, 0, 0, sy, 0, 0);
+        o.overlay(ctx, at, cam);
+      }
       showProgress({ track, fill, time }, started ? u * k : 0, started ? u / BASE : 0, duration, {});
       recStatus();
     }
