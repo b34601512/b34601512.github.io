@@ -28,5 +28,6 @@ export const promoPage = {
     </div>
   </section>
 </div>`,
-  bodyEnd: `<script src="assets/js/promo-film.js" defer></script>`,
+  bodyEnd: `<script src="assets/js/film-engine.js" defer></script>
+<script src="assets/js/promo-film.js" defer></script>`,
 };
