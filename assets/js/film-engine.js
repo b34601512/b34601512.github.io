@@ -15,7 +15,7 @@
 //   createSynth() → { ctx: AudioContext, bus(), play(e, at, k, bus, skip), stream() }
 //   fullscreen: true,             // 可选：全屏按钮（浏览器支持才出现）
 //   record: { filename },         // 可选：导出视频按钮（MediaRecorder + captureStream 都有才出现）
-//                                 // MediaRecorder 只能录实时的流，所以导出＝从头实时播一遍（宣传片 32 秒，补运费 3 分多钟）：
+//                                 // 格式先 MP4 后 WebM（见 RECORD_TYPES）；MediaRecorder 只能录实时的流，所以导出＝从头实时播一遍（宣传片 32 秒，补运费 3 分多钟）：
 //                                 // 画面左上角的 rec 字条报进度与剩余时间，播完自动下载，字条变成文件链接（没下载成可再点）；
 //                                 // 导出中再按一次导出键＝放弃；暂停或切走标签页时录像跟着暂停，回来接着录，不录进冻住的画面。
 //   → { seek, play, pause, render, refresh }（seek/render 用真实秒；refresh：没在播就重画一次）
@@ -34,6 +34,10 @@
 //   autoplay: { threshold, paused },  // 进入视野（IntersectionObserver）且标签页可见时自动播；paused：开始时算访客已暂停
 //   → {}（「怎么用」短片不需要从外面控制）
 (() => {
+  // 导出格式：先要 MP4（Chrome / Edge 126 起 MediaRecorder 能直接录 MP4），没有再退回 WebM。
+  // H.264 + AAC 最通用，但浏览器不一定能编 AAC（Linux 版 Chrome 156 实测不能）；不能就 H.264 + Opus，仍是 MP4。
+  // 不写编码级别（avc1.64002A 这类）：画布 1920×1080、60 帧要几级由浏览器自己定，写死了反而可能报不支持。
+  const RECORD_TYPES = ["video/mp4;codecs=avc1,mp4a.40.2", "video/mp4;codecs=avc1,opus", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   const ICON = {
@@ -351,7 +355,7 @@
       try {
         const stream = canvas.captureStream(60);
         synth.stream().getAudioTracks().forEach((t) => stream.addTrack(t));
-        const type = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"].find((m) => MediaRecorder.isTypeSupported(m));
+        const type = RECORD_TYPES.find((m) => MediaRecorder.isTypeSupported(m));
         recording.recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 12_000_000 });
       } catch {
         recording = null;
@@ -372,7 +376,7 @@
         if (!blob.size) return status("fail", "导出失败：没有录到画面");
         if (savedUrl) URL.revokeObjectURL(savedUrl); // 上一次的链接换掉；这一次的留着，自动下载被拦时还能手动点
         savedUrl = URL.createObjectURL(blob);
-        const name = `${o.record.filename}.${blob.type.includes("mp4") ? "mp4" : "webm"}`;
+        const name = `${o.record.filename}.${blob.type.startsWith("video/mp4") ? "mp4" : "webm"}`;
         status("done", `已导出 ${name}（${(blob.size / 1048576).toFixed(1)} MB）`, savedUrl, name);
         rec.click();
       };
