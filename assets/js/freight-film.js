@@ -27,18 +27,19 @@
   // 聊天窗：默认是微信样子（issue #8）——自己发的气泡是微信绿 + 深字、发送键是微信绿；
   // 原来的品牌橙会和「灵机一动」的橙色底撞成一片，橙色只留给话术精灵自己的动作（灯泡、双击、贴入闪光）
   const C = { bg: "#ededed", head: "#f7f7f7", line: "#e3e3e3", in: "#ffffff", inFg: "#1a1a1a", sub: "#8a8a8a", note: "#a54626" };
-  // 平台聊天窗（issue #8：用了话术精灵以后，在不同平台上一个一个快速切着聊）：只换颜色与平台名，不画任何平台标志。
-  // 京东 / 天猫（千牛）/ 拼多多 / 抖音（飞鸽）的颜色是作者给的真实截图取样值（见 CLAUDE.md「平台皮肤的真值来源」），strip 是标题栏下沿的品牌色细条
-  const SKINS = {
-    wx: { label: "微信", bg: C.bg, head: C.head, in: "#ffffff", own: "#95ec69", send: "#07c160", sendOff: "#b8e6c8", strip: null, avatar: "#d9d2ca" },
-    jd: { label: "京东", bg: "#ffffff", head: "#ffffff", in: "#f7f7f7", own: "#d9e8ff", send: "#4960f4", sendOff: "#c9d0fb", strip: "#e1251b", avatar: "#d9d2ca" },
-    tm: { label: "天猫", bg: "#f0f2f5", head: "#ffffff", in: "#ffffff", own: "#d8e4ff", send: "#3d7fff", sendOff: "#c5d8ff", strip: "#ff6a00", avatar: "#d9d2ca" },
-    pdd: { label: "拼多多", bg: "#ffffff", head: "#ffffff", in: "#f2f3f5", own: "#d4e9fe", send: "#e02e24", sendOff: "#f4c0bd", strip: "#e02e24", avatar: "#f564b3" },
-    dy: { label: "抖音", bg: "#f5f6fa", head: "#f5f6fa", in: "#ffffff", own: "#e3effe", send: "#2f6df9", sendOff: "#c3d5fd", strip: "#fe2c55", avatar: "#35a29b" },
-  };
-  const PLATFORMS = ["wx", "jd", "tm", "pdd", "dy"];
+  // 平台聊天窗（issue #11）：照真实的商家工作台画——京东咚咚、千牛（天猫）、拼多多商家版、抖店飞鸽（assets/js/platform-chat.js），
+  // 顶栏店铺页签、左侧导航、会话列表、聊天头、工具栏、发送键、底边贴着的话术精灵吸附栏都在；平台名与标志一律不画，客服一眼认得出就够了。
+  // 窗口按「原生像素 ×2」画（PLAT_K），聊天栏（消息区 + 输入区）仍是 lay.chat 那块矩形，镜头与布局都不用改。
+  const PLATFORMS = ["jd", "tm", "pdd", "dy"];
+  const PLAT_K = 2;
+  const PLAT_LIST = 100; // 会话列表宽（原生像素）
+  const PLAT_SHOPS = [{}, {}, {}]; // 顶栏上开着的几家店
+  const skin = (plat) => globalThis.PlatformChat.SKINS[plat];
+  // 聊天头 41（原生）＝ 82；拼多多聊天头下面还有一条红色的售后义务提醒
+  const msgTop = (plat) => 82 + (plat === "pdd" ? 60 : 0);
+  // 输入框里第一行字的位置：拼多多输入框上面多一条服务用语提醒
+  const inputTextY = (plat) => 58 + (plat === "pdd" ? 44 : 0);
   // 每个平台一位顾客：先说一句、发运费截图 → 客服在话术精灵里双击「已登记」→ 回车 → 顾客回一句真满意的话（不是「好的」和表情那种模板回复）
-  const DAILY_CAP = "不管在哪个平台聊，都是在话术精灵里双击发送";
   const DAILY = [
     { plat: "jd", who: "顾客 · 阿May", ask: "运费截图发你了", back: ["这么快就登记好了，说得清清楚楚", "比我想的省心多了，给你们点个赞！"] },
     { plat: "tm", who: "顾客 · 大鹏", ask: "补的运费怎么退？", back: ["哦哦明白了，退到余额里是吧", "你一次讲完我就不用一直问了，谢谢亲"] },
@@ -184,7 +185,7 @@
     const dlg = (patch) => appSet({ dialog: { ...app.dialog, ...patch } });
     const inputSet = (text, o = {}) => inputs[sess].push({ at: t, text, focus: o.focus ?? true, flash: o.flash ?? null });
 
-    const session = (id, who, plat = "wx") => {
+    const session = (id, who, plat) => {
       sess = id;
       sessions.push({ at: t, id, who, plat });
       inputs[id] = [{ at: t, text: "", focus: false, flash: null }];
@@ -319,7 +320,7 @@
     // ② 一开始，没有话术的时候：问一句、等一阵，一共三轮
     scene("solo");
     head(L.h1, "01");
-    session("A", "顾客 · 小陈");
+    session("A", "顾客 · 小陈", "tm");
     shot("chat", 1.0);
     t += 0.9;
     stamp("10:02");
@@ -358,7 +359,7 @@
     // ④ 后面用了话术精灵：灵感来了 → 新增话术 → 编辑 → 双击 → 发送
     scene("solo");
     head(L.h3, "03");
-    session("B", "顾客 · 阿杰");
+    session("B", "顾客 · 阿杰", "jd");
     shot("chat", 1.0);
     t += 0.9;
     say("in", L.c1, { hold: 1.4 });
@@ -408,7 +409,7 @@
     hideCursor();
     scene("solo");
     head(L.h4, "04");
-    session("C", "顾客 · Lily");
+    session("C", "顾客 · Lily", "pdd");
     shot("chat", 1.0);
     t += 0.9;
     say("in", null, { kind: "shot", note: "运费截图", hold: 1.3 });
@@ -471,7 +472,7 @@
 
     // ⑥ 然后从此发送这个话术后：双击 → 回车 → 顾客一次性「好的谢谢」
     head(L.h5, "05");
-    session("D", "顾客 · 老王");
+    session("D", "顾客 · 老王", "dy");
     shot("row:1", 1.0); // 从上一幕直接推到「已登记」那一行，双击时再摇回聊天窗
     t += 0.8;
     say("in", null, { kind: "shot", note: "运费截图", hold: 1.0 });
@@ -508,7 +509,6 @@
       say("in", d.back[1], { hold: 1.5 });
     });
     m.daily[1] = t;
-    cap(DAILY_CAP, m.daily[0] + 1.2, t - 0.2);
     hideCursor();
 
     // ⑦ 海量的这类客户
@@ -948,12 +948,12 @@
   // 只有聊天窗一个人在画面里（solo）时，聊天窗拉高到 SOLO_H 把竖屏填满；话术精灵上来时再缩回 CHAT_H。
   const SOLO_H = 1140;
   const MODES = {
-    intro: { chat: { x: 160, y: 200, h: SOLO_H, a: 0, s: 0.92 }, app: { x: 150, y: 1960, a: 0, s: 1 } },
-    solo: { chat: { x: 160, y: 200, h: SOLO_H, a: 1, s: 1 }, app: { x: 150, y: 1960, a: 0, s: 1 } },
-    card: { chat: { x: 160, y: 200, h: 780, a: 1, s: 1 }, app: { x: 150, y: 1960, a: 0, s: 1 } },
-    duo: { chat: { x: 160, y: 200, h: 780, a: 1, s: 1 }, app: { x: 150, y: 1060, a: 1, s: 1 } },
-    montage: { chat: { x: 160, y: 200, h: 780, a: 0, s: 0.9 }, app: { x: 150, y: 1060, a: 0, s: 0.9 } },
-    end: { chat: { x: 160, y: 200, h: 780, a: 0, s: 0.9 }, app: { x: 150, y: 1060, a: 0, s: 0.9 } },
+    intro: { chat: { x: 290, y: 200, h: SOLO_H, a: 0, s: 0.92 }, app: { x: 150, y: 1960, a: 0, s: 1 } },
+    solo: { chat: { x: 290, y: 200, h: SOLO_H, a: 1, s: 1 }, app: { x: 150, y: 1960, a: 0, s: 1 } },
+    card: { chat: { x: 290, y: 200, h: 780, a: 1, s: 1 }, app: { x: 150, y: 1960, a: 0, s: 1 } },
+    duo: { chat: { x: 290, y: 200, h: 780, a: 1, s: 1 }, app: { x: 150, y: 1060, a: 1, s: 1 } },
+    montage: { chat: { x: 290, y: 200, h: 780, a: 0, s: 0.9 }, app: { x: 150, y: 1060, a: 0, s: 0.9 } },
+    end: { chat: { x: 290, y: 200, h: 780, a: 0, s: 0.9 }, app: { x: 150, y: 1060, a: 0, s: 0.9 } },
   };
   const LOW_Y = 1030; // 聊天窗下方那块地方从哪开始（时间线、话术卡片）
   const TIMELINE_H = 700; // 时间线（九行 + 合计）的高度
@@ -1146,8 +1146,9 @@
     function chatNeed(ctx, lay, sid, u) {
       const r = lay.chat;
       const inp = inputAt(sid, u);
-      const iy = r.y + r.h - inputHeight(ctx, r, inp);
-      const top = r.y + 82;
+      const plat = TL.sessions.find((x) => x.id === sid).plat;
+      const iy = r.y + r.h - inputHeight(ctx, r, inp, plat);
+      const top = r.y + msgTop(plat);
       const list = (msgsBy[sid] || []).filter((x) => x.at <= u);
       const hs = list.map((x) => msgHeight(ctx, x) + 18);
       const total = 16 + hs.reduce((a, b) => a + b, 0);
@@ -1159,7 +1160,7 @@
       }
       if (inp.text) {
         const n = Math.min(5, layout(ctx, inp.text, r.w - 56, 26).lines.length);
-        spans.push([iy + 50, iy + 66 + n * 36]);
+        spans.push([iy + inputTextY(plat) - 8, iy + inputTextY(plat) + 8 + n * 36]);
       }
       if (TL.waits.some((w) => u >= w.from - 0.1 && u <= w.to)) {
         const cy = top + (iy - top) / 2 - 10;
@@ -1282,11 +1283,9 @@
       if (x.kind === "shot") return 248 + noteH;
       return 130;
     }
-    function avatar(ctx, x, y, label, own, sk = SKINS.wx) {
-      rr(ctx, x, y, 52, 52, 10);
-      ctx.fillStyle = own ? sk.send : sk.avatar;
-      ctx.fill();
-      text(ctx, label, x + 26, y + 27, { size: 24, weight: 700, color: own ? "#fff" : "#5a4f46" });
+    // 头像：照工作台的样子是剪影（顾客）和店铺头像（自己），不写字
+    function avatar(ctx, x, y, label, own, sk) {
+      globalThis.PlatformChat.face(ctx, x, y, 52, { shape: sk.avatar, bg: own ? sk.accent : "#c9b8a8" });
     }
     function drawMsg(ctx, r, x, y, e, nick, u, sk) {
       const own = x.side === "out";
@@ -1312,11 +1311,12 @@
         rr(ctx, bx, y, bw, bh, 10);
         ctx.fillStyle = own ? sk.own : sk.in;
         ctx.fill();
-        if (!own) {
+        if (!own && sk.inLine !== sk.msgBg) {
           ctx.lineWidth = 1.5;
-          ctx.strokeStyle = C.line;
+          ctx.strokeStyle = sk.inLine;
           ctx.stroke();
         }
+        if (own && sk.read) text(ctx, "已读", bx - 12, y + bh - 14, { size: 19, color: "#a0a6ae", align: "right" });
         drawLayout(ctx, lay, bx + 18, y + 12 + (bh - 24 - lay.lines.length * BUB_LH) / 2, BUB_LH, { size: BUB, color: C.inFg });
       } else if (x.kind === "redact") {
         // 顾客给的收款方式 / 姓名：打码显示，不编造具体内容
@@ -1380,9 +1380,9 @@
         text(ctx, `↑ ${x.note}`, bx + 4, y + bh + 18, { size: 21, weight: 600, color: C.note, align: "left", alpha: clamp((e - 0.5) * 2, 0, 1) });
       }
     }
-    function inputHeight(ctx, r, inp) {
+    function inputHeight(ctx, r, inp, plat) {
       const lay = layout(ctx, inp.text || " ", r.w - 56, 26);
-      return 60 + clamp(lay.lines.length, 2, 5) * 36 + 84;
+      return inputTextY(plat) + 2 + clamp(lay.lines.length, 2, 5) * 36 + 84;
     }
     function drawChat(ctx, lay, u) {
       const r = lay.chat;
@@ -1390,44 +1390,29 @@
       const s = sessionAt(u);
       if (!s) return;
       const nick = s.who.split(" · ")[1];
-      const sk = SKINS[s.plat];
+      const sk = skin(s.plat);
       const prevS = TL.sessions[TL.sessions.indexOf(s) - 1];
       const hop = prevS && prevS.plat !== s.plat ? 0.96 + 0.04 * sm(s.at, s.at + 0.3, u, easeOut) : 1; // 换平台：窗口轻轻弹一下
       ctx.save();
       ctx.globalAlpha = r.a;
       scaleAt(ctx, r.x + r.w / 2, r.y + r.h / 2, r.s * hop);
-      rr(ctx, r.x, r.y, r.w, r.h, 18);
-      ctx.fillStyle = sk.bg;
-      ctx.fill();
-      ctx.save();
-      rr(ctx, r.x, r.y, r.w, r.h, 18);
-      ctx.clip();
-      // 标题栏：顾客名与「在线」；平台聊天窗下沿多一条品牌色细条，右边写平台名（只写字，不画标志）
-      ctx.fillStyle = sk.head;
-      ctx.fillRect(r.x, r.y, r.w, 80);
-      ctx.fillStyle = sk.strip || C.line;
-      ctx.fillRect(r.x, r.y + 80 - (sk.strip ? 3 : 0), r.w, sk.strip ? 4.5 : 1.5);
       const swap = sm(s.at, s.at + 0.35, u);
-      ctx.save();
-      ctx.globalAlpha *= swap;
-      avatar(ctx, r.x + 22, r.y + 14, chars(nick)[0], false, sk);
-      text(ctx, s.who, r.x + 90, r.y + 30, { size: 27, weight: 700, color: "#1a1a1a", align: "left" });
-      text(ctx, "在线", r.x + 90, r.y + 60, { size: 19, color: C.sub, align: "left" });
-      if (sk.strip) {
-        setFont(ctx, 26, 800);
-        const pw = ctx.measureText(sk.label).width + 36;
-        rr(ctx, r.x + r.w - 24 - pw, r.y + 20, pw, 42, 21);
-        ctx.fillStyle = sk.strip;
-        ctx.fill();
-        text(ctx, sk.label, r.x + r.w - 24 - pw / 2, r.y + 42, { size: 26, weight: 800, color: "#fff" });
-      }
-      ctx.restore();
-      // 输入区（会跟着内容长高）
       const inp = inputAt(s.id, u);
-      const ih = inputHeight(ctx, r, inp);
+      const ih = inputHeight(ctx, r, inp, s.plat);
       const iy = r.y + r.h - ih;
+      const kIdx = lastAt(TL.keys, u);
+      const press = kIdx >= 0 ? win(u, TL.keys[kIdx].at - 0.02, TL.keys[kIdx].at + 0.25, 0.06) : 0;
+      // 平台工作台：聊天栏就是 r，导航栏、会话列表、顶栏围着它往外画；第一段还没用话术精灵，底边没有吸附栏
+      ctx.save();
+      ctx.translate(r.x, r.y);
+      ctx.scale(PLAT_K, PLAT_K);
+      globalThis.PlatformChat.draw(ctx, s.plat, { x: 0, y: 0, w: r.w / PLAT_K, h: r.h / PLAT_K }, {
+        customer: nick, listW: PLAT_LIST, headH: 41, inputH: ih / PLAT_K, typing: !!inp.text, press,
+        shops: PLAT_SHOPS, active: 0, bar: s.id !== "A", frame: "#3f3f3f",
+      });
+      ctx.restore();
       // 消息区
-      const top = r.y + 82;
+      const top = r.y + msgTop(s.plat);
       const viewH = iy - top;
       const list = (msgsBy[s.id] || []).filter((x) => x.at <= u);
       let total = 16;
@@ -1449,11 +1434,7 @@
       });
       drawWait(ctx, r, top, viewH, u);
       ctx.restore();
-      // 输入区
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(r.x, iy, r.w, ih);
-      ctx.fillStyle = C.line;
-      ctx.fillRect(r.x, iy, r.w, 1.5);
+      // 输入区：话术贴进来那一下闪一下
       if (inp.flash !== null) {
         const f = 1 - clamp((u - inp.flash) / 0.8, 0, 1);
         if (f > 0) {
@@ -1461,45 +1442,15 @@
           ctx.fillRect(r.x, iy, r.w, ih);
         }
       }
-      // 工具栏：表情 / 文件 / 截图（通用小图标）
-      ctx.strokeStyle = "#7a7a7a";
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      ctx.arc(r.x + 40, iy + 30, 12, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(r.x + 40, iy + 32, 6, 0.15 * Math.PI, 0.85 * Math.PI);
-      ctx.stroke();
-      rr(ctx, r.x + 72, iy + 19, 26, 22, 3);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(r.x + 124, iy + 20);
-      ctx.lineTo(r.x + 140, iy + 40);
-      ctx.moveTo(r.x + 140, iy + 20);
-      ctx.lineTo(r.x + 124, iy + 40);
-      ctx.stroke();
+      const ty = iy + inputTextY(s.plat);
       const tl = layout(ctx, inp.text || "", r.w - 56, 26);
       const show = Math.min(5, tl.lines.length);
-      drawLayout(ctx, tl, r.x + 28, iy + 58, 36, { size: 26, color: "#1a1a1a", skip: tl.lines.length - show, maxLines: show });
+      drawLayout(ctx, tl, r.x + 28, ty, 36, { size: 26, color: "#1a1a1a", skip: tl.lines.length - show, maxLines: show });
       if (inp.focus && Math.floor(u * 2.2) % 2 === 0) {
         const c = caretAt(tl, tl.n, 36);
         ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(r.x + 28 + c.x + 2, iy + 58 + (c.li - (tl.lines.length - show)) * 36 + 5, 2.5, 27);
+        ctx.fillRect(r.x + 28 + c.x + 2, ty + (c.li - (tl.lines.length - show)) * 36 + 5, 2.5, 27);
       }
-      // 发送键：平台色（默认微信绿）；有字时亮，回车那一下压一下
-      const kIdx = lastAt(TL.keys, u);
-      const press = kIdx >= 0 ? win(u, TL.keys[kIdx].at - 0.02, TL.keys[kIdx].at + 0.25, 0.06) : 0;
-      const sx = r.x + r.w - 140;
-      const sy = r.y + r.h - 68;
-      rr(ctx, sx, sy + press * 3, 118, 50, 8);
-      ctx.fillStyle = inp.text ? sk.send : sk.sendOff;
-      ctx.fill();
-      text(ctx, "发送", sx + 59, sy + 26 + press * 3, { size: 24, weight: 700, color: "#fff" });
-      ctx.restore();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "#3f3f3f";
-      rr(ctx, r.x, r.y, r.w, r.h, 18);
-      ctx.stroke();
       ctx.restore();
     }
     // 漫长的等待：消息区压暗，钟飞快地转，时间一路往上跳
@@ -1865,32 +1816,6 @@
         ctx.restore();
       }
     }
-    // 平台页签：客服平常的一天那一段，聊天窗上方一排平台名，当前在聊的那家亮起来
-    function drawPlatformTabs(ctx, lay, u) {
-      if (!m.daily) return;
-      const a = win(u, m.daily[0], m.daily[1] + 0.3, 0.4) * lay.chat.a;
-      if (a <= 0) return;
-      const cur = SKINS[sessionAt(u).plat];
-      ctx.save();
-      ctx.globalAlpha = a;
-      let x = lay.chat.x;
-      PLATFORMS.forEach((key) => {
-        const sk = SKINS[key];
-        const on = sk === cur;
-        setFont(ctx, 26, 800);
-        const w = ctx.measureText(sk.label).width + 44;
-        rr(ctx, x, lay.chat.y - 64, w, 50, 25);
-        ctx.fillStyle = on ? sk.strip || sk.send : "rgba(255,255,255,.06)";
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = on ? sk.strip || sk.send : "#3f3f3f";
-        ctx.stroke();
-        text(ctx, sk.label, x + w / 2, lay.chat.y - 38, { size: 26, weight: 800, color: on ? "#fff" : MUTED });
-        x += w + 14;
-      });
-      ctx.restore();
-    }
-
     // 回车键帽：贴着聊天窗输入区
     function drawKeys(ctx, lay, u) {
       const i = lastAt(TL.keys, u);
@@ -2366,32 +2291,33 @@
       const pop = easeBack(clamp(k / 0.25, 0, 1));
       ctx.scale(s * 0.94 * pop, s * 0.94 * pop);
       ctx.translate(-210, -190);
-      const sk = SKINS[PLATFORMS[tl.n % PLATFORMS.length]]; // 各个平台的顾客都有
-      rr(ctx, 0, 0, 420, 380, 18);
-      ctx.fillStyle = sk.bg;
-      ctx.fill();
-      ctx.save();
-      rr(ctx, 0, 0, 420, 380, 18);
-      ctx.clip();
-      ctx.fillStyle = sk.head;
-      ctx.fillRect(0, 0, 420, 58);
-      if (sk.strip) {
-        ctx.fillStyle = sk.strip;
-        ctx.fillRect(0, 55, 420, 4);
-      }
+      // 各个平台的顾客都有：每一格是一家的小聊天窗（导航栏 + 顶栏 + 聊天头 + 输入区，原生像素 ×2）
+      const plat = PLATFORMS[tl.n % PLATFORMS.length];
+      const sk = skin(plat);
       const name = NAMES[tl.n % NAMES.length];
-      avatar(ctx, 14, 8, chars(name)[0], false, sk);
-      text(ctx, `顾客 · ${name}`, 80, 30, { size: 24, weight: 700, color: "#1a1a1a", align: "left" });
+      const top = { jd: 30, tm: 0, pdd: 30, dy: 32 }[plat];
+      ctx.save();
+      ctx.scale(2, 2);
+      const g = globalThis.PlatformChat.draw(ctx, plat, { x: sk.rail, y: top, w: 210 - sk.rail, h: 190 - top }, {
+        customer: name, list: false, notice: false, agent: false, pddAlert: false, headH: 24, inputH: 30, shops: PLAT_SHOPS, active: 0, frame: "#3f3f3f",
+      });
+      ctx.restore();
+      const mx = g.msgs.x * 2;
+      const my = g.msgs.y * 2;
+      const mw = g.msgs.w * 2;
+      ctx.save();
+      rr(ctx, mx, my, mw, g.msgs.h * 2, 0);
+      ctx.clip();
       // 自己发出的那条话术
       const out = clamp((k - 0.12) / 0.2, 0, 1);
       if (out > 0) {
         ctx.save();
         ctx.globalAlpha *= out;
-        rr(ctx, 120, 76, 280, 132, 10);
+        rr(ctx, mx + mw - 262, my + 10, 250, 104, 10);
         ctx.fillStyle = sk.own;
         ctx.fill();
-        const lay2 = layout(ctx, V6.replace(/\n/g, ""), 248, 20);
-        drawLayout(ctx, lay2, 136, 86, 28, { size: 20, color: C.inFg, maxLines: 4 });
+        const lay2 = layout(ctx, V6.replace(/\n/g, ""), 222, 20);
+        drawLayout(ctx, lay2, mx + mw - 248, my + 20, 28, { size: 20, color: C.inFg, maxLines: 3 });
         ctx.restore();
       }
       // 顾客一次性回复
@@ -2400,26 +2326,26 @@
         const rep = tl.reply;
         if (rep.text) {
           ctx.save();
-          scaleAt(ctx, 20, 260, back);
+          scaleAt(ctx, mx + 10, my + 155, back);
           setFont(ctx, 32, 600);
           const w = ctx.measureText(rep.text).width + 40;
-          rr(ctx, 20, 232, w, 62, 10);
+          rr(ctx, mx + 10, my + 126, Math.min(w, mw - 20), 58, 10);
           ctx.fillStyle = sk.in;
           ctx.fill();
           ctx.lineWidth = 1.5;
-          ctx.strokeStyle = C.line;
+          ctx.strokeStyle = sk.inLine;
           ctx.stroke();
-          text(ctx, rep.text, 40, 264, { size: 32, weight: 600, color: C.inFg, align: "left" });
+          text(ctx, rep.text, mx + 26, my + 156, { maxW: mw - 52, size: 30, weight: 600, color: C.inFg, align: "left" });
           ctx.restore();
-        } else sticker(ctx, rep.sticker, 90, 290, 140 * back, u);
+        } else sticker(ctx, rep.sticker, mx + 70, my + 170, 110 * back, u);
         // 已解决
         const done = sm(tl.at + 0.7, tl.at + 0.9, u, easeBack);
         if (done > 0) {
           ctx.beginPath();
-          ctx.arc(372, 330, 26 * done, 0, Math.PI * 2);
+          ctx.arc(mx + mw - 34, my + 156, 26 * done, 0, Math.PI * 2);
           ctx.fillStyle = ACCENT;
           ctx.fill();
-          text(ctx, "✓", 372, 331, { size: 30, weight: 900, color: "#fff", alpha: clamp(done, 0, 1) });
+          text(ctx, "✓", mx + mw - 34, my + 157, { size: 30, weight: 900, color: "#fff", alpha: clamp(done, 0, 1) });
         }
       }
       ctx.restore();
@@ -2488,7 +2414,7 @@
         rr(ctx, W / 2 - 360, 1174, 720, 92, 46);
         ctx.fillStyle = ACCENT;
         ctx.fill();
-        text(ctx, `加我微信  ${L.wechat}`, W / 2, 1221, { size: 48, weight: 800, color: "#000" });
+        text(ctx, `微信  ${L.wechat}`, W / 2, 1221, { size: 48, weight: 800, color: "#000" });
         ctx.restore();
       }
       text(ctx, "Windows 本地永久免费", W / 2, 300, { size: 36, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });
@@ -2514,7 +2440,6 @@
       sceneTimeline(ctx, lay, u);
       sceneCard(ctx, lay, u);
       sceneCompare(ctx, lay, u);
-      drawPlatformTabs(ctx, lay, u);
       drawFlies(ctx, lay, u);
       drawKeys(ctx, lay, u);
       drawCursor(ctx, lay, u, cur);

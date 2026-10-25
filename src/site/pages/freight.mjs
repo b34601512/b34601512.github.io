@@ -41,5 +41,6 @@ export const freightPage = {
   </section>
 </div>`,
   bodyEnd: `<script src="assets/js/film-engine.js" defer></script>
+<script src="assets/js/platform-chat.js" defer></script>
 <script src="assets/js/freight-film.js" defer></script>`,
 };
