@@ -27,7 +27,8 @@
 
   // ---------- 剧本原文（issue #4，一字不改） ----------
   const L = {
-    kicker: "先说第一个知识分享：",
+    // 开场钩子（issue #5）：第一帧就在画面上，客服一眼认出是不是自己的事
+    hook: ["补运费，你还在", "一句一句", "问顾客？"],
     title: "补运费登记案例",
     intro: "分享客服工作中遇到的问题，我是如何解决这些问题的",
     h1: "一开始，没有话术的时候",
@@ -143,11 +144,13 @@
     const keys = [];
     const steps = [];
     const score = [];
+    const shots = []; // 镜头：每一拍对准什么（target）、几秒推过去（dur）；makeFilm 里换算成取景框
     const m = {}; // 各段的起止时刻
     let t = 0;
     let sess = null;
     let bulbCount = 0;
     const sfx = (u, type, arg = {}, dur = 0) => score.push({ u, type, arg, dur });
+    const shot = (target, dur = 0.9, at = t) => shots.push({ at, dur, target });
 
     let app = { rows: [], sel: -1, dialog: null, menu: null, flash: null };
     const appSet = (patch) => {
@@ -271,10 +274,11 @@
         t += 0.2;
       }
     };
-    const saveDialog = (rows, i) => {
+    const saveDialog = (rows, i, next) => {
       move("dlg:save", 0.45);
       click();
       appSet({ dialog: null, rows, sel: i, flash: { i, at: t } });
+      shot(next, 0.9);
       sfx(t, "save");
       t += 0.9;
     };
@@ -282,12 +286,16 @@
     // ① 片头
     scene("intro");
     m.intro = [0, 6.6];
+    shot("wide", 0);
+    shot("hook", 2.2, 0.05);
+    shot("wide", 0.9, 2.3);
     t = 6.6;
 
     // ② 一开始，没有话术的时候：问一句、等一阵，一共三轮
     scene("solo");
     head(L.h1, "01");
     session("A", "顾客 · 小陈");
+    shot("chat", 1.0);
     t += 0.9;
     stamp("10:02");
     say("in", L.c1);
@@ -306,6 +314,8 @@
     say("in", null, { kind: "shot", note: "运费截图", hold: 1.4 });
     scene("card");
     m.timeline = [t, t + 6.2];
+    shot("timeline:top", 1.0);
+    shot("timeline:bottom", 1.2, t + 1.4);
     cap(L.long, t + 2.6, t + 6.2);
     sfx(t + 2.7, "sad", {}, 1.4);
     t += 6.2;
@@ -313,6 +323,7 @@
     // ③ 其实可以直接用一条话术
     head(L.h2, "02");
     m.card = [t, t + 12.4];
+    shot("card", 1.0);
     for (let i = 0; i < 3; i++) sfx(t + 0.3 + i * 0.25, "pop", { n: 76 + i * 3 });
     sfx(t + 1.3, "whoosh", {}, 0.7);
     for (let i = 0; i < 3; i++) sfx(t + 5.0 + i * 0.7, "blip", { n: 81 + i * 4 });
@@ -323,43 +334,49 @@
     scene("solo");
     head(L.h3, "03");
     session("B", "顾客 · 阿杰");
+    shot("chat", 1.0);
     t += 0.9;
     say("in", L.c1, { hold: 1.4 });
     bulb(L.bulb3);
     scene("duo");
+    shot("app:plus", 1.0);
     t += 1.1;
     steps.push({ at: t, n: 0 });
     move("plus", 0.7);
     click();
     appSet({ dialog: { mode: "新增话术", title: "", body: "", caret: "title", ci: 0 } });
+    shot("dlg:title", 0.8);
     sfx(t, "whoosh", {}, 0.35);
     t += 0.5;
     steps.push({ at: t, n: 1 });
     move("dlg:title", 0.4);
     click();
     typeField("title", "补运费登记");
+    shot("dlg:body", 0.7);
     move("dlg:body", 0.4);
     click();
     dlg({ caret: "body", ci: 0 });
     typeField("body", L.one);
-    saveDialog([{ title: "补运费登记", text: L.one }], 0);
+    saveDialog([{ title: "补运费登记", text: L.one }], 0, "row:0");
     steps.push({ at: t, n: 2 });
     const cap3 = t;
     move("row:0", 0.6);
+    shot("chat", 0.9); // 双击那一下就开始摇向聊天窗（缓入，头 0.3 秒几乎不动），话术贴进输入框时镜头已经到了
     click("dbl");
     appSet({ sel: 0 });
     inputSet(L.one, { flash: t });
     sfx(t, "paste");
-    t += 1.1;
+    t += 1.4;
     steps.push({ at: t, n: 3 });
     send(L.one, 1.8);
     say("in", null, { kind: "redact", bars: [[64, 96, 96, 80], [72]], note: "收款方式和姓名", hold: 0.6 });
     say("in", null, { kind: "shot", note: "运费支付后截图", hold: 1.6 });
     steps.push({ at: t, n: 4 });
-    m.compare = [t, t + 5.2];
+    m.compare = [t, t + 4.9];
+    shot("compare", 1.0);
     sfx(t + 0.5, "blip", { n: 72 });
     sfx(t + 2.2, "chime", { n: 84 });
-    t += 5.2;
+    t += 4.9;
     cap(L.after3, cap3, t);
 
     // ⑤ 然后没有话术精灵的时候：顾客一句句追问，客服每回答一次就灵机一动，把答案补进同一条话术
@@ -367,6 +384,7 @@
     scene("solo");
     head(L.h4, "04");
     session("C", "顾客 · Lily");
+    shot("chat", 1.0);
     t += 0.9;
     say("in", null, { kind: "shot", note: "运费截图", hold: 1.3 });
     typeChat(L.ok);
@@ -386,20 +404,24 @@
       bulb(L.bulb);
       if (i === 0) {
         scene("duo");
+        shot("app:plus", 1.0);
         t += 1.1;
         move("plus", 0.7);
         click();
         appSet({ dialog: { mode: "新增话术", title: "", body: "", caret: "title", ci: 0 } });
+        shot("dlg:title", 0.8);
         sfx(t, "whoosh", {}, 0.35);
         t += 0.45;
         move("dlg:title", 0.4);
         click();
         typeField("title", "已登记");
+        shot("dlg:body", 0.7);
         move("dlg:body", 0.4);
         click();
         dlg({ caret: "body", ci: 0 });
         typeField("body", r.v);
       } else {
+        shot("app:menu", 0.8);
         move("row:1", 0.55);
         click("r");
         appSet({ menu: { row: 1 }, sel: 1 });
@@ -407,15 +429,17 @@
         move("menu:edit", 0.3);
         click();
         appSet({ menu: null, dialog: { mode: "编辑话术", title: "已登记", body: ROUNDS[i - 1].v, caret: "body", ci: chars(ROUNDS[i - 1].v).length } });
+        shot("dlg:body", 0.7);
         sfx(t, "whoosh", {}, 0.35);
         t += 0.4;
         editBody(r.v);
       }
-      saveDialog([app.rows[0], { title: "已登记", text: r.v }], 1);
+      saveDialog([app.rows[0], { title: "已登记", text: r.v }], 1, "chat");
       t += 0.3;
     });
     hideCursor();
     m.reveal = [t, t + 9.2];
+    shot("reveal", 1.0);
     for (let i = 0; i < ANSWERS.length; i++) sfx(t + 1.6 + i * 1.0, "blip", { n: 76 + i * 2 });
     sfx(t + 7.8, "chime", { n: 88 });
     t += 9.2;
@@ -423,21 +447,24 @@
     // ⑥ 然后从此发送这个话术后：双击 → 回车 → 顾客一次性「好的谢谢」
     head(L.h5, "05");
     session("D", "顾客 · 老王");
+    shot("row:1", 1.0); // 从上一幕直接推到「已登记」那一行，双击时再摇回聊天窗
     t += 0.8;
     say("in", null, { kind: "shot", note: "运费截图", hold: 1.0 });
     move("row:1", 0.7);
+    shot("chat", 0.9);
     click("dbl");
     appSet({ sel: 1 });
     inputSet(V6, { flash: t });
     sfx(t, "paste");
-    t += 1.2;
+    t += 1.5;
     send(V6, 2.0);
-    say("in", L.thanks, { hold: 2.6 });
+    say("in", L.thanks, { hold: 2.3 });
     hideCursor();
 
     // ⑦ 海量的这类客户
     scene("montage");
     m.montage = [t, t + 15];
+    shot("wide", 1.2);
     t += 15;
     cap(L.montage, m.montage[0] + 1.2, t);
 
@@ -456,7 +483,7 @@
       if (i < 40 || i % 3 === 0) sfx(tile.at + 0.15, "pop", { n: 76 + (i % 7) * 2, v: i < 8 ? 0.9 : 0.35 });
     });
     music(score, m, waits, base);
-    return { base, msgs, sessions, inputs, appKeys, cur, clicks, caps, heads, bulbs, scenes, waits, keys, steps, m, score: score.sort((a, b) => a.u - b.u) };
+    return { base, msgs, sessions, inputs, appKeys, cur, clicks, caps, heads, bulbs, scenes, waits, keys, steps, shots, m, score: score.sort((a, b) => a.u - b.u) };
   }
 
   // 海量客户的格子：三拨，越来越多、越来越快
@@ -519,6 +546,14 @@
   }
 
   // ---------- 文字排版（中文逐字折行；💗 画成一颗心） ----------
+  // Node 里（测试）没有画布：按「中文一个字宽、ASCII 半个字宽」量字，只给镜头表排版用
+  const NODE_CTX = {
+    font: "",
+    measureText(c) {
+      const size = parseFloat(this.font.split(" ")[1]);
+      return { width: c.charCodeAt(0) < 128 ? size * 0.55 : size };
+    },
+  };
   const KINSOKU = new Set(chars("，。！？、；：～~）」』…,.!?)"));
   const wcache = new Map();
   const lcache = new Map();
@@ -972,6 +1007,191 @@
       const from = resolveRef(ctx, prev, lay, u);
       const e = sm(key.at - key.dur, key.at, u);
       return { x: lerp(from.x, to.x, e), y: lerp(from.y, to.y, e) - Math.sin(e * Math.PI) * 30, a: 1 };
+    }
+
+    // ---------- 镜头（issue #5：手机上看，整屏 1920 宽的字太小，要推近、拉远） ----------
+    // 剧本里每一拍写「对准什么」（TL.shots 的 target），这里换算成取景框，得到一张 { at, dur, from, focus } 的镜头表：
+    // 从上一拍停下（或正在走）的位置，用 dur 秒缓入缓出推到 focus，然后停住。取景框比例恒为 16:9、永远在画布里面，
+    // 所以不会露出画布外的空白；focus 一定包住它对准的东西（fit 只会放大取景框，不会切掉目标）。
+    // 聊天窗那一拍（"chat"）跟着对话走：只有新消息、输入框、等待钟、回车键帽要出框时才挪，挪的距离最小。
+    const Z_CHAT = 1.85; // 聊天窗推近的倍数：气泡 28px × 1.85 ≈ 52px、输入框 26px × 1.85 ≈ 48px
+    const HEAD_FOR = 3.5; // 章节标题显示几秒
+    const BAND_TOP = 140; // 画面上：章节标题占的那一条（画布像素）
+    const BAND_BOT = 150; // 字幕占的那一条
+    // 画面顶上那一条被占着：章节标题，或第三段的步骤条
+    const topOn = (a, b) => TL.heads.some((h) => h.at < b && h.at + HEAD_FOR > a) || (TL.steps.length > 0 && TL.steps[0].at - 0.4 < b && m.compare[0] + 0.4 > a);
+    const capOn = (a, b) => TL.caps.some((c) => c.from < b && c.to > a);
+    // 包住 T、至少推近到 z 倍的最小 16:9 取景框，以 T 为中心，推到画布边上就贴边
+    function fit(T, z) {
+      const w = Math.min(W, Math.max(W / z, T.w, (T.h * W) / H));
+      const h = (w * H) / W;
+      return { x: clamp(T.x + T.w / 2 - w / 2, 0, W - w), y: clamp(T.y + T.h / 2 - h / 2, 0, H - h), w, h };
+    }
+    const WIDE = { x: 0, y: 0, w: W, h: H };
+    const FILL = Infinity; // 推到目标刚好填满画面
+    // 镜头走得多快：中心每秒最多走 PAN_MAX 画面像素、倍数每秒最多变 ZOOM_MAX（对数），按缓动的峰值速度算；
+    // 剧本写的 dur 不够就拉长（宁可慢一点到位，也不甩镜头）
+    const PAN_MAX = 2800;
+    const ZOOM_MAX = 0.9;
+    const camEase = (k) => (1 - Math.cos(Math.PI * k)) / 2; // 峰值速度 = 平均的 π/2 倍
+    function calmDur(a, b, dur) {
+      const za = W / a.w;
+      const zb = W / b.w;
+      const dist = Math.hypot(b.x + b.w / 2 - a.x - a.w / 2, b.y + b.h / 2 - a.y - a.h / 2) * Math.max(za, zb);
+      const need = (Math.PI / 2) * Math.max(dist / PAN_MAX, Math.abs(Math.log(zb / za)) / ZOOM_MAX);
+      return Math.max(dur, need);
+    }
+    // 镜头对准的东西（设计坐标）；at 是镜头到位的时刻，按那时的布局量
+    function shotTarget(target, at) {
+      const lay = layoutAt(at);
+      const r = lay.app;
+      const st = appAt(at);
+      const ll = listLayout(r, st);
+      const d = dialogRect(r);
+      switch (target) {
+        case "wide":
+          return { T: WIDE, z: 1 };
+        case "hook":
+          return { T: { x: 140, y: 440, w: 1640, h: 160 }, z: 1.05 };
+        case "timeline:top":
+          return { T: { x: 1000, y: 185, w: 790, h: 420 }, z: Z_CHAT };
+        case "timeline:bottom":
+          return { T: { x: 1000, y: 520, w: 790, h: 400 }, z: Z_CHAT };
+        case "card":
+          return { T: { x: 1000, y: 120, w: 790, h: 680 }, z: FILL };
+        case "compare":
+          return { T: { x: r.x, y: r.y + 160, w: r.w, h: 460 }, z: 2.1 };
+        case "reveal":
+          return { T: { x: 300, y: 150, w: 1520, h: 640 }, z: FILL };
+        case "app:plus":
+          return { T: { x: r.x + 16, y: r.y + 176, w: r.w - 32, h: ll.plus.y + 30 - (r.y + 176) }, z: 2.2 };
+        case "app:menu": {
+          const row = ll.rows[1];
+          return { T: { x: r.x + 16, y: row.y, w: r.w - 32, h: 160 }, z: 2.3 };
+        }
+        case "dlg:title":
+          return { T: { x: d.x, y: d.y, w: d.w, h: 300 }, z: 2.2 };
+        case "dlg:body":
+          return { T: { x: d.x, y: d.body.y - 34, w: d.w, h: d.save.y + d.save.h + 16 - (d.body.y - 34) }, z: 2.2 };
+        default: {
+          const row = target.startsWith("row:") && ll.rows[Number(target.slice(4))];
+          if (row) return { T: { x: r.x + 16, y: row.y, w: r.w - 32, h: 104 }, z: 2.3 };
+          throw new Error(`未知镜头 ${target}`);
+        }
+      }
+    }
+    // 聊天窗第 u 秒（按已经落定的位置算）要看清的几段竖向范围：最新一条消息、输入框里的字、等待钟、回车键帽
+    function chatNeed(ctx, lay, sid, u) {
+      const r = lay.chat;
+      const inp = inputAt(sid, u);
+      const iy = r.y + r.h - inputHeight(ctx, r, inp);
+      const top = r.y + 82;
+      const list = (msgsBy[sid] || []).filter((x) => x.at <= u);
+      const hs = list.map((x) => msgHeight(ctx, x) + 18);
+      const total = 16 + hs.reduce((a, b) => a + b, 0);
+      const offset = Math.max(0, total - (iy - top) + 10);
+      const spans = [];
+      if (list.length) {
+        const y = top - offset + total - hs[hs.length - 1];
+        spans.push([y - 6, y + hs[hs.length - 1] - 12]);
+      }
+      if (inp.text) {
+        const n = Math.min(5, layout(ctx, inp.text, r.w - 56, 26).lines.length);
+        spans.push([iy + 50, iy + 66 + n * 36]);
+      }
+      if (TL.waits.some((w) => u >= w.from - 0.1 && u <= w.to)) {
+        const cy = top + (iy - top) / 2 - 10;
+        spans.push([cy - 165, cy + 215]);
+      }
+      if (TL.keys.some((k) => u >= k.at - 0.5 && u <= k.at + 0.15)) spans.push([r.y + r.h - 160, r.y + r.h - 84]); // 按下之前；按下以后看的是发出去的气泡
+      if (!spans.length) spans.push([top, top + 120]);
+      return [Math.min(...spans.map((x) => x[0])), Math.max(...spans.map((x) => x[1]))];
+    }
+    function chatBeats(ctx, s, until, out) {
+      const arrive = s.at + s.dur;
+      const sid = sessionAt(arrive).id;
+      const r = layoutAt(arrive).chat;
+      const w = W / Z_CHAT;
+      const h = (w * H) / W;
+      const x = clamp(r.x + r.w / 2 - w / 2, 0, W - w);
+      let y = null;
+      let aim = null; // 这一拍要看清的那一段（交给镜头表核对用）
+      let cut = 0; // 放不下、只好让出去的高度（设计像素）
+      const frame = (e) => {
+        let [a, b] = chatNeed(ctx, layoutAt(e + 0.35), sid, e + 0.35);
+        const top = topOn(e + 0.5, e + 1.2) ? BAND_TOP / Z_CHAT : 0; // 半秒内就收起的标题不让位
+        const bot = capOn(e, e + 1.2) ? BAND_BOT / Z_CHAT : 0;
+        const room = h - top - bot;
+        cut = Math.max(0, b - a - room);
+        if (cut) a = b - room; // 放不下就保住下面（输入框、回车）
+        aim = { x: r.x, y: a, w: r.w, h: b - a };
+        if (y === null) y = r.y - (top || 20); // 一开场先带上聊天窗标题栏（谁在说话），放不下再往下挪
+        if (a < y + top) y = a - top;
+        if (b > y + h - bot) y = b - h + bot;
+        y = clamp(y, 0, H - h);
+      };
+      frame(arrive);
+      out.push({ at: s.at, dur: s.dur, focus: { x, y, w, h }, target: "chat", aim, cut });
+      const events = new Set();
+      (msgsBy[sid] || []).forEach((m) => events.add(m.at));
+      TL.inputs[sid].forEach((k, i, list) => k.text && !(list[i - 1] && list[i - 1].text) && events.add(k.at));
+      TL.waits.forEach((wt) => events.add(wt.from));
+      TL.keys.forEach((k) => events.add(k.at - 0.4));
+      [...events]
+        .filter((e) => e > arrive && e < until - 0.3)
+        .sort((a, b) => a - b)
+        .forEach((e) => {
+          const before = y;
+          frame(e);
+          if (Math.abs(y - before) <= 1) {
+            const last = out[out.length - 1];
+            if (cut > last.cut) last.cut = cut;
+            return;
+          }
+          // 离上一次挪不到 0.8 秒：并进上一次（一口气挪到位），不连着挪两下
+          const last = out[out.length - 1];
+          if (e - 0.15 - last.at < 0.8) {
+            last.focus = { x, y, w, h };
+            last.aim = aim;
+            last.cut = Math.max(last.cut, cut);
+            last.dur = Math.max(last.dur, e + 0.45 - last.at);
+          } else out.push({ at: e - 0.15, dur: 0.6, focus: { x, y, w, h }, target: "chat", aim, cut });
+        });
+    }
+    // 两个取景框之间：倍数按对数插（推近拉远的速度均匀），中心按直线插，再贴回画布里面
+    function mixRect(a, b, k) {
+      if (k <= 0) return a;
+      if (k >= 1) return b;
+      const z = Math.exp(lerp(Math.log(W / a.w), Math.log(W / b.w), k));
+      const w = W / z;
+      const h = (w * H) / W;
+      const cx = lerp(a.x + a.w / 2, b.x + b.w / 2, k);
+      const cy = lerp(a.y + a.h / 2, b.y + b.h / 2, k);
+      return { x: clamp(cx - w / 2, 0, W - w), y: clamp(cy - h / 2, 0, H - h), w, h };
+    }
+    const beatAt = (b, u) => mixRect(b.from, b.focus, b.dur > 0 ? camEase(clamp((u - b.at) / b.dur, 0, 1)) : 1);
+    let track = null;
+    function cameraTrack() {
+      if (track) return track;
+      const ctx = typeof document === "undefined" ? NODE_CTX : document.createElement("canvas").getContext("2d");
+      const out = [];
+      TL.shots.forEach((s, i) => {
+        const until = i + 1 < TL.shots.length ? TL.shots[i + 1].at : TL.base;
+        if (s.target === "chat") return chatBeats(ctx, s, until, out);
+        const { T, z } = shotTarget(s.target, s.at + s.dur);
+        out.push({ at: s.at, dur: s.dur, focus: fit(T, z), target: s.target, aim: T });
+      });
+      out.sort((a, b) => a.at - b.at);
+      out.forEach((b, i) => {
+        b.from = i ? beatAt(out[i - 1], b.at) : b.focus;
+        if (b.dur > 0) b.dur = calmDur(b.from, b.focus, b.dur);
+      });
+      track = out;
+      return track;
+    }
+    function camera(u) {
+      const list = cameraTrack();
+      return beatAt(list[Math.max(0, lastAt(list, u))], u);
     }
 
     // ---------- 背景 ----------
@@ -1557,15 +1777,16 @@
       keycap(ctx, lay.chat.x + lay.chat.w - 81, lay.chat.y + lay.chat.h - 130, k.label, press, a * lay.chat.a);
     }
 
-    // 灵机一动：灯泡亮起来
-    function drawBulb(ctx, lay, u) {
+    // 灵机一动：灯泡亮起来。画在镜头外面那一层（不跟着推近变大），位置是聊天窗右上角投到画面上、再收进画面里
+    function drawBulb(ctx, lay, u, cam) {
       const b = TL.bulbs.find((x) => u >= x.at - 0.05 && u < x.at + 1.5);
       if (!b) return;
       const k = u - b.at;
       const a = win(u, b.at, b.at + 1.5, 0.15);
       const pop = easeBack(clamp(k / 0.35, 0, 1));
-      const x = lay.chat.x + lay.chat.w + 4;
-      const y = lay.chat.y + 46;
+      const z = W / cam.w;
+      const x = clamp((lay.chat.x + lay.chat.w + 4 - cam.x) * z, 170, W - 170);
+      const y = clamp((lay.chat.y + 46 - cam.y) * z, 170, H - 330);
       if (k < 0.18) {
         ctx.fillStyle = `rgba(255,236,200,${0.22 * (1 - k / 0.18)})`;
         ctx.fillRect(0, 0, W, H);
@@ -1614,58 +1835,63 @@
       const label = b.n > 1 ? `${b.label} ×${b.n}` : b.label;
       ctx.save();
       ctx.globalAlpha = a;
-      setFont(ctx, 34, 800);
-      const tw = ctx.measureText(label).width + 40;
-      const ly = y + 130 + (1 - pop) * 20;
-      rr(ctx, x - tw / 2, ly - 30, tw, 60, 30);
+      setFont(ctx, 44, 800);
+      const tw = ctx.measureText(label).width + 48;
+      const lx = clamp(x, tw / 2 + 24, W - tw / 2 - 24);
+      const ly = y + 136 + (1 - pop) * 20;
+      rr(ctx, lx - tw / 2, ly - 36, tw, 72, 36);
       ctx.fillStyle = ACCENT;
       ctx.fill();
-      text(ctx, label, x, ly + 1, { size: 34, weight: 800, color: "#fff" });
+      text(ctx, label, lx, ly + 1, { size: 44, weight: 800, color: "#fff" });
       ctx.restore();
     }
 
-    // 第三段的步骤条：新增话术 → 编辑话术 → 双击话术 → 发送话术
+    // 第三段的步骤条：新增话术 → 编辑话术 → 双击话术 → 发送话术（镜头外那一层，钉在画面右上角）
     function drawSteps(ctx, lay, u) {
       if (!TL.steps.length || u < TL.steps[0].at - 0.4 || u > m.compare[0] + 0.4) return;
       const a = win(u, TL.steps[0].at - 0.4, m.compare[0] + 0.4, 0.3) * lay.app.a;
       const cur = TL.steps[Math.max(0, lastAt(TL.steps, u))].n;
       const labels = ["新增话术", "编辑话术", "双击话术", "发送话术"];
-      const x0 = lay.app.x;
+      const x0 = W - 140 - 3 * 206 - 190;
       ctx.save();
       ctx.globalAlpha = a;
       labels.forEach((label, i) => {
-        const x = x0 + i * 198;
+        const x = x0 + i * 206;
         const on = i === cur;
         const done = i < cur;
-        rr(ctx, x, 112, 180, 44, 22);
-        ctx.fillStyle = on ? ACCENT : done ? "rgba(255,107,44,.18)" : "rgba(255,255,255,.06)";
+        rr(ctx, x, 52, 190, 52, 26);
+        ctx.fillStyle = on ? ACCENT : done ? "rgba(40,20,10,.85)" : "rgba(14,12,11,.85)";
         ctx.fill();
         ctx.lineWidth = 1.5;
         ctx.strokeStyle = on || done ? ACCENT : "#3f3f3f";
         ctx.stroke();
-        text(ctx, `${done ? "✓" : i + 1} ${label}`, x + 90, 135, { size: 22, weight: 700, color: on ? "#fff" : done ? ACCENT_HOT : DIM });
+        text(ctx, `${done ? "✓" : i + 1} ${label}`, x + 95, 79, { size: 28, weight: 700, color: on ? "#fff" : done ? ACCENT_HOT : MUTED });
       });
       ctx.restore();
     }
 
-    // 章节标题（左上角）与字幕（下方）
+    // 章节标题（左上角，每章开头亮 HEAD_FOR 秒，不一直压在推近的画面上）与字幕（下方）
     function drawHead(ctx, u) {
       const i = lastAt(TL.heads, u);
       if (i < 0) return;
       const h = TL.heads[i];
       const next = TL.heads[i + 1];
-      const until = next ? next.at : m.montage[0];
+      const until = Math.min(next ? next.at : m.montage[0], h.at + HEAD_FOR);
       let a = win(u, h.at, until + 0.1, 0.35);
       if (u >= m.reveal[0] && u < m.reveal[1]) a *= 1 - win(u, m.reveal[0], m.reveal[1], 0.4);
       if (a <= 0) return;
       const slide = (1 - sm(h.at, h.at + 0.5, u, easeOut)) * -40;
       ctx.save();
       ctx.globalAlpha = a;
-      rr(ctx, 140 + slide, 52, 64, 44, 8);
+      setFont(ctx, 46, 800);
+      rr(ctx, 120 + slide, 44, 98 + ctx.measureText(h.text).width + 28, 66, 12);
+      ctx.fillStyle = "rgba(10,9,8,.82)";
+      ctx.fill();
+      rr(ctx, 132 + slide, 54, 72, 46, 8);
       ctx.fillStyle = ACCENT;
       ctx.fill();
-      text(ctx, h.n, 172 + slide, 75, { size: 26, weight: 800, color: "#000", font: MONO });
-      text(ctx, h.text, 222 + slide, 75, { size: 38, weight: 800, color: FG, align: "left" });
+      text(ctx, h.n, 168 + slide, 78, { size: 30, weight: 800, color: "#000", font: MONO });
+      text(ctx, h.text, 218 + slide, 78, { size: 46, weight: 800, color: FG, align: "left" });
       ctx.restore();
     }
     function drawCaps(ctx, u) {
@@ -1676,22 +1902,31 @@
         const note = c.tone === "note";
         ctx.save();
         ctx.globalAlpha = a;
-        setFont(ctx, 40, 700);
-        const tw = ctx.measureText(c.text).width + 56;
-        const y = 1012 + lift;
-        rr(ctx, W / 2 - tw / 2, y - 34, tw, 68, 12);
-        ctx.fillStyle = note ? "rgba(255,107,44,.92)" : "rgba(0,0,0,.72)";
+        setFont(ctx, 48, 700);
+        const tw = ctx.measureText(c.text).width + 60;
+        const y = 1000 + lift;
+        rr(ctx, W / 2 - tw / 2, y - 40, tw, 80, 12);
+        ctx.fillStyle = note ? "rgba(255,107,44,.94)" : "rgba(0,0,0,.8)";
         ctx.fill();
         if (!note) {
           ctx.fillStyle = ACCENT;
-          ctx.fillRect(W / 2 - tw / 2, y - 34, 6, 68);
+          ctx.fillRect(W / 2 - tw / 2, y - 40, 6, 80);
         }
-        text(ctx, c.text, W / 2, y + 1, { size: 40, weight: 700, color: note ? "#fff" : FG });
+        text(ctx, c.text, W / 2, y + 1, { size: 48, weight: 700, color: note ? "#fff" : FG });
         ctx.restore();
       }
     }
 
-    // ① 片头
+    // ① 片头：第一帧就是钩子那句问话（不淡入、不被动画盖住），2.3 秒起缩到上方留着，期号和题目跟在后面
+    function hookLine(ctx, x, y, size) {
+      setFont(ctx, size, 900);
+      const ws = L.hook.map((part) => ctx.measureText(part).width);
+      let left = x - ws.reduce((a, b) => a + b, 0) / 2;
+      L.hook.forEach((part, i) => {
+        text(ctx, part, left, y, { size, weight: 900, color: i === 1 ? ACCENT : FG, align: "left" });
+        left += ws[i];
+      });
+    }
     function sceneIntro(ctx, u) {
       const [a0, a1] = m.intro;
       if (u > a1 + 0.6) return;
@@ -1708,34 +1943,32 @@
         ctx.fillStyle = i % 3 ? "rgba(255,255,255,.05)" : "rgba(255,107,44,.12)";
         ctx.fill();
       }
-      const tag = sm(a0 + 0.2, a0 + 0.6, u, easeOut);
-      ctx.save();
-      ctx.globalAlpha *= tag;
-      rr(ctx, W / 2 - 130, 250 - (1 - tag) * 20, 260, 52, 26);
-      ctx.strokeStyle = ACCENT;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.save();
-      if ("letterSpacing" in ctx) ctx.letterSpacing = "6px";
-      text(ctx, "知识分享 01", W / 2 + 3, 277 - (1 - tag) * 20, { size: 26, weight: 700, color: ACCENT_HOT });
-      ctx.restore();
-      ctx.restore();
-      // 「先说第一个知识分享：」逐字打出
-      const kick = chars(L.kicker);
-      const shown = Math.floor(clamp((u - a0 - 0.6) / 0.08, 0, kick.length));
-      text(ctx, kick.slice(0, shown).join(""), W / 2, 380, { size: 46, weight: 600, color: MUTED });
+      const up = sm(a0 + 2.3, a0 + 3.0, u);
+      hookLine(ctx, W / 2, lerp(520, 250, up), lerp(118, 60, up));
+      const tag = sm(a0 + 2.7, a0 + 3.1, u, easeOut);
+      if (tag > 0) {
+        ctx.save();
+        ctx.globalAlpha *= tag;
+        rr(ctx, W / 2 - 130, 340 - (1 - tag) * 20, 260, 52, 26);
+        ctx.strokeStyle = ACCENT;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        if ("letterSpacing" in ctx) ctx.letterSpacing = "6px";
+        text(ctx, "知识分享 01", W / 2 + 3, 367 - (1 - tag) * 20, { size: 26, weight: 700, color: ACCENT_HOT });
+        ctx.restore();
+      }
       // 「补运费登记案例」一个字一个字砸下来
       const t = chars(L.title);
       t.forEach((c, i) => {
-        const d = sm(a0 + 1.6 + i * 0.09, a0 + 2.0 + i * 0.09, u, easeBack);
-        text(ctx, c, W / 2 + (i - (t.length - 1) / 2) * 170, 530 - (1 - d) * 90, { size: 160, weight: 900, color: FG, alpha: clamp(d, 0, 1) });
+        const d = sm(a0 + 3.0 + i * 0.09, a0 + 3.4 + i * 0.09, u, easeBack);
+        if (d > 0) text(ctx, c, W / 2 + (i - (t.length - 1) / 2) * 170, 520 - (1 - d) * 90, { size: 160, weight: 900, color: FG, alpha: clamp(d, 0, 1) });
       });
-      const line = sm(a0 + 2.6, a0 + 3.2, u);
+      const line = sm(a0 + 3.8, a0 + 4.4, u);
       ctx.fillStyle = ACCENT;
-      ctx.fillRect(W / 2 - 560 * line, 640, 1120 * line, 6);
-      text(ctx, L.intro, W / 2, 712, { size: 38, color: MUTED, alpha: sm(a0 + 3.0, a0 + 3.5, u) });
+      ctx.fillRect(W / 2 - 560 * line, 625, 1120 * line, 6);
+      text(ctx, L.intro, W / 2, 695, { size: 38, color: MUTED, alpha: sm(a0 + 4.1, a0 + 4.6, u) });
       // 署名放在顶上：底部正中留给播放器的封面字条（封面就停在这一幕）
-      text(ctx, "话术精灵 · SoftTalk", W / 2, 170, { size: 28, weight: 600, color: DIM, alpha: sm(a0 + 3.4, a0 + 3.9, u) });
+      text(ctx, "话术精灵 · SoftTalk", W / 2, 140, { size: 28, weight: 600, color: DIM, alpha: sm(a0 + 4.4, a0 + 4.9, u) });
       ctx.restore();
     }
 
@@ -2129,23 +2362,29 @@
       sceneIntro(ctx, u);
       drawChat(ctx, lay, u);
       drawApp(ctx, lay, u, cur);
-      drawSteps(ctx, lay, u);
       sceneTimeline(ctx, lay, u);
       sceneCard(ctx, lay, u);
       sceneCompare(ctx, lay, u);
       drawKeys(ctx, lay, u);
       drawCursor(ctx, lay, u, cur);
-      drawBulb(ctx, lay, u);
       sceneReveal(ctx, lay, u);
       sceneMontage(ctx, u);
       sceneEnd(ctx, u);
+      ctx.restore();
+    }
+    // 镜头外那一层：灯泡、步骤条、章节标题、字幕、暗角——按画面坐标画，推近时不跟着变大、也不被推出画面
+    function overlay(ctx, u, cam) {
+      const lay = layoutAt(u);
+      ctx.save();
+      drawBulb(ctx, lay, u, cam || WIDE);
+      drawSteps(ctx, lay, u);
       drawHead(ctx, u);
       drawCaps(ctx, u);
       vignette(ctx);
       ctx.restore();
     }
 
-    return { TL, render };
+    return { TL, render, overlay, camera, cameraTrack };
   }
 
   // 小精灵图（标题栏与片尾）：加载好之前这两处先不画
@@ -2443,17 +2682,19 @@
       duration: base,
       width: W,
       height: H,
-      still: 4.2, // 封面停在片头「补运费登记案例」上
-      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：没有话术时客服问一句、顾客等很久才回一句，整个流程花费非常长；其实一条话术就能一次问齐；用话术精灵新增、编辑、双击、发送；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此顾客一次性回「好的谢谢」、OK、爱心、拜拜、飞吻、花。片尾：话术精灵，节约时间，快速高效率。`,
+      still: 4.8, // 封面停在片头：钩子问话 + 期号 + 「补运费登记案例」都已出齐
+      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：开场一句「${L.hook.join("")}」；没有话术时客服问一句、顾客等很久才回一句，整个流程花费非常长；其实一条话术就能一次问齐；用话术精灵新增、编辑、双击、发送；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此顾客一次性回「好的谢谢」、OK、爱心、拜拜、飞吻、花。片尾：话术精灵，节约时间，快速高效率。`,
       cover: { text: "播放 · 补运费登记案例 · 有声", again: "再看一遍" },
       render: film.render,
+      camera: film.camera,
+      overlay: film.overlay,
       score: film.TL.score,
       createSynth: () => new Synth(),
       fullscreen: true,
       record: { filename: "话术精灵-补运费登记案例" },
     });
     logo.addEventListener("load", refresh);
-    root.freightFilm = api;
+    root.freightFilm = { ...api, film };
   }
 
   // 测试钩子：Node 里没有 document，只把时间线与渲染交出去
