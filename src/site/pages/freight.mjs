@@ -1,0 +1,34 @@
+// freight.html：推广视频「补运费登记案例」（知识分享第一期，剧本见 GitHub issue #4）。
+// 画面 Canvas 现画、声音 Web Audio 现合成（assets/js/freight-film.js），播放器与宣传片共用 film-engine.js 和 promo-film.css。
+// 暂不进导航和 sitemap（登记在 pages.mjs 的 extraPages，noindex），老板看过再决定挂到哪里。
+import { seoHead } from "../seo.mjs";
+import { pageUrl, siteData } from "../site-data.mjs";
+
+const url = pageUrl("freight.html");
+const title = "补运费登记案例_客服话术实战分享 - 话术精灵";
+const share =
+  "客服知识分享第一期：顾客要退运费，客服问一句、顾客等一阵才回，整个流程花费非常长；一条话术一次问齐收款方式、姓名和截图，再把顾客的追问一条条补进话术，从此顾客一次性回「好的谢谢」。";
+
+export const freightPage = {
+  outputFile: "freight.html",
+  navLabel: "补运费登记案例",
+  styles: ["assets/css/promo-film.css"],
+  head: seoHead({ title, description: share, url, ogType: "video.other", robots: "noindex,follow", jsonLd: [{ "@type": "WebPage", name: title, url, inLanguage: "zh-CN" }] }),
+  main: `<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">知识分享 01</p>
+    <h1>补运费登记<span class="hl">案例</span></h1>
+  </section>
+
+  <section class="section">
+    <div class="promo" data-freight-film></div>
+    <noscript><p class="note">视频是浏览器现场画出来的，需要执行 JavaScript。</p></noscript>
+    <div class="actions">
+      <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载 Windows 版</a>
+      <a class="btn btn--ghost" href="contact.html">加微信聊聊</a>
+    </div>
+  </section>
+</div>`,
+  bodyEnd: `<script src="assets/js/film-engine.js" defer></script>
+<script src="assets/js/freight-film.js" defer></script>`,
+};
