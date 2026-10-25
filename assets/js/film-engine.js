@@ -7,7 +7,7 @@
 //   score, createSynth()          // 声音事件 [{ u, … }]（按 u 排好序）与建声音的函数（见下面两种时钟各自的约定）
 //
 // 宣传片（默认：clock 不写）——画布 + 引擎自己生成控件 + 声音时钟：
-//   classes: { screen, canvas, cover, coverIcon, coverText, bar, track, fill, time },  // 各部件的类名（片子自己的样式表里定义）
+//   classes: { screen, canvas, cover, coverIcon, coverText, bar, track, fill, time, rec },  // 各部件的类名（片子自己的样式表里定义）
 //   width, height,                // 画布的设计尺寸，render 按这个坐标画
 //   label,                        // 画布的 aria-label
 //   cover: { text, again },       // 封面文字、播完后的封面文字
@@ -15,6 +15,9 @@
 //   createSynth() → { ctx: AudioContext, bus(), play(e, at, k, bus, skip), stream() }
 //   fullscreen: true,             // 可选：全屏按钮（浏览器支持才出现）
 //   record: { filename },         // 可选：导出视频按钮（MediaRecorder + captureStream 都有才出现）
+//                                 // MediaRecorder 只能录实时的流，所以导出＝从头实时播一遍（宣传片 32 秒，补运费 3 分多钟）：
+//                                 // 画面左上角的 rec 字条报进度与剩余时间，播完自动下载，字条变成文件链接（没下载成可再点）；
+//                                 // 导出中再按一次导出键＝放弃；暂停或切走标签页时录像跟着暂停，回来接着录，不录进冻住的画面。
 //   → { seek, play, pause, render, refresh }（seek/render 用真实秒；refresh：没在播就重画一次）
 //
 // 「怎么用」短片（clock: "frame"）——DOM 舞台 + 页面里写死的控件 + 逐帧时钟：
@@ -132,7 +135,11 @@
     canvas.setAttribute("aria-label", o.label);
     const cover = el("button", c.cover, `<span class="${c.coverIcon}">${ICON.play}</span><span class="${c.coverText}">${o.cover.text}</span>`);
     cover.type = "button";
-    screen.append(canvas, cover);
+    const rec = el("a", c.rec); // 导出字条：录制中报进度，录完是文件链接
+    rec.hidden = true;
+    rec.setAttribute("role", "status");
+    rec.setAttribute("aria-live", "polite");
+    screen.append(canvas, cover, rec);
 
     const bar = el("div", c.bar);
     const playBtn = el("button", "ctl-btn ctl-btn--solid", ICON.play);
@@ -152,8 +159,9 @@
     soundBtn.setAttribute("aria-label", "静音");
     const saveBtn = el("button", "ctl-btn", ICON.save);
     saveBtn.type = "button";
-    saveBtn.setAttribute("aria-label", "导出视频文件（实时录制一遍，带声音）");
-    saveBtn.title = "导出视频文件（实时录制一遍，带声音）";
+    const SAVE_LABEL = "导出视频文件（实时录制一遍，带声音）";
+    saveBtn.setAttribute("aria-label", SAVE_LABEL);
+    saveBtn.title = SAVE_LABEL;
     const fullBtn = el("button", "ctl-btn", ICON.full);
     fullBtn.type = "button";
     fullBtn.setAttribute("aria-label", "全屏");
@@ -173,7 +181,9 @@
     let cursor = 0;
     let timer = 0;
     let raf = 0;
-    let recorder = null;
+    let recording = null; // 导出中：{ recorder, chunks, cancelled, failed }
+    let savedUrl = "";
+    let recShown = "";
     let started = false;
 
     const clock = () => (synth ? synth.ctx.currentTime : performance.now() / 1000);
@@ -181,7 +191,7 @@
     function size() {
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const target = recorder ? W : Math.round(clamp(rect.width * dpr, 320, 2560));
+      const target = recording ? W : Math.round(clamp(rect.width * dpr, 320, 2560));
       if (canvas.width !== target) {
         canvas.width = target;
         canvas.height = Math.round((target * H) / W);
@@ -193,6 +203,32 @@
       ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
       o.render(ctx, started ? u : o.still);
       showProgress({ track, fill, time }, started ? u * k : 0, started ? u / BASE : 0, duration, {});
+      recStatus();
+    }
+
+    function recStatus() {
+      if (!recording || recording.cancelled) return;
+      const pct = Math.floor((u / BASE) * 100);
+      status("rec", playing ? `正在导出 ${pct}% · 还需 ${fmt(Math.ceil((BASE - u) * k))} · 播完自动下载` : `导出已暂停 ${pct}% · 按播放继续`);
+    }
+
+    // 导出字条：state = rec（录制中）/ done（录好了，是文件链接）/ fail；没有 state 就收起来
+    function status(state, text = "", href = "", name = "") {
+      const key = `${state}|${text}`;
+      if (key === recShown) return;
+      recShown = key;
+      rec.hidden = !state;
+      if (state) rec.dataset.state = state;
+      rec.textContent = text;
+      if (href) {
+        rec.href = href;
+        rec.download = name;
+        rec.title = "没看到下载就点这里再存一次";
+      } else {
+        rec.removeAttribute("href");
+        rec.removeAttribute("download");
+        rec.removeAttribute("title");
+      }
     }
 
     // 预排声音：每 25ms 把接下来 0.3 秒里的事件交给 Web Audio
@@ -221,7 +257,7 @@
         stop();
         cover.hidden = false;
         cover.querySelector(`.${c.coverText}`).textContent = o.cover.again;
-        if (recorder) recorder.stop();
+        if (recording) recording.recorder.stop();
       }
       draw();
       if (playing) raf = requestAnimationFrame(tick);
@@ -238,6 +274,7 @@
       if (synth && synth.ctx.state === "suspended") synth.ctx.resume();
       started = true;
       cover.hidden = true;
+      if (!recording) status(null);
       u = from >= BASE ? 0 : from;
       startU = u;
       startClock = clock() + 0.05;
@@ -251,6 +288,7 @@
         timer = setInterval(schedule, 25);
       }
       playing = true;
+      if (recording?.recorder.state === "paused") recording.recorder.resume();
       playBtn.innerHTML = ICON.pause;
       playBtn.setAttribute("aria-label", "暂停");
       cancelAnimationFrame(raf);
@@ -259,6 +297,7 @@
 
     function stop() {
       playing = false;
+      if (recording?.recorder.state === "recording") recording.recorder.pause();
       clearInterval(timer);
       cancelAnimationFrame(raf);
       if (busNode && synth) {
@@ -272,6 +311,7 @@
       }
       playBtn.innerHTML = ICON.play;
       playBtn.setAttribute("aria-label", "播放");
+      recStatus();
     }
 
     function seek(to) {
@@ -296,40 +336,79 @@
       if (document.fullscreenElement) document.exitFullscreen();
       else root.requestFullscreen().catch(() => {});
     });
-    saveBtn.addEventListener("click", () => {
-      if (recorder) return;
+    function setSaveUi(on) {
+      saveBtn.setAttribute("aria-pressed", String(on));
+      saveBtn.setAttribute("aria-label", on ? "停止导出（录到的不保存）" : SAVE_LABEL);
+      saveBtn.title = saveBtn.getAttribute("aria-label");
+    }
+
+    function record() {
       if (playing) stop();
       start(0);
-      if (!synth) return;
-      const stream = canvas.captureStream(60);
-      synth.stream().getAudioTracks().forEach((t) => stream.addTrack(t));
-      const type = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"].find((m) => MediaRecorder.isTypeSupported(m));
-      recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 12_000_000 });
-      const chunks = [];
-      recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: recorder.mimeType });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `${o.record.filename}.${blob.type.includes("mp4") ? "mp4" : "webm"}`;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-        recorder = null;
-        root.removeAttribute("data-recording");
+      if (!synth) return status("fail", "导出失败：这个浏览器不能合成声音");
+      recording = { recorder: null, chunks: [], cancelled: false, failed: false };
+      size(); // 先把画布定成 1920×1080，再开始抓流（录到一半改尺寸，有的播放器会花屏）
+      try {
+        const stream = canvas.captureStream(60);
+        synth.stream().getAudioTracks().forEach((t) => stream.addTrack(t));
+        const type = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"].find((m) => MediaRecorder.isTypeSupported(m));
+        recording.recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 12_000_000 });
+      } catch {
+        recording = null;
+        stop();
         draw();
+        return status("fail", "导出失败：这个浏览器不支持录制画布");
+      }
+      const r = recording;
+      r.recorder.ondataavailable = (e) => e.data.size && r.chunks.push(e.data);
+      r.recorder.onstop = () => {
+        recording = null;
+        root.removeAttribute("data-recording");
+        setSaveUi(false);
+        draw();
+        if (r.failed) return status("fail", "导出失败：录制被浏览器中断");
+        if (r.cancelled) return status(null);
+        const blob = new Blob(r.chunks, { type: r.recorder.mimeType });
+        if (!blob.size) return status("fail", "导出失败：没有录到画面");
+        if (savedUrl) URL.revokeObjectURL(savedUrl); // 上一次的链接换掉；这一次的留着，自动下载被拦时还能手动点
+        savedUrl = URL.createObjectURL(blob);
+        const name = `${o.record.filename}.${blob.type.includes("mp4") ? "mp4" : "webm"}`;
+        status("done", `已导出 ${name}（${(blob.size / 1048576).toFixed(1)} MB）`, savedUrl, name);
+        rec.click();
+      };
+      r.recorder.onerror = () => {
+        r.cancelled = r.failed = true;
+        stop();
       };
       root.setAttribute("data-recording", "true");
-      recorder.start(1000);
+      setSaveUi(true);
+      r.recorder.start(1000);
+      draw();
+    }
+
+    saveBtn.addEventListener("click", () => {
+      if (!recording) return record();
+      recording.cancelled = true; // 导出中再按一次：放弃
+      stop();
+      recording.recorder.stop();
     });
 
     wireTrack(track, {
-      locked: () => recorder,
+      locked: () => recording,
       toRatio: (r) => seek(clamp(r, 0, 1) * BASE),
       key: (name) => ({ ArrowRight: u + 3 / k, ArrowLeft: u - 3 / k, Home: 0, End: BASE })[name],
       seek,
     });
+    // 切走标签页就停（导出中也停：浏览器在后台不画帧，硬录会录进冻住的画面）；导出中切回来接着录
+    let hiddenWhileRecording = false;
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden && playing && !recorder) stop();
+      if (document.hidden) {
+        hiddenWhileRecording = Boolean(recording && playing);
+        if (playing) stop();
+      } else if (hiddenWhileRecording && recording) {
+        hiddenWhileRecording = false;
+        start(u);
+      }
     });
     const refresh = () => playing || draw();
     new ResizeObserver(refresh).observe(canvas);

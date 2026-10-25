@@ -1413,7 +1413,7 @@
       ctx.fillStyle = P.chip;
       ctx.fill();
       text(ctx, "全部", r.x + r.w - 68, sy + 25, { size: 19, color: P.ink });
-      text(ctx, "官网 luyao2089.cc", r.x + 20, r.y + r.h - 28, { size: 19, color: P.muted, align: "left" });
+      text(ctx, `微信 ${L.wechat}`, r.x + 20, r.y + r.h - 28, { size: 19, color: P.muted, align: "left" });
       if (logo.complete && logo.naturalWidth) ctx.drawImage(logo, r.x + r.w - 46, r.y + r.h - 50, 26, 29);
       // 右键菜单
       if (st.menu) {
@@ -2110,7 +2110,7 @@
         text(ctx, `加我微信  ${L.wechat}`, W / 2, 779, { size: 44, weight: 800, color: "#000" });
         ctx.restore();
       }
-      text(ctx, "luyao2089.cc   ·   Windows 本地永久免费", W / 2, 150, { size: 30, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });
+      text(ctx, `微信 ${L.wechat}   ·   Windows 本地永久免费`, W / 2, 150, { size: 30, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });
     }
 
     function vignette(ctx) {
@@ -2437,6 +2437,7 @@
         track: "promo-track",
         fill: "promo-fill",
         time: "promo-time",
+        rec: "promo-rec",
       },
       base,
       duration: base,
