@@ -1734,7 +1734,8 @@
       ctx.fillStyle = ACCENT;
       ctx.fillRect(W / 2 - 560 * line, 640, 1120 * line, 6);
       text(ctx, L.intro, W / 2, 712, { size: 38, color: MUTED, alpha: sm(a0 + 3.0, a0 + 3.5, u) });
-      text(ctx, "话术精灵 · SoftTalk", W / 2, 960, { size: 28, weight: 600, color: DIM, alpha: sm(a0 + 3.4, a0 + 3.9, u) });
+      // 署名放在顶上：底部正中留给播放器的封面字条（封面就停在这一幕）
+      text(ctx, "话术精灵 · SoftTalk", W / 2, 170, { size: 28, weight: 600, color: DIM, alpha: sm(a0 + 3.4, a0 + 3.9, u) });
       ctx.restore();
     }
 
