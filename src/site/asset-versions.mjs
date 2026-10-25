@@ -14,6 +14,7 @@ const VERSIONED_ASSETS = [
   "assets/css/promo-film.css",
   "assets/js/film-engine.js",
   "assets/js/promo-film.js",
+  "assets/js/freight-film.js",
   "assets/js/demo-data.js",
   "assets/js/demo.js",
   "assets/js/theme.js",

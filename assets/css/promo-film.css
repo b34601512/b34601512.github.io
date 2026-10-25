@@ -116,6 +116,40 @@
   text-align: right;
 }
 
+/* 导出字条：压在画面左上角（不进录像，录的只是画布）；录制中前面一个红点，录好了是文件链接 */
+.promo-rec {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  max-width: calc(100% - 20px);
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font: 13px/1.5 inherit;
+  text-decoration: none;
+}
+
+.promo-rec[hidden] {
+  display: none;
+}
+
+.promo-rec[data-state="rec"]::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #ff3b30;
+  vertical-align: 1px;
+}
+
+.promo-rec[data-state="done"] {
+  color: #ff6b2c;
+  text-decoration: underline;
+}
+
 /* 录制时禁止拖动，进度条变成「录制中」的红色 */
 .promo[data-recording] .promo-fill {
   background: #ff3b30;

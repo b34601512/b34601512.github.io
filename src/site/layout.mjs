@@ -9,7 +9,7 @@ const THEME_BOOT = `<script>
 try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
 </script>`;
 
-// 页面定义需要提供：outputFile、navLabel、head、main、可选 styles 与 bodyEnd。
+// 页面定义需要提供：outputFile、navLabel、head、main、可选 styles、bodyEnd 与 navUnder。
 export function renderPage(page, sitePages) {
   return `<!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
@@ -43,11 +43,14 @@ function renderPageStyles(page) {
 }
 
 function renderNav(page, sitePages) {
+  // navUnder：挂在别的页面下的页面（经验分享的每一期）不单独进导航，打开时由上级页面显示为当前项。
   const links = sitePages
+    .filter((item) => !item.navUnder)
     .map((item) => ({
       label: item.navLabel,
       href: item.outputFile,
-      current: item.outputFile === page.outputFile,
+      // 上级页面不是「本页」，aria-current 用 true（当前所在的栏目）而不是 page
+      current: item.outputFile === page.outputFile ? "page" : item.outputFile === page.navUnder ? "true" : "",
     }))
     .concat(DOWNLOAD_LINK)
     .map(renderNavLink)
@@ -77,7 +80,7 @@ function renderNavLink(link) {
   const attributes = [
     `class="nav-link${link.current ? " nav-link--current" : ""}"`,
     `href="${link.href}"`,
-    link.current ? 'aria-current="page"' : "",
+    link.current ? `aria-current="${link.current}"` : "",
     link.external ? 'target="_blank" rel="noopener"' : "",
   ].filter(Boolean);
 
