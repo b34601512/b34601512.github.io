@@ -2103,14 +2103,14 @@
       if (w > 0) {
         ctx.save();
         ctx.globalAlpha = clamp(w, 0, 1);
-        scaleAt(ctx, W / 2, 820, 0.9 + 0.1 * w);
-        rr(ctx, W / 2 - 330, 780, 660, 84, 42);
+        scaleAt(ctx, W / 2, 776, 0.9 + 0.1 * w);
+        rr(ctx, W / 2 - 330, 736, 660, 84, 42);
         ctx.fillStyle = ACCENT;
         ctx.fill();
-        text(ctx, `加我微信  ${L.wechat}`, W / 2, 823, { size: 44, weight: 800, color: "#000" });
+        text(ctx, `加我微信  ${L.wechat}`, W / 2, 779, { size: 44, weight: 800, color: "#000" });
         ctx.restore();
       }
-      text(ctx, "luyao2089.cc   ·   Windows 本地永久免费", W / 2, 950, { size: 30, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });
+      text(ctx, "luyao2089.cc   ·   Windows 本地永久免费", W / 2, 150, { size: 30, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });
     }
 
     function vignette(ctx) {
