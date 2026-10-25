@@ -1,7 +1,8 @@
 // freight.html：推广视频「补运费登记案例」（知识分享第一期，剧本见 GitHub issue #4）。
 // 画面 Canvas 现画、声音 Web Audio 现合成（assets/js/freight-film.js），播放器与宣传片共用 film-engine.js 和 promo-film.css。
-// 暂不进导航和 sitemap（登记在 pages.mjs 的 extraPages，noindex），老板看过再决定挂到哪里。
-import { seoHead } from "../seo.mjs";
+// 「客服经验分享」系列的第一期：登记在 src/site/experience.mjs 的 episodes 里，由那里进页面清单、导航与 sitemap。
+import { backToListing, experienceListing } from "../experience-series.mjs";
+import { breadcrumb, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";
 
 const url = pageUrl("freight.html");
@@ -13,9 +14,19 @@ export const freightPage = {
   outputFile: "freight.html",
   navLabel: "补运费登记案例",
   styles: ["assets/css/promo-film.css"],
-  head: seoHead({ title, description: share, url, ogType: "video.other", robots: "noindex,follow", jsonLd: [{ "@type": "WebPage", name: title, url, inLanguage: "zh-CN" }] }),
+  head: seoHead({
+    title,
+    description: share,
+    url,
+    ogType: "video.other",
+    jsonLd: [
+      { "@type": "WebPage", name: title, url, inLanguage: "zh-CN" },
+      breadcrumb("补运费登记案例", url, [{ name: experienceListing.name, url: pageUrl(experienceListing.outputFile) }]),
+    ],
+  }),
   main: `<div class="wrap">
   <section class="hero">
+    ${backToListing}
     <p class="eyebrow">知识分享 01</p>
     <h1>补运费登记<span class="hl">案例</span></h1>
   </section>

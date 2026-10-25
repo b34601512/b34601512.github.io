@@ -2110,7 +2110,7 @@
         text(ctx, `加我微信  ${L.wechat}`, W / 2, 779, { size: 44, weight: 800, color: "#000" });
         ctx.restore();
       }
-      text(ctx, `微信 ${L.wechat}   ·   Windows 本地永久免费`, W / 2, 150, { size: 30, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });
+      text(ctx, "Windows 本地永久免费", W / 2, 150, { size: 30, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });
     }
 
     function vignette(ctx) {
@@ -2444,7 +2444,7 @@
       width: W,
       height: H,
       still: 4.2, // 封面停在片头「补运费登记案例」上
-      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：没有话术时客服问一句、顾客等很久才回一句，整个流程花费非常长；其实一条话术就能一次问齐；用话术精灵新增、编辑、双击、发送；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此顾客一次性回「好的谢谢」、OK、爱心、拜拜、飞吻、花。片尾：话术精灵，节约时间，快速高效率，微信 luyao2089。`,
+      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：没有话术时客服问一句、顾客等很久才回一句，整个流程花费非常长；其实一条话术就能一次问齐；用话术精灵新增、编辑、双击、发送；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此顾客一次性回「好的谢谢」、OK、爱心、拜拜、飞吻、花。片尾：话术精灵，节约时间，快速高效率。`,
       cover: { text: "播放 · 补运费登记案例 · 有声", again: "再看一遍" },
       render: film.render,
       score: film.TL.score,

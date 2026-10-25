@@ -3,13 +3,12 @@ import { siteData } from "./site-data.mjs";
 
 export const ogImageUrl = new URL(siteData.ogImage, siteData.siteUrl).href;
 
-export function breadcrumb(name, url) {
+// via：首页与本页之间的上级页面 [{ name, url }]（如经验分享的某一期 → 「客服经验分享」列表页）。
+export function breadcrumb(name, url, via = []) {
+  const trail = [{ name: "首页", url: siteData.siteUrl }, ...via, { name, url }];
   return {
     "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "首页", item: siteData.siteUrl },
-      { "@type": "ListItem", position: 2, name, item: url },
-    ],
+    itemListElement: trail.map((item, i) => ({ "@type": "ListItem", position: i + 1, name: item.name, item: item.url })),
   };
 }
 

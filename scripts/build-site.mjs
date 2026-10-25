@@ -54,6 +54,7 @@ function lastmodFor(outputFile, rendered) {
   }
 }
 
+// 优先级按清单顺序递减，最低 0.1（经验分享一期期加下去，不能减成 0 或负数）。
 const entries = orderedEntries
   .map(({ page, index, rendered }) => {
     const loc = page.outputFile === "index.html" ? siteData.siteUrl : pageUrl(page.outputFile);
@@ -61,7 +62,7 @@ const entries = orderedEntries
     <loc>${loc}</loc>
     <lastmod>${lastmodFor(page.outputFile, rendered)}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>${(1 - index * 0.1).toFixed(1)}</priority>
+    <priority>${Math.max(0.1, 1 - index * 0.1).toFixed(1)}</priority>
   </url>`;
   })
   .join("\n");

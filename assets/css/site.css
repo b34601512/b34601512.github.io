@@ -139,6 +139,8 @@ a {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
   text-decoration: none;
 }
 
@@ -148,11 +150,22 @@ a {
   object-fit: contain;
 }
 
+/* 放不下全部导航时横向滑动（任何宽度都一样），不折行、不挤掉主题按钮也不撑出页面 */
 .nav-links {
   display: flex;
   align-items: center;
   gap: 26px;
   margin-left: auto;
+  min-width: 0;
+  /* 上下留出当前项下划线（text-underline-offset 7px）的位置，否则会被滚动容器裁掉 */
+  padding: 12px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+
+.nav-links::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-link {
@@ -628,6 +641,79 @@ a {
   animation: rise 0.2s ease both;
 }
 
+/* ---------- 客服经验分享：列表与每一期的返回链接 ---------- */
+.crumb {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: var(--fg-muted);
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.crumb:hover {
+  color: var(--accent);
+}
+
+.episodes {
+  list-style: none;
+  padding: 0;
+}
+
+.episodes > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.episode {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  padding: 24px 0;
+  text-decoration: none;
+}
+
+.episode-still {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  transition: border-color 0.18s ease;
+}
+
+.episode:hover .episode-still {
+  border-color: var(--accent);
+}
+
+.episode-text {
+  display: grid;
+  gap: 8px;
+}
+
+.episode-meta {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  color: var(--fg-dim);
+  font-size: 12.5px;
+}
+
+.episode-title {
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 700;
+  transition: color 0.18s ease;
+}
+
+.episode:hover .episode-title {
+  color: var(--accent);
+}
+
+.episode-summary {
+  max-width: 34em;
+  color: var(--fg-muted);
+  font-size: 14.5px;
+}
+
 /* ---------- 页脚 ---------- */
 .footer {
   border-top: 1px solid var(--line);
@@ -699,21 +785,17 @@ a {
     display: none;
   }
 
-  /* 窄屏放不下全部导航时横向滑动，不挤掉主题按钮也不撑出页面 */
   .nav-links {
     gap: 16px;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-    white-space: nowrap;
-  }
-
-  .nav-links::-webkit-scrollbar {
-    display: none;
   }
 
   .nav-link {
     font-size: 13px;
+  }
+
+  .episode {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .copy-row {
@@ -741,6 +823,9 @@ a {
   }
 
   .nav-link,
+  .crumb,
+  .episode-still,
+  .episode-title,
   .btn,
   .copy-row,
   .footer-link,
