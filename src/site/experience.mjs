@@ -18,7 +18,7 @@ export const episodes = [
     no: 1,
     title: "补运费登记案例",
     summary: "顾客要退运费，客服问一句、顾客等一阵才回；一条话术一次问齐，再把顾客的追问一条条补进话术。",
-    duration: 200,
+    duration: 227,
     href: freightPage.outputFile,
     cover: "assets/img/experience-01.jpg",
     page: freightPage,

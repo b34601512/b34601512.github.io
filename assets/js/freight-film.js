@@ -22,8 +22,27 @@
     muted: "#7f7b74", digit: "#8c7b6b", answer: "#4a3a2e", box: "#8d8279", base: "#75685f", tabLine: "#b3a79b",
     chipLine: "#d6cabb", lv2Line: "#645145", hover: "#fdf3e7", badge: "#fff3e7", hot: "#c2410c", focus: "#e07f4a", title: "#e53935",
   };
-  // 聊天窗：中性外观，不模仿任何平台（标题只写顾客名、没有平台名与标志、没有绿色）；自己发的气泡是品牌橙 + 白字
+  // 聊天窗：默认是微信样子（issue #8）——自己发的气泡是微信绿 + 深字、发送键是微信绿；
+  // 原来的品牌橙会和「灵机一动」的橙色底撞成一片，橙色只留给话术精灵自己的动作（灯泡、双击、贴入闪光）
   const C = { bg: "#ededed", head: "#f7f7f7", line: "#e3e3e3", in: "#ffffff", inFg: "#1a1a1a", sub: "#8a8a8a", note: "#a54626" };
+  // 平台聊天窗（issue #8：用了话术精灵以后，在不同平台上一个一个快速切着聊）：只换颜色与平台名，不画任何平台标志。
+  // 京东 / 天猫（千牛）/ 拼多多 / 抖音（飞鸽）的颜色是作者给的真实截图取样值（见 CLAUDE.md「平台皮肤的真值来源」），strip 是标题栏下沿的品牌色细条
+  const SKINS = {
+    wx: { label: "微信", bg: C.bg, head: C.head, in: "#ffffff", own: "#95ec69", send: "#07c160", sendOff: "#b8e6c8", strip: null, avatar: "#d9d2ca" },
+    jd: { label: "京东", bg: "#ffffff", head: "#ffffff", in: "#f7f7f7", own: "#d9e8ff", send: "#4960f4", sendOff: "#c9d0fb", strip: "#e1251b", avatar: "#d9d2ca" },
+    tm: { label: "天猫", bg: "#f0f2f5", head: "#ffffff", in: "#ffffff", own: "#d8e4ff", send: "#3d7fff", sendOff: "#c5d8ff", strip: "#ff6a00", avatar: "#d9d2ca" },
+    pdd: { label: "拼多多", bg: "#ffffff", head: "#ffffff", in: "#f2f3f5", own: "#d4e9fe", send: "#e02e24", sendOff: "#f4c0bd", strip: "#e02e24", avatar: "#f564b3" },
+    dy: { label: "抖音", bg: "#f5f6fa", head: "#f5f6fa", in: "#ffffff", own: "#e3effe", send: "#2f6df9", sendOff: "#c3d5fd", strip: "#fe2c55", avatar: "#35a29b" },
+  };
+  const PLATFORMS = ["wx", "jd", "tm", "pdd", "dy"];
+  // 每个平台一位顾客：先说一句、发运费截图 → 客服在话术精灵里双击「已登记」→ 回车 → 顾客回一句真满意的话（不是「好的」和表情那种模板回复）
+  const DAILY_CAP = "不管在哪个平台聊，都是在话术精灵里双击发送";
+  const DAILY = [
+    { plat: "jd", who: "顾客 · 阿May", ask: "运费截图发你了", back: ["这么快就登记好了，说得清清楚楚", "比我想的省心多了，给你们点个赞！"] },
+    { plat: "tm", who: "顾客 · 大鹏", ask: "补的运费怎么退？", back: ["哦哦明白了，退到余额里是吧", "你一次讲完我就不用一直问了，谢谢亲"] },
+    { plat: "pdd", who: "顾客 · 糖糖", ask: "截图在这，麻烦登记下", back: ["客服态度真好，回得也快", "下次还来你家买～"] },
+    { plat: "dy", who: "顾客 · 晴天", ask: "运费补了，截图给你", back: ["行，7个工作日我记住了", "第一次遇到讲这么明白的客服，好评！"] },
+  ];
 
   // ---------- 剧本原文（issue #4，一字不改） ----------
   const L = {
@@ -75,7 +94,8 @@
   // 最后一版里，每一句对上的是哪一次追问（只做高亮，不加字）
   const ANSWERS = ["我已经帮您登记了", "请放心不会遗漏的～", "一般7个工作日左右", "后续会有专门的同事统一处理", "返到您余额里", "辛苦您耐心等候一下，我们会积极跟进的哦！"];
   // 「有的客户是直接发个OK表情，有的是发个好的，有的是发一个爱心，有的是发个拜拜表情，有是的发个飞吻，有是的发个花」
-  const REPLIES = [{ text: L.thanks }, { sticker: "ok" }, { text: "好的" }, { sticker: "heart" }, { sticker: "bye" }, { sticker: "kiss" }, { sticker: "flower" }];
+  // issue #8：再多一些看得出是真满意的文字回复，和表情穿插着来
+  const REPLIES = [{ text: L.thanks }, { sticker: "ok" }, { text: "一次说清楚，太省心了" }, { sticker: "heart" }, { text: "服务真贴心，好评！" }, { sticker: "bye" }, { text: "这么快就登记好了" }, { sticker: "kiss" }, { text: "讲得很明白，放心了" }, { sticker: "flower" }, { text: "下次还来你家买" }, { text: "好的" }];
   const NAMES = ["小陈", "阿杰", "Lily", "老王", "小美", "大鹏", "安安", "Coco", "阿强", "糖糖", "小鱼", "老李", "木木", "Kiki", "阿峰", "晴天", "小周", "豆豆", "阿May", "大海"];
 
   // ---------- 数学 ----------
@@ -143,6 +163,7 @@
     const waits = [];
     const keys = [];
     const steps = [];
+    const flies = []; // 双击话术行：那条话术从话术精灵飞进聊天输入框（看得出是另一个软件把字送过去的）
     const score = [];
     const shots = []; // 镜头：每一拍对准什么（target）、几秒推过去（dur）；makeFilm 里换算成取景框
     const m = {}; // 各段的起止时刻
@@ -161,9 +182,9 @@
     const dlg = (patch) => appSet({ dialog: { ...app.dialog, ...patch } });
     const inputSet = (text, o = {}) => inputs[sess].push({ at: t, text, focus: o.focus ?? true, flash: o.flash ?? null });
 
-    const session = (id, who) => {
+    const session = (id, who, plat = "wx") => {
       sess = id;
-      sessions.push({ at: t, id, who });
+      sessions.push({ at: t, id, who, plat });
       inputs[id] = [{ at: t, text: "", focus: false, flash: null }];
     };
     const scene = (mode) => scenes.push({ at: t, mode });
@@ -202,7 +223,9 @@
     };
     const hideCursor = () => cur.push({ at: t, dur: 0, ref: null });
     const click = (kind = "l") => {
-      clicks.push({ at: t, key: cur[cur.length - 1], kind });
+      const key = cur[cur.length - 1];
+      clicks.push({ at: t, key, kind });
+      if (kind === "dbl" && typeof key.ref === "string" && key.ref.startsWith("row:")) flies.push({ at: t + 0.12, key });
       sfx(t, "click");
       if (kind === "dbl") {
         sfx(t + 0.12, "click");
@@ -458,7 +481,32 @@
     sfx(t, "paste");
     t += 1.5;
     send(V6, 2.0);
-    say("in", L.thanks, { hold: 2.3 });
+    say("in", L.thanks, { hold: 1.4 });
+    say("in", "一次就说清楚了，你们服务真贴心！", { hold: 1.6 });
+
+    // ⑥′ 客服平常的一天（issue #8）：京东、天猫、拼多多、抖音一个窗口接一个窗口切着聊，
+    // 镜头拉开到两个窗口都在画面里——每一次都是在话术精灵里双击、话术飞进平台的输入框、回车发出去
+    m.daily = [t, 0];
+    shot("wide", 1.1);
+    t += 0.6;
+    DAILY.forEach((d, i) => {
+      session(`P${i}`, d.who, d.plat);
+      sfx(t, "whoosh", {}, 0.3);
+      t += 0.35;
+      say("in", d.ask, { hold: 0.5 });
+      say("in", null, { kind: "shot", hold: 0.5 });
+      move("row:1", i ? 0.45 : 0.6);
+      click("dbl");
+      appSet({ sel: 1 });
+      inputSet(V6, { flash: t });
+      sfx(t, "paste");
+      t += 0.75;
+      send(V6, 0.9);
+      say("in", d.back[0], { hold: 1.0 });
+      say("in", d.back[1], { hold: 1.5 });
+    });
+    m.daily[1] = t;
+    cap(DAILY_CAP, m.daily[0] + 1.2, t - 0.2);
     hideCursor();
 
     // ⑦ 海量的这类客户
@@ -483,7 +531,7 @@
       if (i < 40 || i % 3 === 0) sfx(tile.at + 0.15, "pop", { n: 76 + (i % 7) * 2, v: i < 8 ? 0.9 : 0.35 });
     });
     music(score, m, waits, base);
-    return { base, msgs, sessions, inputs, appKeys, cur, clicks, caps, heads, bulbs, scenes, waits, keys, steps, shots, m, score: score.sort((a, b) => a.u - b.u) };
+    return { base, msgs, sessions, inputs, appKeys, cur, clicks, caps, heads, bulbs, scenes, waits, keys, steps, flies, shots, m, score: score.sort((a, b) => a.u - b.u) };
   }
 
   // 海量客户的格子：三拨，越来越多、越来越快
@@ -1220,13 +1268,13 @@
       if (x.kind === "shot") return 248 + noteH;
       return 130;
     }
-    function avatar(ctx, x, y, label, own) {
+    function avatar(ctx, x, y, label, own, sk = SKINS.wx) {
       rr(ctx, x, y, 52, 52, 10);
-      ctx.fillStyle = own ? ACCENT : "#d9d2ca";
+      ctx.fillStyle = own ? sk.send : sk.avatar;
       ctx.fill();
       text(ctx, label, x + 26, y + 27, { size: 24, weight: 700, color: own ? "#fff" : "#5a4f46" });
     }
-    function drawMsg(ctx, r, x, y, e, nick, u) {
+    function drawMsg(ctx, r, x, y, e, nick, u, sk) {
       const own = x.side === "out";
       if (x.side === "time") {
         text(ctx, x.text, r.x + r.w / 2, y + 22, { size: 20, color: C.sub, font: MONO, alpha: e });
@@ -1238,7 +1286,7 @@
       ctx.globalAlpha *= clamp(e * 1.6, 0, 1);
       const pop = 0.85 + 0.15 * easeBack(clamp(e, 0, 1));
       scaleAt(ctx, own ? right : left, y + 20, pop);
-      avatar(ctx, own ? right - 52 : left, y, own ? "我" : chars(nick)[0], own);
+      avatar(ctx, own ? right - 52 : left, y, own ? "我" : chars(nick)[0], own, sk);
       const bx0 = own ? right - 52 - 14 : left + 52 + 14;
       let bw = 0;
       let bh = 0;
@@ -1248,21 +1296,21 @@
         bh = Math.max(56, lay.lines.length * BUB_LH + 24);
         const bx = own ? bx0 - bw : bx0;
         rr(ctx, bx, y, bw, bh, 10);
-        ctx.fillStyle = own ? ACCENT : C.in;
+        ctx.fillStyle = own ? sk.own : sk.in;
         ctx.fill();
         if (!own) {
           ctx.lineWidth = 1.5;
           ctx.strokeStyle = C.line;
           ctx.stroke();
         }
-        drawLayout(ctx, lay, bx + 18, y + 12 + (bh - 24 - lay.lines.length * BUB_LH) / 2, BUB_LH, { size: BUB, color: own ? "#fff" : C.inFg });
+        drawLayout(ctx, lay, bx + 18, y + 12 + (bh - 24 - lay.lines.length * BUB_LH) / 2, BUB_LH, { size: BUB, color: C.inFg });
       } else if (x.kind === "redact") {
         // 顾客给的收款方式 / 姓名：打码显示，不编造具体内容
         bw = Math.max(...x.bars.map((row) => row.reduce((s, w) => s + w + 12, 0))) + 24;
         bh = x.bars.length * 40 + 24;
         const bx = own ? bx0 - bw : bx0;
         rr(ctx, bx, y, bw, bh, 10);
-        ctx.fillStyle = C.in;
+        ctx.fillStyle = sk.in;
         ctx.fill();
         ctx.lineWidth = 1.5;
         ctx.strokeStyle = C.line;
@@ -1328,26 +1376,37 @@
       const s = sessionAt(u);
       if (!s) return;
       const nick = s.who.split(" · ")[1];
+      const sk = SKINS[s.plat];
+      const prevS = TL.sessions[TL.sessions.indexOf(s) - 1];
+      const hop = prevS && prevS.plat !== s.plat ? 0.96 + 0.04 * sm(s.at, s.at + 0.3, u, easeOut) : 1; // 换平台：窗口轻轻弹一下
       ctx.save();
       ctx.globalAlpha = r.a;
-      scaleAt(ctx, r.x + r.w / 2, r.y + r.h / 2, r.s);
+      scaleAt(ctx, r.x + r.w / 2, r.y + r.h / 2, r.s * hop);
       rr(ctx, r.x, r.y, r.w, r.h, 18);
-      ctx.fillStyle = C.bg;
+      ctx.fillStyle = sk.bg;
       ctx.fill();
       ctx.save();
       rr(ctx, r.x, r.y, r.w, r.h, 18);
       ctx.clip();
-      // 标题栏：只有顾客名与「在线」
-      ctx.fillStyle = C.head;
+      // 标题栏：顾客名与「在线」；平台聊天窗下沿多一条品牌色细条，右边写平台名（只写字，不画标志）
+      ctx.fillStyle = sk.head;
       ctx.fillRect(r.x, r.y, r.w, 80);
-      ctx.fillStyle = C.line;
-      ctx.fillRect(r.x, r.y + 80, r.w, 1.5);
+      ctx.fillStyle = sk.strip || C.line;
+      ctx.fillRect(r.x, r.y + 80 - (sk.strip ? 3 : 0), r.w, sk.strip ? 4.5 : 1.5);
       const swap = sm(s.at, s.at + 0.35, u);
       ctx.save();
       ctx.globalAlpha *= swap;
-      avatar(ctx, r.x + 22, r.y + 14, chars(nick)[0], false);
+      avatar(ctx, r.x + 22, r.y + 14, chars(nick)[0], false, sk);
       text(ctx, s.who, r.x + 90, r.y + 30, { size: 27, weight: 700, color: "#1a1a1a", align: "left" });
       text(ctx, "在线", r.x + 90, r.y + 60, { size: 19, color: C.sub, align: "left" });
+      if (sk.strip) {
+        setFont(ctx, 26, 800);
+        const pw = ctx.measureText(sk.label).width + 36;
+        rr(ctx, r.x + r.w - 24 - pw, r.y + 20, pw, 42, 21);
+        ctx.fillStyle = sk.strip;
+        ctx.fill();
+        text(ctx, sk.label, r.x + r.w - 24 - pw / 2, r.y + 42, { size: 26, weight: 800, color: "#fff" });
+      }
       ctx.restore();
       // 输入区（会跟着内容长高）
       const inp = inputAt(s.id, u);
@@ -1371,7 +1430,7 @@
       let y = top + 16 - offset;
       list.forEach((x, i) => {
         const e = clamp((u - x.at) / 0.3, 0, 1);
-        if (y + hs[i] > top - 40 && y < iy + 40) drawMsg(ctx, r, x, y, e * swap, nick, u);
+        if (y + hs[i] > top - 40 && y < iy + 40) drawMsg(ctx, r, x, y, e * swap, nick, u, sk);
         y += hs[i] * easeOut(e);
       });
       drawWait(ctx, r, top, viewH, u);
@@ -1413,13 +1472,13 @@
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(r.x + 28 + c.x + 2, iy + 58 + (c.li - (tl.lines.length - show)) * 36 + 5, 2.5, 27);
       }
-      // 发送键：品牌橙；有字时亮，回车那一下压一下
+      // 发送键：平台色（默认微信绿）；有字时亮，回车那一下压一下
       const kIdx = lastAt(TL.keys, u);
       const press = kIdx >= 0 ? win(u, TL.keys[kIdx].at - 0.02, TL.keys[kIdx].at + 0.25, 0.06) : 0;
       const sx = r.x + r.w - 140;
       const sy = r.y + r.h - 68;
       rr(ctx, sx, sy + press * 3, 118, 50, 8);
-      ctx.fillStyle = inp.text ? ACCENT : "#f1d6c8";
+      ctx.fillStyle = inp.text ? sk.send : sk.sendOff;
       ctx.fill();
       text(ctx, "发送", sx + 59, sy + 26 + press * 3, { size: 24, weight: 700, color: "#fff" });
       ctx.restore();
@@ -1763,6 +1822,58 @@
       ctx.lineWidth = 1.6;
       ctx.strokeStyle = "#111";
       ctx.stroke();
+      ctx.restore();
+    }
+
+    // 双击话术行：一张话术小卡从话术精灵那一行飞进聊天输入框（字不用看清，看得出是话术精灵把话术送过去的）
+    function drawFlies(ctx, lay, u) {
+      for (const f of TL.flies) {
+        const k = (u - f.at) / 0.5;
+        if (k < 0 || k > 1) continue;
+        const from = resolveRef(ctx, f.key, lay, f.at);
+        const to = { x: lay.chat.x + 230, y: lay.chat.y + lay.chat.h - 150 };
+        const e = easeIO(k);
+        const x = lerp(from.x, to.x, e);
+        const y = lerp(from.y, to.y, e) - Math.sin(e * Math.PI) * 90;
+        const st = appAt(f.at);
+        const row = st.rows[Number(f.key.ref.slice(4))];
+        ctx.save();
+        ctx.globalAlpha *= clamp(k * 6, 0, 1) * (1 - sm(0.8, 1, k));
+        scaleAt(ctx, x, y, lerp(1, 0.75, e));
+        rr(ctx, x - 150, y - 34, 300, 68, 10);
+        ctx.fillStyle = P.hover;
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = ACCENT;
+        ctx.stroke();
+        plane(ctx, x - 122, y, 22, P.hot);
+        text(ctx, row ? row.title : "", x - 98, y + 1, { size: 26, weight: 800, color: P.title, align: "left" });
+        ctx.restore();
+      }
+    }
+    // 平台页签：客服平常的一天那一段，聊天窗上方一排平台名，当前在聊的那家亮起来
+    function drawPlatformTabs(ctx, lay, u) {
+      if (!m.daily) return;
+      const a = win(u, m.daily[0], m.daily[1] + 0.3, 0.4) * lay.chat.a;
+      if (a <= 0) return;
+      const cur = SKINS[sessionAt(u).plat];
+      ctx.save();
+      ctx.globalAlpha = a;
+      let x = lay.chat.x;
+      PLATFORMS.forEach((key) => {
+        const sk = SKINS[key];
+        const on = sk === cur;
+        setFont(ctx, 26, 800);
+        const w = ctx.measureText(sk.label).width + 44;
+        rr(ctx, x, lay.chat.y - 64, w, 50, 25);
+        ctx.fillStyle = on ? sk.strip || sk.send : "rgba(255,255,255,.06)";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = on ? sk.strip || sk.send : "#3f3f3f";
+        ctx.stroke();
+        text(ctx, sk.label, x + w / 2, lay.chat.y - 38, { size: 26, weight: 800, color: on ? "#fff" : MUTED });
+        x += w + 14;
+      });
       ctx.restore();
     }
 
@@ -2227,16 +2338,21 @@
       const pop = easeBack(clamp(k / 0.25, 0, 1));
       ctx.scale(s * 0.94 * pop, s * 0.94 * pop);
       ctx.translate(-210, -190);
+      const sk = SKINS[PLATFORMS[tl.n % PLATFORMS.length]]; // 各个平台的顾客都有
       rr(ctx, 0, 0, 420, 380, 18);
-      ctx.fillStyle = C.bg;
+      ctx.fillStyle = sk.bg;
       ctx.fill();
       ctx.save();
       rr(ctx, 0, 0, 420, 380, 18);
       ctx.clip();
-      ctx.fillStyle = C.head;
+      ctx.fillStyle = sk.head;
       ctx.fillRect(0, 0, 420, 58);
+      if (sk.strip) {
+        ctx.fillStyle = sk.strip;
+        ctx.fillRect(0, 55, 420, 4);
+      }
       const name = NAMES[tl.n % NAMES.length];
-      avatar(ctx, 14, 8, chars(name)[0], false);
+      avatar(ctx, 14, 8, chars(name)[0], false, sk);
       text(ctx, `顾客 · ${name}`, 80, 30, { size: 24, weight: 700, color: "#1a1a1a", align: "left" });
       // 自己发出的那条话术
       const out = clamp((k - 0.12) / 0.2, 0, 1);
@@ -2244,10 +2360,10 @@
         ctx.save();
         ctx.globalAlpha *= out;
         rr(ctx, 120, 76, 280, 132, 10);
-        ctx.fillStyle = ACCENT;
+        ctx.fillStyle = sk.own;
         ctx.fill();
         const lay2 = layout(ctx, V6.replace(/\n/g, ""), 248, 20);
-        drawLayout(ctx, lay2, 136, 86, 28, { size: 20, color: "#fff", maxLines: 4 });
+        drawLayout(ctx, lay2, 136, 86, 28, { size: 20, color: C.inFg, maxLines: 4 });
         ctx.restore();
       }
       // 顾客一次性回复
@@ -2260,7 +2376,7 @@
           setFont(ctx, 32, 600);
           const w = ctx.measureText(rep.text).width + 40;
           rr(ctx, 20, 232, w, 62, 10);
-          ctx.fillStyle = C.in;
+          ctx.fillStyle = sk.in;
           ctx.fill();
           ctx.lineWidth = 1.5;
           ctx.strokeStyle = C.line;
@@ -2365,6 +2481,8 @@
       sceneTimeline(ctx, lay, u);
       sceneCard(ctx, lay, u);
       sceneCompare(ctx, lay, u);
+      drawPlatformTabs(ctx, lay, u);
+      drawFlies(ctx, lay, u);
       drawKeys(ctx, lay, u);
       drawCursor(ctx, lay, u, cur);
       sceneReveal(ctx, lay, u);
@@ -2683,7 +2801,7 @@
       width: W,
       height: H,
       still: 4.8, // 封面停在片头：钩子问话 + 期号 + 「补运费登记案例」都已出齐
-      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：开场一句「${L.hook.join("")}」；没有话术时客服问一句、顾客等很久才回一句，整个流程花费非常长；其实一条话术就能一次问齐；用话术精灵新增、编辑、双击、发送；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此顾客一次性回「好的谢谢」、OK、爱心、拜拜、飞吻、花。片尾：话术精灵，节约时间，快速高效率。`,
+      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：开场一句「${L.hook.join("")}」；没有话术时客服问一句、顾客等很久才回一句，整个流程花费非常长；其实一条话术就能一次问齐；用话术精灵新增、编辑、双击、发送；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此双击一下话术就发出去，顾客一次性回「好的谢谢」；接着在京东、天猫、拼多多、抖音的聊天窗之间一个个切过去，每次都是在话术精灵里双击、回车，顾客回的都是满意的话；海量顾客回「好的谢谢」、OK、爱心、拜拜、飞吻、花。片尾：话术精灵，节约时间，快速高效率。`,
       cover: { text: "播放 · 补运费登记案例 · 有声", again: "再看一遍" },
       render: film.render,
       camera: film.camera,
