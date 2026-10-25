@@ -73,7 +73,7 @@ D:\SoftTalk官网
 │  ├─ js\demo-data.js        演示话术数据 + 话术行/分类树标记（浏览器与构建脚本共用一份）
 │  ├─ js\demo.js             首页演示交互（渲染 + 模拟发送，数据从 demo-data.js 取）
 │  ├─ js\theme.js            白天/黑夜切换按钮（记住选择、圆形铺开动画）
-│  ├─ js\guide-film.js       「怎么用」页的 45 秒演示短片（DOM 舞台 + 按秒驱动的时间线 + 播放器）
+│  ├─ js\guide-film.js       「怎么用」页的 45 秒演示短片（DOM 舞台 + 按秒驱动的时间线；播放器是与宣传片共用的 film-engine.js）
 │  ├─ css\guide.css          「怎么用」页播放器与步骤样式
 │  ├─ css\guide-film.css     演示短片舞台：聊天窗/主界面/吸附栏（数值照抄 demo.css）、鼠标、按键提示、字幕
 │  ├─ js\contact.js          联系页点击复制

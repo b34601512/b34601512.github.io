@@ -117,5 +117,6 @@ export const guidePage = {
     <p class="note">设置、导入导出、云同步等更多功能，见 <a class="text-link" href="${siteData.tutorialUrl}" target="_blank" rel="noopener">使用帮助文档</a>。</p>
   </section>
 </div>`,
-  bodyEnd: `<script src="assets/js/guide-film.js" defer></script>`,
+  bodyEnd: `<script src="assets/js/film-engine.js" defer></script>
+<script src="assets/js/guide-film.js" defer></script>`,
 };

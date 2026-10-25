@@ -5,11 +5,6 @@
 (() => {
   const stage = document.getElementById("guide-film");
   if (!stage) return;
-  const playButton = document.getElementById("guide-play");
-  const track = document.getElementById("guide-track");
-  const fill = document.getElementById("guide-fill");
-  const timeLabel = document.getElementById("guide-time");
-  const stepButtons = [...document.querySelectorAll("[data-chapter]")];
 
   const W = 800;
   const DURATION = 45;
@@ -156,7 +151,7 @@
   const TAIL = { turn: 0.3, click: 0.06, type: 0.06, key: 0.08, paste: 0.25, whoosh: 0.4, pop: 0.15, ding: 1.0, snap: 0.15, pluck: 0.3, chime: 1.3, shimmer: 1.0 };
   function buildScore() {
     const ev = [];
-    const add = (at, type, arg = {}) => ev.push({ at, type, arg });
+    const add = (u, type, arg = {}) => ev.push({ u, type, arg });
     add(0.2, "chime", { n: 76, v: 0.7 }); // 片头小精灵弹出
     add(0.7, "pop", { n: 83 });
     add(1.2, "pop", { n: 88 });
@@ -175,7 +170,7 @@
     [72, 76, 79, 84].forEach((n, i) => add(41.4 + i * 0.14, "pluck", { n }));
     add(42.0, "chime", { n: 88 });
     add(42.0, "shimmer");
-    return ev.filter((e) => e.at + TAIL[e.type] < DURATION - 0.3).sort((a, b) => a.at - b.at);
+    return ev.filter((e) => e.u + TAIL[e.type] < DURATION - 0.3).sort((a, b) => a.u - b.u);
   }
 
   // 特效（默认跟系统「减少动态效果」走，访客可在舞台右上角「特效」上手动开关）。都是一次性的、跟着上面的节拍走，没有持续高频闪烁：
@@ -714,11 +709,11 @@
   // ---------- 声音 ----------
   // 和宣传片（promo-film.js）同一路做法：Web Audio 现场合成，不加载任何音频文件。
   // 节点图：每个音 → 自己的包络 gain/滤波 → bus（这一段播放专用，暂停/拖动时淡出并整个断开）→ master → 压缩器 → 扬声器。
-  // 声音跟着短片自己的时间 T 走：每帧由 tick 调 sync(T)，只把接下来 0.25 秒里的音交给 Web Audio。
+  // 什么时候排哪个音由引擎（film-engine.js）决定：跟着短片自己的时间 T 走，每帧只把接下来 0.25 秒里的音交给 Web Audio。
   const NOTE = (n) => 440 * Math.pow(2, (n - 69) / 12);
-  const LOOKAHEAD = 0.25;
-  class GuideAudio {
-    constructor(ctx) {
+  class GuideSynth {
+    constructor() {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
       this.ctx = ctx;
       this.master = ctx.createGain();
       this.master.gain.value = 0.16; // 实测整片峰值约 −18 dBFS（headless Chrome 接分析器量的），当背景声
@@ -727,6 +722,7 @@
       this.comp.ratio.value = 4;
       this.master.connect(this.comp);
       this.comp.connect(ctx.destination);
+      this.out = this.master; // 引擎每段播放建的 bus 接在这里
       const len = ctx.sampleRate;
       this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
       const d = this.noise.getChannelData(0);
@@ -735,51 +731,11 @@
         seed = (seed * 16807) % 2147483647;
         d[i] = (seed / 2147483647) * 2 - 1;
       }
-      this.score = buildScore();
-      this.bus = null;
       this.voices = new Set();
-      this.anchor = null; // { t: 短片秒, c: 对应的 ctx.currentTime }
-      this.cursor = 0;
     }
-    // 开一段新的播放：建 bus，下一次 sync 时按当时的 T 对齐时钟
-    begin() {
-      this.end();
-      this.bus = this.ctx.createGain();
-      this.bus.connect(this.master);
-      this.anchor = null;
-    }
-    // 结束这一段：bus 30ms 淡出，所有已排上的音立刻停掉并断开，不留任何还在响的振荡器
-    end() {
-      const bus = this.bus;
-      this.bus = null;
-      this.anchor = null;
-      if (!bus) return;
-      const now = this.ctx.currentTime;
-      bus.gain.cancelScheduledValues(now);
-      bus.gain.setValueAtTime(bus.gain.value, now);
-      bus.gain.linearRampToValueAtTime(0, now + 0.03);
-      this.voices.forEach((voice) => this.kill(voice, now + 0.04));
-      setTimeout(() => bus.disconnect(), 120);
-    }
-    sync(t) {
-      if (!this.bus || this.ctx.state !== "running") return;
-      const now = this.ctx.currentTime;
-      // 画面卡了一下（tick 每帧最多走 0.1 秒）或刚开始：重新对齐，跳过已经过去的音
-      if (!this.anchor || Math.abs(this.anchor.t + (now - this.anchor.c) - t) > 0.08) {
-        const fresh = !this.anchor;
-        this.anchor = { t, c: now + 0.02 };
-        if (fresh) {
-          // 留 40ms 余量：跳到章节开头时第一帧已经走过了一点，章节的翻页声不能因此漏掉
-          this.cursor = this.score.findIndex((e) => e.at >= t - 0.04);
-          if (this.cursor === -1) this.cursor = this.score.length;
-        }
-      }
-      while (this.cursor < this.score.length && this.score[this.cursor].at < t + LOOKAHEAD) {
-        const e = this.score[this.cursor++];
-        const at = this.anchor.c + (e.at - this.anchor.t);
-        if (at < now - 0.03) continue; // 来不及了就不响，绝不补一串
-        this.play(e, Math.max(at, now));
-      }
+    // 引擎结束一段播放时调：所有已排上的音立刻停掉，不留任何还在响的振荡器
+    silence(when) {
+      this.voices.forEach((voice) => this.kill(voice, when));
     }
     kill(voice, when) {
       voice.sources.forEach((src) => {
@@ -791,7 +747,7 @@
       });
     }
     // 一个音：记下它所有的节点，最后一个声源结束时全部 disconnect
-    play(e, t) {
+    play(e, t, bus) {
       const ctx = this.ctx;
       const voice = { nodes: [], sources: [], live: 0 };
       this.voices.add(voice);
@@ -839,9 +795,9 @@
         n.buffer = this.noise;
         n.loop = true;
         n.connect(out);
-        return source(n, at, end, (e.at * 0.37) % 0.8);
+        return source(n, at, end, (e.u * 0.37) % 0.8);
       };
-      const out = this.bus;
+      const out = bus;
       const a = e.arg;
       const v = a.v ?? 1;
       switch (e.type) {
@@ -956,269 +912,73 @@
       }
     }
   }
-
-  // ---------- 播放器 ----------
+  // ---------- 播放器（assets/js/film-engine.js 的逐帧时钟） ----------
   // calm：系统开了「减少动态效果」。它只决定默认值——不自动播、停在 16.8 秒那一帧、特效默认关。
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const STILL = 16.8;
-  let time = calm ? STILL : 0;
-  let playing = false;
-  let userPaused = calm;
-  let ended = false;
-  let onScreen = false;
-  let lastNow = 0;
-  let raf = 0;
-
-  // 访客的选择记在 localStorage；读不到、写不了（隐私模式）就只管这一次。
-  const SOUND_KEY = "softtalk-guide-sound";
-  const FX_KEY = "softtalk-guide-fx";
-  const load = (key) => {
-    try {
-      return localStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  };
-  const save = (key, on) => {
-    try {
-      localStorage.setItem(key, on ? "on" : "off");
-    } catch {
-      /* 存不了就只管这一次 */
-    }
-  };
-
   // 特效（换段白闪与扫光、粒子、拖尾、命中光圈、彩纸、节拍推镜、字幕弹出）：
   // 默认跟系统（减少动态效果 → 关）；访客在舞台右上角「特效」上点过以后以访客为准——
   // 点开了，即使系统要求减少动态效果也照样放；点关了，一点特效都没有。和声音互不影响。
-  const fxButton = document.getElementById("guide-fx");
-  const fxSaved = load(FX_KEY);
-  let fx = fxSaved ? fxSaved === "on" : !calm;
+  let fx = !calm;
 
-  function syncFxUi() {
-    if (!fxButton) return;
-    fxButton.hidden = false;
-    fxButton.setAttribute("aria-pressed", String(fx));
-    fxButton.setAttribute("aria-label", fx ? "特效：开" : "特效：关");
-    fxButton.title = fxButton.getAttribute("aria-label"); // 图标按钮，悬停时把字说出来
-  }
-
-  // 声音：默认开，选择记在 localStorage。浏览器只许在用户有过一次操作之后出声，所以页面打开时一定是静的：
-  // 自动播放的画面没有声音，访客在页面任何地方第一次点一下 / 按一个键之后才建 AudioContext，
-  // 从短片当时的位置接着响（不重放画面，不补已经过去的音）。
-  // 还没放行时舞台左上角挂一个「点一下打开声音」，放行或静音后就收起来。
-  // 静音时一个音频节点都不建（连 AudioContext 都关掉）。声音不跟「减少动态效果」走——那是画面的事。
-  const soundButton = document.getElementById("guide-sound");
-  const hint = document.getElementById("guide-hint");
-  const AC = window.AudioContext || window.webkitAudioContext;
-  const canSound = Boolean(AC);
-  let soundOn = load(SOUND_KEY) !== "off";
-  let unlocked = false; // 用户操作过了没有
-  let audio = null;
-  let suspendTimer = 0;
-
-  function syncSoundUi() {
-    if (hint) hint.hidden = !(canSound && soundOn && !unlocked);
-    if (!soundButton) return;
-    soundButton.hidden = !canSound;
-    const state = !soundOn ? "off" : unlocked ? "on" : "locked";
-    soundButton.dataset.sound = state;
-    soundButton.setAttribute("aria-pressed", String(state === "on"));
-    soundButton.setAttribute("aria-label", { on: "声音：开", off: "声音：关", locked: "声音：关，点一下打开" }[state]);
-    soundButton.title = soundButton.getAttribute("aria-label");
-  }
-
-  function audioStart() {
-    if (!canSound || !soundOn || !unlocked) return;
-    if (!audio) {
-      try {
-        audio = new GuideAudio(new AC());
-      } catch {
-        audio = null;
-        return;
-      }
-    }
-    clearTimeout(suspendTimer);
-    if (audio.ctx.state === "suspended") audio.ctx.resume().catch(() => {});
-    audio.begin();
-  }
-  // 暂停：停掉这一段的音，再把 AudioContext 挂起（不占 CPU）；end=true 时整个关掉，所有节点随之释放
-  function audioStop(close = false) {
-    if (!audio) return;
-    audio.end();
-    clearTimeout(suspendTimer);
-    const ctx = audio.ctx;
-    if (close) {
-      audio = null;
-      setTimeout(() => ctx.close().catch(() => {}), 150);
-    } else {
-      suspendTimer = setTimeout(() => ctx.state === "running" && ctx.suspend().catch(() => {}), 150);
-    }
-  }
-  // 只在浏览器认的「用户操作」里放行（触屏的 pointerdown 不算，要等 pointerup），否则建出来的 AudioContext 是挂起的。
-  function unlock() {
-    if (unlocked || !canSound) return;
-    if (navigator.userActivation && !navigator.userActivation.isActive) return;
-    unlocked = true;
-    GESTURES.forEach((type) => document.removeEventListener(type, onGesture, true));
-    syncSoundUi();
-    if (playing) audioStart();
-  }
-  // 页面任何地方的第一下操作都算放行。舞台上的开关与提示自己处理（不然按下时提示先消失、声音键先被放行，
-  // 松开时就点到了下面的舞台或把声音又关掉）。
-  const GESTURES = ["pointerdown", "pointerup", "keydown"];
-  function onGesture(event) {
-    if (event.target instanceof Element && event.target.closest("[data-film-ctl]")) return;
-    unlock();
-  }
-  if (canSound) GESTURES.forEach((type) => document.addEventListener(type, onGesture, { capture: true, passive: true }));
-
-  const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-
-  function syncUi() {
-    const ratio = time / DURATION;
-    if (fill) fill.style.width = `${(ratio * 100).toFixed(2)}%`;
-    if (track) {
-      track.setAttribute("aria-valuenow", String(Math.floor(time)));
-      track.setAttribute("aria-valuetext", `${fmt(time)} / ${fmt(DURATION)}`);
-    }
-    if (timeLabel) timeLabel.textContent = `${fmt(time)} / ${fmt(DURATION)}`;
+  // 页面下方五个步骤就是章节按钮：片头算第 0 段，片尾回到 0（不高亮任何一步）。
+  function chapterAt(t) {
     let chapter = 0;
     SCENES.forEach((s, i) => {
-      if (s.caption && time >= s.start) chapter = i;
+      if (s.caption && t >= s.start) chapter = i;
     });
-    if (time >= SCENES.at(-1).start) chapter = 0;
-    stepButtons.forEach((button) => button.setAttribute("aria-current", String(Number(button.dataset.chapter) === chapter)));
+    if (t >= SCENES.at(-1).start) chapter = 0;
+    return chapter;
   }
 
-  function draw() {
-    render(time);
-    syncUi();
-  }
-
-  // 播到片尾就停在最后一帧（不再循环），声音同时收尾；再按播放从头放。
-  function tick(now) {
-    raf = 0;
-    if (!playing) return;
-    time += Math.min(0.1, (now - lastNow) / 1000);
-    lastNow = now;
-    if (time >= DURATION - 0.01) {
-      time = DURATION - 0.01;
-      ended = true;
-      setPlaying(false);
-      draw();
-      return;
-    }
-    audio?.sync(time);
-    draw();
-    raf = requestAnimationFrame(tick);
-  }
-
-  function setPlaying(next) {
-    if (next && ended) {
-      ended = false;
-      time = 0;
-    }
-    const was = playing;
-    playing = next;
-    if (playButton) {
-      playButton.dataset.playing = String(next);
-      playButton.setAttribute("aria-label", next ? "暂停" : ended ? "重新播放" : "播放");
-    }
-    if (next && !raf) {
-      lastNow = performance.now();
-      raf = requestAnimationFrame(tick);
-    }
-    if (next && !was) audioStart();
-    if (!next && was) audioStop(ended);
-  }
-
-  function seek(t) {
-    time = clamp(t, 0, DURATION - 0.01);
-    ended = false;
-    if (playing) audioStart(); // 停掉旧的、按新位置重新对齐
-    draw();
-  }
-
-  function resize() {
-    const width = stage.clientWidth;
-    if (!width) return;
-    scale = width / W;
-    zoomed = width < 560;
-    stage.toggleAttribute("data-zoom", zoomed);
-    stage.parentElement.toggleAttribute("data-zoom", zoomed); // .film-frame（开关挪到舞台上方现在由 guide.css 的 @container 按宽度决定）
-    draw();
-  }
-
-  playButton?.addEventListener("click", () => {
-    unlock();
-    userPaused = playing;
-    setPlaying(!playing);
-  });
-  stage.addEventListener("click", () => playButton?.click());
-
-  soundButton?.addEventListener("click", () => {
-    if (soundOn && !unlocked) {
-      unlock(); // 默认就是开着的，只是浏览器还没放行：这一下就是放行
-      return;
-    }
-    unlock();
-    soundOn = !soundOn;
-    save(SOUND_KEY, soundOn);
-    syncSoundUi();
-    if (!soundOn) audioStop(true);
-    else if (playing) audioStart();
-  });
-  hint?.addEventListener("click", unlock);
-
-  fxButton?.addEventListener("click", () => {
-    unlock();
-    fx = !fx;
-    save(FX_KEY, fx);
-    syncFxUi();
-    draw(); // 当场换：关掉时正在闪的、飞的立刻收掉，暂停时也一样
-  });
-
-  track?.addEventListener("pointerdown", (event) => {
-    unlock();
-    const rect = track.getBoundingClientRect();
-    const move = (e) => seek(((e.clientX - rect.left) / rect.width) * DURATION);
-    move(event);
-    track.setPointerCapture(event.pointerId);
-    track.addEventListener("pointermove", move);
-    track.addEventListener("pointerup", () => track.removeEventListener("pointermove", move), { once: true });
-  });
-  track?.addEventListener("keydown", (event) => {
-    const step = { ArrowLeft: -5, ArrowRight: 5, Home: -DURATION, End: DURATION }[event.key];
-    if (step === undefined) return;
-    event.preventDefault();
-    unlock();
-    seek(time + step);
-  });
-
-  stepButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      unlock();
-      seek(SCENES[Number(button.dataset.chapter)].start);
-      userPaused = false;
-      setPlaying(true);
-      stage.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "center" });
-    });
-  });
-
-  // 只在看得见的时候播：滚走或切到别的标签页就停，回来接着放（除非访客自己按了暂停，或已经播完）。
-  const autoPlay = () => {
-    if (!userPaused && !ended) setPlaying(onScreen && !document.hidden);
-  };
-  new IntersectionObserver(
-    ([entry]) => {
-      onScreen = entry.isIntersecting;
-      autoPlay();
+  window.mountFilm(stage, {
+    clock: "frame",
+    controls: {
+      play: document.getElementById("guide-play"),
+      track: document.getElementById("guide-track"),
+      fill: document.getElementById("guide-fill"),
+      time: document.getElementById("guide-time"),
     },
-    { threshold: 0.35 },
-  ).observe(stage);
-  document.addEventListener("visibilitychange", autoPlay);
-  new ResizeObserver(resize).observe(stage);
-  syncSoundUi();
-  syncFxUi();
-  resize();
+    base: DURATION,
+    duration: DURATION,
+    still: calm ? STILL : 0,
+    end: { at: DURATION - 0.01, label: "重新播放" }, // 播到片尾就停在最后一帧（不再循环），再按播放从头放
+    maxStep: 0.1,
+    lookahead: 0.25,
+    render,
+    layout() {
+      const width = stage.clientWidth;
+      if (!width) return false;
+      scale = width / W;
+      zoomed = width < 560;
+      stage.toggleAttribute("data-zoom", zoomed);
+      stage.parentElement.toggleAttribute("data-zoom", zoomed); // .film-frame（开关挪到舞台上方现在由 guide.css 的 @container 按宽度决定）
+    },
+    score: buildScore(),
+    createSynth: () => new GuideSynth(),
+    // 声音默认开；声音不跟「减少动态效果」走——那是画面的事。舞台上的开关与提示带 data-film-ctl，自己处理放行。
+    sound: {
+      button: document.getElementById("guide-sound"),
+      hint: document.getElementById("guide-hint"),
+      key: "softtalk-guide-sound",
+      labels: { on: "声音：开", off: "声音：关", locked: "声音：关，点一下打开" },
+      gate: "[data-film-ctl]",
+    },
+    switches: [
+      {
+        button: document.getElementById("guide-fx"),
+        key: "softtalk-guide-fx",
+        initial: !calm,
+        label: (on) => (on ? "特效：开" : "特效：关"),
+        change: (on) => (fx = on), // 引擎随后重画：关掉时正在闪的、飞的立刻收掉
+      },
+    ],
+    chapters: {
+      buttons: document.querySelectorAll("[data-chapter]"),
+      start: (n) => SCENES[n].start,
+      current: chapterAt,
+      jumped: () => stage.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "center" }),
+    },
+    autoplay: { threshold: 0.35, paused: calm }, // 只在进入视野（≥35%）且标签页可见时播；访客自己按了暂停就不再自动续播
+  });
 })();
