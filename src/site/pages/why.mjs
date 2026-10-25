@@ -49,5 +49,6 @@ export const whyPage = {
   </section>
 </div>`,
   bodyEnd: `<script src="assets/js/film-engine.js" defer></script>
+<script src="assets/js/platform-chat.js" defer></script>
 <script src="assets/js/why-film.js" defer></script>`,
 };
