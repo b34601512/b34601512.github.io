@@ -1,4 +1,4 @@
-// guide.html：45 秒操作演示短片（带合成音效与特效，舞台右上角「声音」「特效」两个开关）+ 同样五步的文字版。文字步骤也是动画的章节按钮，点哪步就跳到哪段。
+// guide.html：45 秒操作演示短片（带合成音效与特效，「声音」「特效」两个开关和宣传片一样在进度条那一行）+ 同样五步的文字版。文字步骤也是动画的章节按钮，点哪步就跳到哪段。
 import { breadcrumb, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";
 
@@ -11,9 +11,9 @@ const share =
 // 短片就用截图当聊天窗的底，气泡和输入框里的字照常叠在上面；留空就是代码画的（样式见 guide-film.css）。
 const filmShots = { chat: "" };
 
-// 舞台右上角「声音」「特效」两个开关与左上角「点一下打开声音」提示共用的喇叭图标（没开 JS 时三个都 hidden）。
+// 「点一下打开声音」提示的喇叭图标（没开 JS 时提示与两个开关都 hidden）。
 const speaker = `<svg class="film-icon film-icon--sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12 3.8a6 6 0 0 1 0 8.4" /></svg>`;
-// 舞台右上角两个开关用宣传片控制条的图标（同 assets/js/promo-film.js 的 ICON.sound / ICON.mute，`ctl-btn__wave` 是描边的那几笔），
+// 控制条上的按钮和宣传片同一套（site.css 的 .ctl-btn），图标也一样（同 assets/js/promo-film.js 的 ICON.sound / ICON.mute，`ctl-btn__wave` 是描边的那几笔），
 // 特效是同样 1.5px 描边的一大一小两颗星。
 const ctlSound = `<svg class="film-icon--sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path class="ctl-btn__wave" d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12 3.8a6 6 0 0 1 0 8.4" /></svg>`;
 const ctlMute = `<svg class="film-icon--mute" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path class="ctl-btn__wave" d="M10.5 6l4 4M14.5 6l-4 4" /></svg>`;
@@ -80,23 +80,19 @@ export const guidePage = {
 
   <section class="section">
     <figure class="film">
-      <div class="film-frame">
-        <div class="film-stage" id="guide-film"${filmShots.chat ? ` data-chat-shot="${filmShots.chat}"` : ""} role="img" aria-label="操作演示：鼠标在话术精灵主界面切换团队、个人、离线话术和套号，双击一条话术贴进聊天输入框再回车发送，点话术左侧纸飞机直接发送，按 Alt+Q 搜索后按 Tab 再按数字发送，最后用吸附在聊天窗口下面的搜索栏搜索并发送"></div>
-        <button class="film-hint" id="guide-hint" type="button" data-film-ctl hidden>${speaker}点一下打开声音</button>
-        <div class="film-toggles" data-film-ctl>
-          <button class="ctl-btn film-toggle" id="guide-sound" type="button" aria-label="声音：关，点一下打开" title="声音：关，点一下打开" aria-pressed="false" data-sound="locked" hidden>${ctlSound}${ctlMute}</button>
-          <button class="ctl-btn" id="guide-fx" type="button" aria-label="特效：关" title="特效：关" aria-pressed="false" hidden>${ctlSparkle}</button>
-        </div>
-      </div>
+      <div class="film-stage" id="guide-film"${filmShots.chat ? ` data-chat-shot="${filmShots.chat}"` : ""} role="img" aria-label="操作演示：鼠标在话术精灵主界面切换团队、个人、离线话术和套号，双击一条话术贴进聊天输入框再回车发送，点话术左侧纸飞机直接发送，按 Alt+Q 搜索后按 Tab 再按数字发送，最后用吸附在聊天窗口下面的搜索栏搜索并发送"></div>
       <figcaption class="film-bar">
-        <button class="film-play" id="guide-play" type="button" aria-label="播放" data-playing="false">
-          <svg class="film-icon film-icon--play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.6 8Z" /></svg>
-          <svg class="film-icon film-icon--pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3h2.4v10H4.5zM9.1 3h2.4v10H9.1z" /></svg>
+        <button class="ctl-btn ctl-btn--solid film-play" id="guide-play" type="button" aria-label="播放" data-playing="false">
+          <svg class="film-icon--play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.6 8Z" /></svg>
+          <svg class="film-icon--pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3h2.4v10H4.5zM9.1 3h2.4v10H9.1z" /></svg>
         </button>
         <div class="film-track" id="guide-track" role="slider" tabindex="0" aria-label="播放进度" aria-valuemin="0" aria-valuemax="45" aria-valuenow="0">
           <span class="film-fill" id="guide-fill"></span>
         </div>
         <span class="film-time" id="guide-time">0:00 / 0:45</span>
+        <button class="film-hint" id="guide-hint" type="button" data-film-ctl hidden>${speaker}点一下打开声音</button>
+        <button class="ctl-btn film-toggle" id="guide-sound" type="button" aria-label="声音：关，点一下打开" title="声音：关，点一下打开" aria-pressed="false" data-sound="locked" data-film-ctl hidden>${ctlSound}${ctlMute}</button>
+        <button class="ctl-btn" id="guide-fx" type="button" aria-label="特效：关" title="特效：关" aria-pressed="false" data-film-ctl hidden>${ctlSparkle}</button>
       </figcaption>
     </figure>
     <noscript><p class="note">动画需要浏览器执行 JavaScript，下面是同样的五个步骤。</p></noscript>

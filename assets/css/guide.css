@@ -7,36 +7,15 @@
   margin: 0;
 }
 
+/* 控制条：和宣传片（promo-film.css 的 .promo-bar）一样，所有按钮都在进度条这一行——
+   播放 · 进度条 · 时间 · （「点一下打开声音」）· 声音 · 特效。按钮是 site.css 的 .ctl-btn，与宣传片同一套。
+   放不下时（窄屏且提示还在）提示自己掉到下一行，按钮和进度条不换行，见下面的 @container。 */
 .film-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
-  margin-top: 14px;
-}
-
-.film-play {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: var(--accent);
-  color: var(--on-accent);
-  cursor: pointer;
-  transition: background-color 0.18s ease;
-}
-
-.film-play:hover {
-  background: var(--accent-hover);
-}
-
-.film-icon {
-  width: 15px;
-  height: 15px;
-  fill: currentColor;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .film-play[data-playing="true"] .film-icon--play,
@@ -44,76 +23,29 @@
   display: none;
 }
 
-/* 舞台上的开关层：右上角「声音」「特效」，左上角「点一下打开声音」提示。
-   都放在舞台外面一层（舞台点一下是播放/暂停，内容也会被脚本整块重写），绝对定位叠在画面上，不挤动任何东西。
-   宽屏时落在窗口上方那条空白里（窗口从舞台 48/450 处开始），字幕居中、不和它们重叠；
-   舞台窄了就挪到舞台正上方（见下面的 @container）。 */
-.film-frame {
-  position: relative;
-}
-
-.film-toggles,
-.film-hint {
-  position: absolute;
-  z-index: 1;
-}
-
-.film-toggles {
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 8px;
+/* 声音开关里两个图标只露当前那个 */
+.film-toggle[data-sound="on"] .film-icon--mute,
+.film-toggle[data-sound]:not([data-sound="on"]) .film-icon--sound {
+  display: none;
 }
 
 .film-hint {
-  top: 13px; /* 26px 高，和 36px 的圆按钮中线对齐 */
-  left: 8px;
-}
-
-/* 舞台窄于 740px 时窗口上方那条空白放不下 36px 的圆按钮（8 + 36 > 48 × 舞台宽 / 800），
-   更窄时镜头推近、顶上又是一整条字幕——开关和提示都改放在舞台正上方贴着它的一条里。
-   按舞台的实际宽度判断（.film 是尺寸容器），不看视口。 */
-.film {
-  container-type: inline-size;
-}
-
-@container (max-width: 740px) {
-  .film-frame {
-    padding-top: 42px; /* 36px 圆按钮 + 6px 空隙 */
-  }
-
-  .film-toggles {
-    top: 0;
-    right: 0;
-  }
-
-  .film-hint {
-    top: 5px;
-    left: 0;
-  }
-}
-
-.film-hint {
+  flex: none;
   display: inline-flex;
   align-items: center;
   gap: 5px;
   height: 26px;
   padding: 0 10px 0 8px;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--accent);
   border-radius: 999px;
   background: var(--surface);
-  color: var(--fg-muted);
+  color: var(--accent);
   font: inherit;
   font-size: 12.5px;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 0.18s ease, color 0.18s ease;
-}
-
-.film-hint {
-  border-color: var(--accent);
-  color: var(--accent);
+  transition: background-color 0.18s ease;
 }
 
 .film-hint:hover {
@@ -124,7 +56,7 @@
   display: none;
 }
 
-.film-hint .film-icon {
+.film-icon {
   width: 14px;
   height: 14px;
   fill: none;
@@ -134,16 +66,11 @@
   stroke-linejoin: round;
 }
 
-/* 开关本身是 site.css 的 .ctl-btn（和宣传片控制条同一套圆形按钮）；声音开关里两个图标只露当前那个 */
-.film-toggle[data-sound="on"] .film-icon--mute,
-.film-toggle[data-sound]:not([data-sound="on"]) .film-icon--sound {
-  display: none;
-}
-
 /* 细线进度条：整条都能点、能拖，键盘左右键每次 5 秒 */
 .film-track {
   position: relative;
   flex: 1;
+  min-width: 60px;
   height: 22px;
   cursor: pointer;
   touch-action: none;
@@ -185,10 +112,30 @@
 .film-time {
   flex: none;
   min-width: 84px;
-  color: var(--fg-dim);
-  font-family: var(--mono);
-  font-size: 12.5px;
+  color: var(--fg-muted);
+  font: 13px/1 var(--mono);
   text-align: right;
+}
+
+/* 按控制条自己的宽度判断（.film 是尺寸容器），不看视口：
+   窄了提示放不进这一行，就排到最后、单独占下一行；它只在访客第一次点页面之前出现，点过就收起，控制条回到一行。 */
+.film {
+  container-type: inline-size;
+}
+
+@container (max-width: 560px) {
+  .film-bar {
+    gap: 10px;
+  }
+
+  .film-hint {
+    order: 1;
+  }
+
+  .film-time {
+    min-width: 0;
+    font-size: 11.5px;
+  }
 }
 
 .steps {
@@ -267,19 +214,7 @@
   color: var(--accent);
 }
 
-@media (max-width: 560px) {
-  .film-bar {
-    gap: 10px;
-  }
-
-  .film-time {
-    min-width: 0;
-    font-size: 11.5px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .film-play,
   .film-hint,
   .step-jump,
   .step-no {
