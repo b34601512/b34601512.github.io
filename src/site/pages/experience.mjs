@@ -13,7 +13,7 @@ const newestFirst = [...episodes].sort((a, b) => b.no - a.no);
 function renderEpisode(episode) {
   return `<li>
         <a class="episode" href="${episode.href}">
-          <img class="episode-still" src="${episode.cover}" width="800" height="450" alt="${episode.title}短片封面" loading="lazy" />
+          <img class="episode-still" src="${episode.cover}" width="360" height="640" alt="${episode.title}短片封面" loading="lazy" />
           <span class="episode-text">
             <span class="episode-meta"><span class="eyebrow">${episodeNo(episode.no)}</span><span>${formatDuration(episode.duration)}</span></span>
             <span class="episode-title">${episode.title}</span>

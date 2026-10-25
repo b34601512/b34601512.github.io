@@ -664,7 +664,7 @@ a {
 
 .episode {
   display: grid;
-  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
   gap: 28px;
   align-items: center;
   padding: 24px 0;
@@ -674,7 +674,7 @@ a {
 .episode-still {
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 9 / 16; /* 每一期都是竖屏短片（issue #9） */
   border: 1px solid var(--line);
   transition: border-color 0.18s ease;
 }
@@ -801,8 +801,9 @@ a {
     display: none;
   }
 
+  /* 竖屏静帧铺满整行会占掉一整屏：手机上仍然左图右文，图收窄 */
   .episode {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 104px) minmax(0, 1fr);
     gap: 16px;
   }
 

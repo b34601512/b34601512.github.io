@@ -1,7 +1,7 @@
 // 「客服经验分享」列表页的静帧：每一期的片子在播放器封面上停的那一帧（剧本里的 still），原样导出成 JPG。
 // 画面就是片子自己的 render 画出来的，不另画插图；片子改了画面后重跑一次即可：
 //   CHROME=/path/to/chrome node scripts/build-episode-covers.mjs
-// 只用 Node 自带模块：起一个本地静态服务，用 Chrome 的远程调试协议打开每一期页面，读画布、缩成 800×450 写进 cover 路径。
+// 只用 Node 自带模块：起一个本地静态服务，用 Chrome 的远程调试协议打开每一期页面，读画布、缩成 360×640（竖屏，issue #9）写进 cover 路径。
 import { spawn } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
@@ -59,7 +59,7 @@ try {
       await document.fonts.ready;
       await new Promise((r) => setTimeout(r, 1500));
       const src = document.querySelector("canvas");
-      const out = Object.assign(document.createElement("canvas"), { width: 800, height: 450 });
+      const out = Object.assign(document.createElement("canvas"), { width: 360, height: 640 });
       const ctx = out.getContext("2d");
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(src, 0, 0, out.width, out.height);

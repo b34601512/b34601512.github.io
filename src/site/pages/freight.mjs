@@ -1,5 +1,5 @@
 // freight.html：推广视频「补运费登记案例」（知识分享第一期，剧本见 GitHub issue #4）。
-// 画面 Canvas 现画、声音 Web Audio 现合成（assets/js/freight-film.js），播放器与宣传片共用 film-engine.js 和 promo-film.css。
+// 竖屏 1080×1920（issue #9），画面 Canvas 现画、声音 Web Audio 现合成（assets/js/freight-film.js），播放器与宣传片共用 film-engine.js 和 promo-film.css。
 // 「客服经验分享」系列的第一期：登记在 src/site/experience.mjs 的 episodes 里，由那里进页面清单、导航与 sitemap。
 import { backToListing, experienceListing } from "../experience-series.mjs";
 import { breadcrumb, seoHead } from "../seo.mjs";
@@ -32,7 +32,7 @@ export const freightPage = {
   </section>
 
   <section class="section">
-    <div class="promo" data-freight-film></div>
+    <div class="promo promo--tall" data-freight-film></div>
     <noscript><p class="note">视频是浏览器现场画出来的，需要执行 JavaScript。</p></noscript>
     <div class="actions">
       <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载 Windows 版</a>

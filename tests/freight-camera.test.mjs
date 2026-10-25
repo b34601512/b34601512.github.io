@@ -1,4 +1,4 @@
-// 补运费短片的镜头（issue #5）：取景框永远在画布里、比例 16:9，推拉连续不跳，每一拍都包住它对准的东西，开场第一帧是全景（钩子问话完整在画面里）。
+// 补运费短片的镜头（issue #5）：取景框永远在画布里、比例 9:16（issue #9 起竖屏），推拉连续不跳，每一拍都包住它对准的东西，开场第一帧是全景（钩子问话完整在画面里）。
 // 运行：node --test tests/
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -6,8 +6,8 @@ import { resolve } from "node:path";
 import { test } from "node:test";
 import vm from "node:vm";
 
-const W = 1920;
-const H = 1080;
+const W = 1080;
+const H = 1920;
 const sandbox = {};
 sandbox.globalThis = sandbox;
 vm.runInNewContext(readFileSync(resolve(import.meta.dirname, "../assets/js/freight-film.js"), "utf8"), sandbox);
@@ -24,7 +24,7 @@ test("开场第一帧是全景，钩子问话不被镜头切掉", () => {
   assert.deepEqual({ ...film.camera(0) }, { x: 0, y: 0, w: W, h: H });
 });
 
-test("逐帧（60 帧/秒）取景框都在画布里、比例 16:9，推拉每帧不超过 2%，中心每帧不超过 50 画面像素", () => {
+test("逐帧（60 帧/秒）取景框都在画布里、比例 9:16，推拉每帧不超过 2%，中心每帧不超过 50 画面像素", () => {
   let prev = film.camera(0);
   for (let u = 1 / 60; u <= film.TL.base; u += 1 / 60) {
     const c = film.camera(u);
