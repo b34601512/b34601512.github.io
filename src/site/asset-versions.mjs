@@ -21,7 +21,6 @@ const VERSIONED_ASSETS = [
   "assets/js/demo-data.js",
   "assets/js/demo.js",
   "assets/js/theme.js",
-  "assets/js/nav.js",
   "assets/js/contact.js",
 ];
 

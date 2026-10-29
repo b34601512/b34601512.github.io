@@ -152,87 +152,43 @@ a {
   object-fit: contain;
 }
 
-/* 目录：右上角一个「目录」按钮，点开是竖排的分组清单（页面多了以后横排放不下，issue #7）。
-   清单挂在 .nav-inner 上、右边缘对齐内容区；分组之间靠 1px 细线，当前页左侧一道橙线。 */
-.nav-menu {
-  margin-left: auto;
-}
-
-.nav-menu-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 14px 0 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  font-size: 14px;
-  color: var(--fg);
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-  white-space: nowrap;
-  transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
-}
-
-.nav-menu-toggle::-webkit-details-marker {
-  display: none;
-}
-
-.nav-menu-toggle:hover,
-.nav-menu[open] .nav-menu-toggle {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.nav-menu-icon {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-}
-
-/* 按钮上带着当前所在的页面名，不打开目录也知道自己在哪 */
-.nav-menu-here {
-  padding-left: 9px;
-  border-left: 1px solid var(--line-strong);
-  color: var(--fg-muted);
-}
-
+/* 目录：不是按钮，是页面本身的一部分，一打开就摆在那里、收不起来（issue #12）。
+   窄屏：顶栏下面一块紧凑清单，每组一行（组名 + 横排链接，放不下就换行），左右与内容区对齐、随页面滚走。
+   宽屏（≥ 1280px）：钉在页面右侧、从顶到底的常驻侧栏，页面整体让出右边 --side 宽。
+   分组之间靠 1px 细线，当前页一道橙线（窄屏在字下面，宽屏在左边）。 */
 .nav-links {
-  position: absolute;
-  top: calc(100% + 1px);
-  right: var(--pad);
-  width: 260px;
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-  padding: 6px 0;
-  background: var(--bg);
-  border: 1px solid var(--line-strong);
-  border-top: none;
+  padding: 4px max(var(--pad), calc((100% - var(--width)) / 2 + var(--pad)));
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.nav-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .nav-group + .nav-group {
-  margin-top: 6px;
-  padding-top: 6px;
   border-top: 1px solid var(--line);
 }
 
 .nav-group-name {
-  margin: 0;
-  padding: 8px 18px 4px;
+  flex: none;
+  width: 5em;
   font-size: 12px;
   color: var(--fg-dim);
 }
 
+.nav-group-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2px;
+  min-width: 0;
+}
+
 .nav-link {
-  display: block;
-  padding: 9px 18px 9px 16px;
-  border-left: 2px solid transparent;
-  font-size: 15px;
+  padding: 5px 6px;
+  border-bottom: 2px solid transparent;
   color: var(--fg-muted);
   text-decoration: none;
   transition: color 0.18s ease, background-color 0.18s ease;
@@ -244,34 +200,58 @@ a {
 }
 
 .nav-link--current {
-  border-left-color: var(--accent);
+  border-bottom-color: var(--accent);
   color: var(--fg);
   font-weight: 600;
 }
 
-/* 宽屏（≥ 1280px）：目录展开时是贴在页面右侧、从顶到底的常驻侧栏（issue #12），开合由 nav.js 记住。
-   页面整体（顶栏、正文、页脚）让出右边 --side 宽，1280 下仍剩 1040px，放得下 1000px 内容区。
-   顶栏有 backdrop-filter，会成为 fixed 子元素的定位框，所以侧栏用 absolute 挂在 sticky 顶栏的右外侧：
-   顶栏始终贴在视口顶部，侧栏也就一直钉在原处。 */
 @media (min-width: 1280px) {
-  body:has(.nav-menu[open]) {
+  body {
     padding-right: var(--side);
   }
 
-  .nav-inner {
-    position: static;
-  }
-
   .nav-links {
+    position: fixed;
     top: 0;
-    left: 100%;
-    right: auto;
+    right: 0;
+    z-index: 60;
     width: var(--side);
     height: 100vh;
-    max-height: none;
+    overflow-y: auto;
     padding: 16px 0;
-    border: none;
+    border-bottom: none;
     border-left: 1px solid var(--line);
+    background: var(--bg);
+    font-size: 15px;
+  }
+
+  .nav-group {
+    display: block;
+  }
+
+  .nav-group + .nav-group {
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+
+  .nav-group-name {
+    width: auto;
+    padding: 8px 18px 4px;
+  }
+
+  .nav-group-links {
+    display: block;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 9px 18px 9px 16px;
+    border-bottom: none;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-link--current {
+    border-left-color: var(--accent);
   }
 }
 
@@ -810,24 +790,6 @@ a {
     display: none;
   }
 
-  .nav-menu-toggle {
-    height: 30px;
-    padding: 0 12px 0 10px;
-  }
-
-  /* 手机上目录铺满整行，按钮上不再挂当前页名（窄屏放不下） */
-  .nav-links {
-    left: 0;
-    right: 0;
-    width: auto;
-    border-left: none;
-    border-right: none;
-  }
-
-  .nav-menu-here {
-    display: none;
-  }
-
   /* 竖屏静帧铺满整行会占掉一整屏：手机上仍然左图右文，图收窄 */
   .episode {
     grid-template-columns: minmax(0, 104px) minmax(0, 1fr);
@@ -859,7 +821,6 @@ a {
   }
 
   .nav-link,
-  .nav-menu-toggle,
   .crumb,
   .episode-still,
   .episode-title,
