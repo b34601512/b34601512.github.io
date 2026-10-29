@@ -1,6 +1,5 @@
 // 公共页面骨架：head 基础项、导航、页脚。公共信息只从 site-data.mjs 读取。
 import { siteData } from "./site-data.mjs";
-import { NAV_STORAGE_KEY, NAV_WIDE_QUERY, navStartsOpen } from "./nav-state.mjs";
 
 const DOWNLOAD_LINK = { label: "下载", href: siteData.downloadUrl, external: true };
 
@@ -8,12 +7,6 @@ const DOWNLOAD_LINK = { label: "下载", href: siteData.downloadUrl, external: t
 // 访客点过切换就按他的选择；没点过就跟随系统设置；系统没明确要深色（或读不到）就是白天。键名与 theme.js 共用。
 const THEME_BOOT = `<script>
 try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
-</script>`;
-
-// 紧跟在目录后面同步执行：正文还没解析、也还没绘制，宽屏按记住的选择把目录摊开，不会先收起再弹开。
-// 判据是 nav-state.mjs 里的纯函数原样内联；挂到 window 上给 nav.js 复用。
-const NAV_BOOT = `<script>
-try { window.softtalkNav = { key: "${NAV_STORAGE_KEY}", query: "${NAV_WIDE_QUERY}", startsOpen: ${navStartsOpen} }; document.getElementById("nav-menu").open = softtalkNav.startsOpen(localStorage.getItem(softtalkNav.key), matchMedia(softtalkNav.query).matches); } catch {}
 </script>`;
 
 // 页面定义需要提供：outputFile、navLabel、head、main、可选 styles、bodyEnd 与 navUnder。
@@ -31,7 +24,6 @@ ${page.head.trim()}
 <link rel="icon" href="assets/favicon.png" />
 <link rel="stylesheet" href="assets/css/site.css" />${renderPageStyles(page)}
 <script src="assets/js/theme.js" defer></script>
-<script src="assets/js/nav.js" defer></script>
 </head>
 <body>
 ${renderNav(page, sitePages)}
@@ -50,10 +42,9 @@ function renderPageStyles(page) {
   return (page.styles ?? []).map((href) => `\n<link rel="stylesheet" href="${href}" />`).join("");
 }
 
-// 导航是一个竖排目录（GitHub issue #7：页面越来越多，横排放不下）：<details> 展开，没开 JS 也能用；
+// 顶栏只有品牌与主题切换；目录紧跟在顶栏后面，一打开页面就摆在那里，没有按钮、不能收起，也不靠 JS（issue #12）。
 // 页面按 navGroup 分组，组的先后按 sitePages 里第一次出现的顺序；「下载」挂在最后一组。
-// 宽屏（≥ 1280px）展开时是贴在页面右侧的常驻侧栏，开合记在 localStorage（issue #12）；窄屏仍是顶栏下拉。
-// nav.js 补「记住开合」，以及窄屏下「点外面 / 按 Esc / 点了链接就收起」。
+// 宽屏（≥ 1280px）是钉在页面右侧的常驻侧栏；窄屏是顶栏下面一块紧凑的分组清单（每组一行，链接横排换行）。
 function renderNav(page, sitePages) {
   const groups = new Map();
   sitePages
@@ -70,15 +61,16 @@ function renderNav(page, sitePages) {
     });
   [...groups.values()].at(-1).push(DOWNLOAD_LINK);
 
-  const here = sitePages.find((item) => item.outputFile === (page.navUnder ?? page.outputFile));
   const sections = [...groups]
     .map(
       ([name, links]) => `<div class="nav-group">${name ? `
-          <p class="nav-group-name">${name}</p>` : ""}
-          ${links.map(renderNavLink).join("\n          ")}
-        </div>`,
+    <p class="nav-group-name">${name}</p>` : ""}
+    <p class="nav-group-links">
+      ${links.map(renderNavLink).join("\n      ")}
+    </p>
+  </div>`,
     )
-    .join("\n        ");
+    .join("\n  ");
 
   return `<header class="nav">
   <div class="nav-inner">
@@ -86,19 +78,12 @@ function renderNav(page, sitePages) {
       <img class="brand-logo" src="assets/logo-small.png" alt="" />
       <span>${siteData.siteName}</span>
     </a>
-    <details class="nav-menu" id="nav-menu">
-      <summary class="nav-menu-toggle">
-        <svg class="nav-menu-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" /></svg>
-        <span>目录</span>${here ? `<span class="nav-menu-here">${here.navLabel}</span>` : ""}
-      </summary>
-      <nav class="nav-links" aria-label="站点目录">
-        ${sections}
-      </nav>
-    </details>
-    ${NAV_BOOT}
     ${THEME_TOGGLE}
   </div>
-</header>`;
+</header>
+<nav class="nav-links" aria-label="站点目录">
+  ${sections}
+</nav>`;
 }
 
 // 黑夜模式显示太阳（点了去白天），白天模式显示月亮；文案由 theme.js 按当前主题改写。
