@@ -141,7 +141,7 @@
     return h;
   }
 
-  // 通用聊天窗：不模仿任何平台（标题只写顾客名），自己发的气泡是品牌橙
+  // 通用简化聊天窗（标题只写顾客名），自己发的气泡是品牌橙；不写平台名、不画标志、不含真实用户信息
   function chatWindow(ctx, x, y, w, h, who, { alpha = 1, scale = 1, lit = 0 } = {}) {
     if (alpha <= 0) return;
     ctx.save();
