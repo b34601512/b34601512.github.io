@@ -1,4 +1,4 @@
-"""用客户端的手绘绘制代码导出站点图片（小精灵 logo、favicon、演示区话术类型角标），和客户端里是同一套笔迹。
+"""用客户端的手绘绘制代码生成站点图片（小精灵 logo、favicon、演示区话术类型角标），和客户端里是同一套笔迹。
 
 用法（在项目根目录执行）：
     python scripts/optimize-images.py brand <客户端仓库目录，例如 D:\\SoftTalk>

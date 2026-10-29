@@ -11,7 +11,7 @@
 // 画笔、镜头、合成器与 why-film.js 同一套（每部片子自带一份，互不牵连）。
 //
 // 挂到任何页面：放一个容器 <div class="promo promo--tall" data-diff-film></div>，引 assets/css/promo-film.css
-// 与 assets/js/film-engine.js、assets/js/diff-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、导出、全屏）在 film-engine.js。
+// 与 assets/js/film-engine.js、assets/js/diff-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、全屏）在 film-engine.js。
 (() => {
   const BASE = 42;
   const W = 1080;
@@ -1378,13 +1378,6 @@
       fb.connect(d1);
       lp.connect(this.master);
     }
-    stream() {
-      if (!this.dest) {
-        this.dest = this.ctx.createMediaStreamDestination();
-        this.comp.connect(this.dest);
-      }
-      return this.dest.stream;
-    }
     bus() {
       const g = this.ctx.createGain();
       g.connect(this.master);
@@ -1651,7 +1644,6 @@
         track: "promo-track",
         fill: "promo-fill",
         time: "promo-time",
-        rec: "promo-rec",
       },
       base: BASE,
       duration: BASE,
@@ -1664,7 +1656,6 @@
       score: buildScore(),
       createSynth: () => new Synth(),
       fullscreen: true,
-      record: { filename: "话术精灵_话术软件有什么不同" },
     });
     // 小精灵图加载好了再画一次封面
     opts.logo.addEventListener("load", refresh);

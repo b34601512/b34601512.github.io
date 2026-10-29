@@ -1,6 +1,6 @@
-// MP4 体检（issue #15）：把导出的文件按盒子拆开，核对样本表自洽，给自检用。
-// Node 里的测试（tests/mp4-mux.test.mjs）和浏览器里的自检页（check-export.html）用的是同一份，
-// 所以「Node 里测过的封装」和「浏览器里真导出来的文件」走的是同一套核对。正式页面不加载它。
+// MP4 体检（issue #15）：把出好的文件按盒子拆开，核对样本表自洽。
+// Node 里的测试（mp4-mux.test.mjs）和离线出片工具（tools/export-films.mjs）出完片的体检用的是同一份，
+// 所以「Node 里测过的封装」和「真出来的文件」走的是同一套核对。不进站点。
 //
 //   Mp4Inspect.inspect(bytes: Uint8Array) → { brands, duration, tracks: [...], problems: [字符串] }
 //   problems 为空 = 盒子长度、样本数、时长、偏移量都对得上

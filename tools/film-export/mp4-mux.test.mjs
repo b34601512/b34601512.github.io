@@ -1,7 +1,7 @@
-// MP4 封装自检（issue #15）：喂一批假样本给 assets/js/mp4-mux.js，再用 assets/js/mp4-inspect.js 拆回来，
+// MP4 封装自检（issue #15）：喂一批假样本给 mp4-mux.js，再用 mp4-inspect.js 拆回来，
 // 核对盒子、样本数、时长、关键帧、编码配置、每个样本的字节都原样落在算出来的偏移上。
-// 浏览器里导出的真文件走的也是这两份代码（自检页 check-export.html 用同一个 inspect 核对）。
-// 运行：node --test tests/
+// 离线出片工具（tools/export-films.mjs）出的真文件走的也是这两份代码，出完用同一个 inspect 体检。
+// 运行：node --test tools/film-export/*.test.mjs
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -10,7 +10,7 @@ import vm from "node:vm";
 
 // 跑在本 realm 里（不另开 vm 上下文），数组、TypedArray 才能直接 deepEqual
 for (const file of ["mp4-mux.js", "mp4-inspect.js"]) {
-  vm.runInThisContext(readFileSync(resolve(import.meta.dirname, "../assets/js", file), "utf8"), { filename: file });
+  vm.runInThisContext(readFileSync(resolve(import.meta.dirname, file), "utf8"), { filename: file });
 }
 const { Mp4Mux, Mp4Inspect } = globalThis;
 

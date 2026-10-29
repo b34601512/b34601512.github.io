@@ -1,10 +1,10 @@
-// 离线导出（issue #15）：一帧一帧把短片画好交给 WebCodecs 编码，声音用 OfflineAudioContext 一次算完再编码，
-// 最后用 mp4-mux.js 拼成 MP4。和播放完全脱钩：不用播放、不用开着这一页、不用等真实时间——
-// 机器多快就多快（以前的 MediaRecorder 只能实时录，片子多长就等多久，切走标签页还会录坏）。
+// 离线编码（issue #15）：一帧一帧把短片画好交给 WebCodecs 编码，声音用 OfflineAudioContext 一次算完再编码，
+// 最后用 mp4-mux.js 拼成 MP4。和播放完全脱钩：不用播放、不用等真实时间，机器多快就多快。
+// 不进站点：只由离线出片工具（tools/export-films.mjs）注进片子页面里跑（run.js 调它）。
 //
-// 片子画什么、响什么都不归这里管：film-engine.js 把「第 t 秒画到这块画布上」和「把声音排到这个 AudioContext 上」交进来。
+// 片子画什么、响什么都不归这里管：run.js 把「第 t 秒画到这块画布上」（film-engine.js 的 mountFilm.paint）和「把声音排到这个 AudioContext 上」交进来。
 //
-//   filmExport.available()                          // 浏览器有没有 WebCodecs 这一套（没有就走原来的 MediaRecorder）
+//   filmExport.available()                          // 浏览器有没有 WebCodecs 这一套（没有就由 run.js 实时录 WebM）
 //   filmExport.plan({ width, height, fps, bitrate }) → Promise<plan | null>   // 挑浏览器真能编的格式；null = 编不了 H.264 或声音
 //   filmExport.encode({ plan, width, height, fps, seconds, paint(ctx, t), sound(audioCtx), progress(ratio), signal })
 //     → Promise<Blob>（video/mp4）；signal 放弃时抛 AbortError，编码器一律关掉

@@ -2,7 +2,7 @@
 // 画面与声音都是时间 u（0–32 秒的剧本时间）的函数：拖到哪一秒都能还原同一帧，声音按同一条时间线排程。
 //
 // 挂到任何页面：放一个容器 <div class="promo" data-promo-film></div>，引 assets/css/promo-film.css
-// 与 assets/js/film-engine.js、assets/js/promo-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、导出、全屏）在 film-engine.js。
+// 与 assets/js/film-engine.js、assets/js/promo-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、全屏）在 film-engine.js。
 // 可选属性：data-duration（整片秒数，默认 32，画面与音乐一起按比例伸缩）、
 // data-tagline（片尾标语）、data-logo（片尾小精灵图，默认 assets/logo.png）。
 (() => {
@@ -1019,13 +1019,6 @@
       fb.connect(d1);
       lp.connect(this.master);
     }
-    stream() {
-      if (!this.dest) {
-        this.dest = this.ctx.createMediaStreamDestination();
-        this.comp.connect(this.dest);
-      }
-      return this.dest.stream;
-    }
     bus() {
       const g = this.ctx.createGain();
       g.connect(this.master);
@@ -1293,7 +1286,6 @@
         track: "promo-track",
         fill: "promo-fill",
         time: "promo-time",
-        rec: "promo-rec",
       },
       base: BASE,
       duration,
@@ -1306,7 +1298,6 @@
       score,
       createSynth: () => new Synth(),
       fullscreen: true,
-      record: { filename: "话术精灵宣传片" },
     });
     // 片尾小精灵图加载好了再画一次封面
     opts.logo.addEventListener("load", refresh);

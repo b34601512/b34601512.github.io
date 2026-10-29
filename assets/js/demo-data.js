@@ -1364,7 +1364,7 @@ const DEFAULT_CATEGORY = SCOPES.team.sets[0].categories.findIndex((category) => 
 const initialTreeHtml = () => treeHtml(SCOPES.team.sets[0].categories[DEFAULT_CATEGORY]).html;
 
 /* 浏览器挂到 window，Node（构建脚本）拿到 module.exports。 */
-/* 导出给两种运行环境：浏览器挂到 window.SOFTTALK_DEMO（demo.js 取 SCOPES/DEFAULT_CATEGORY/esc/rowHtml/treeHtml 与内容读取函数），
+/* 交给两种运行环境：浏览器挂到 window.SOFTTALK_DEMO（demo.js 取 SCOPES/DEFAULT_CATEGORY/esc/rowHtml/treeHtml 与内容读取函数），
    构建脚本在 Node 里 import（index.mjs 用 initialTreeHtml 做静态预渲染）；TYPE_ICONS 只在本文件内部用。 */
 const DEMO = { SCOPES, DEFAULT_CATEGORY, esc, rowHtml, treeHtml, initialTreeHtml, segmentsOf, filesOf, isRich };
 if (typeof module !== "undefined" && module.exports) module.exports = DEMO;
