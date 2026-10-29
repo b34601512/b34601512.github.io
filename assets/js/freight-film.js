@@ -518,7 +518,7 @@
     t += 15;
     cap(L.montage, m.montage[0] + 1.2, t);
 
-    // ⑧ 以上这些都是真实案例，真实经验 + 话术精灵 + 微信
+    // ⑧ 以上这些都是真实案例，真实经验 + 话术精灵 + 作者账号
     scene("end");
     m.end = [t, t + 11];
     sfx(t, "swell", {}, 6);
@@ -1657,7 +1657,7 @@
       ctx.fillStyle = P.chip;
       ctx.fill();
       text(ctx, "全部", r.x + r.w - 68, sy + 25, { size: 19, color: P.ink });
-      text(ctx, `微信 ${L.wechat}`, r.x + 20, r.y + r.h - 28, { size: 19, color: P.muted, align: "left" });
+      text(ctx, L.wechat, r.x + 20, r.y + r.h - 28, { size: 19, color: P.muted, align: "left" });
       if (logo.complete && logo.naturalWidth) ctx.drawImage(logo, r.x + r.w - 46, r.y + r.h - 50, 26, 29);
       // 右键菜单
       if (st.menu) {
@@ -2414,7 +2414,7 @@
         rr(ctx, W / 2 - 360, 1174, 720, 92, 46);
         ctx.fillStyle = ACCENT;
         ctx.fill();
-        text(ctx, `微信  ${L.wechat}`, W / 2, 1221, { size: 48, weight: 800, color: "#000" });
+        text(ctx, L.wechat, W / 2, 1221, { size: 48, weight: 800, color: "#000" });
         ctx.restore();
       }
       text(ctx, "Windows 本地永久免费", W / 2, 300, { size: 36, color: MUTED, alpha: sm(t0 + 6.3, t0 + 6.8, u) });

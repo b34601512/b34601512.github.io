@@ -281,7 +281,7 @@
 <div class="gf-hud" aria-hidden="true">
   <p class="gf-caption" data-ref="caption"></p>
   <div class="gf-title" data-ref="intro"><img src="assets/logo.png" alt="" /><strong>话术精灵</strong><span>45 秒看懂怎么用</span></div>
-  <div class="gf-title" data-ref="outro" hidden><img src="assets/logo.png" alt="" /><strong>装好就能用</strong><span>本地永久免费 · <b>微信 luyao2089</b></span></div>
+  <div class="gf-title" data-ref="outro" hidden><img src="assets/logo.png" alt="" /><strong>装好就能用</strong><span>本地永久免费 · <b>luyao2089</b></span></div>
   ${'<i class="gf-confetti" hidden></i>'.repeat(CONFETTI)}
   <span class="gf-sweep" hidden></span><span class="gf-flash" hidden></span>
 </div>`;
