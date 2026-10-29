@@ -40,7 +40,7 @@ export const whyPage = {
 
   <section class="section">
     <div class="promo promo--tall" data-why-film></div>
-    <noscript><p class="note">我们开了很多店：京东、天猫、拼多多、抖音，每个平台都有好几家店。平台自带快捷短语，可话术要经常优化——改一句，就得每家店都重新编辑一遍，工作量太大，而且完全没必要。所以我做了话术精灵，专门管理话术：话术只改一次，所有店铺都能用。节约时间，快速高效率。想用、想问，加我微信 ${siteData.authorWechat}。（短片是浏览器现场画出来的，需要执行 JavaScript。）</p></noscript>
+    <noscript><p class="note">我们开了很多店：京东、天猫、拼多多、抖音，每个平台都有好几家店。平台自带快捷短语，可话术要经常优化——改一句，就得每家店都重新编辑一遍，工作量太大，而且完全没必要。所以我做了话术精灵，专门管理话术：话术只改一次，所有店铺都能用。节约时间，快速高效率。想用、想问，加我 ${siteData.authorWechat}。（短片是浏览器现场画出来的，需要执行 JavaScript。）</p></noscript>
     <div class="actions">
       <a class="btn btn--primary" href="${siteData.downloadUrl}" target="_blank" rel="noopener">下载 Windows 版</a>
       <a class="btn btn--ghost" href="index.html#demo">先看演示</a>

@@ -867,7 +867,7 @@
         ctx.fillRect(W / 2 - full / 2 + part + 10, 855, 5, 70);
       }
     }
-    text(ctx, "微信 luyao2089   ·   Windows 本地永久免费", W / 2, 1000, { size: 34, color: MUTED, alpha: sm(28.6, 29.1, u) });
+    text(ctx, "luyao2089   ·   Windows 本地永久免费", W / 2, 1000, { size: 34, color: MUTED, alpha: sm(28.6, 29.1, u) });
   }
 
   function render(ctx, u, opts) {
