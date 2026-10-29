@@ -49,6 +49,8 @@ export const diffPage = {
     </div>
   </section>
 </div>`,
-  bodyEnd: `<script src="assets/js/film-engine.js" defer></script>
+  bodyEnd: `<script src="assets/js/mp4-mux.js" defer></script>
+<script src="assets/js/film-export.js" defer></script>
+<script src="assets/js/film-engine.js" defer></script>
 <script src="assets/js/diff-film.js" defer></script>`,
 };

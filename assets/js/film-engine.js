@@ -15,12 +15,17 @@
 //   camera(u) → { x, y, w, h },   // 可选：镜头。第 u 秒的取景框（设计坐标，比例 = width:height，不出画布），引擎把它放大铺满画布再调 render
 //   overlay(ctx, u, cam),         // 可选：镜头之外的一层（字幕、章节标题……），按画布坐标画，不跟着镜头缩放；cam 是这一帧的取景框
 //   createSynth() → { ctx: AudioContext, bus(), play(e, at, k, bus, skip), stream() }
+//                                 // 离线导出时会再建一个，ctx 换成 OfflineAudioContext（见 offlineSound）：Synth 要在构造时 new window.AudioContext
 //   fullscreen: true,             // 可选：全屏按钮（浏览器支持才出现）
-//   record: { filename },         // 可选：导出视频按钮（MediaRecorder + captureStream 都有才出现）
-//                                 // 格式先 MP4 后 WebM（见 RECORD_TYPES）；MediaRecorder 只能录实时的流，所以导出＝从头实时播一遍（宣传片 32 秒，补运费 3 分多钟）：
-//                                 // 画面左上角的 rec 字条报进度与剩余时间，播完自动下载，字条变成文件链接（没下载成可再点）；
-//                                 // 导出中再按一次导出键＝放弃；暂停或切走标签页时录像跟着暂停，回来接着录，不录进冻住的画面。
-//   → { seek, play, pause, render, refresh }（seek/render 用真实秒；refresh：没在播就重画一次）
+//   record: { filename },         // 可选：导出视频按钮（浏览器有 WebCodecs，或有 MediaRecorder + captureStream 才出现），两条路：
+//                                 // ① 离线编码（film-export.js，issue #15）：一帧帧画、离线合成声音、自己拼 MP4，不用播放、不用等真实时间、
+//                                 //    切走标签页照常导出；播放器照常能看。浏览器编不了 H.264 或声音时自动走 ②。
+//                                 // ② MediaRecorder 实时录（老办法，格式先 MP4 后 WebM，见 RECORD_TYPES）：导出＝从头实时播一遍
+//                                 //    （宣传片 32 秒，补运费 3 分多钟）；暂停或切走标签页时录像跟着暂停，回来接着录，不录进冻住的画面。
+//                                 // 两条路都是画面左上角的 rec 字条报进度与剩余时间，好了自动下载，字条变成文件链接（没下载成可再点）；
+//                                 // 导出中再按一次导出键＝放弃。
+//   → { seek, play, pause, render, refresh, exportVideo }（seek/render 用真实秒；refresh：没在播就重画一次；
+//     exportVideo({ save })：走 ① 导出一次，返回 { blob, plan }，编不了返回 null，save=false 时不自动下载——给自检页 check-export.html 用）
 //
 // 「怎么用」短片（clock: "frame"）——DOM 舞台 + 页面里写死的控件 + 逐帧时钟：
 //   controls: { play, track, fill, time },   // 页面上已有的元素（播放键用 data-playing 切两个图标）
@@ -40,6 +45,9 @@
   // H.264 + AAC 最通用，但浏览器不一定能编 AAC（Linux 版 Chrome 156 实测不能）；不能就 H.264 + Opus，仍是 MP4。
   // 不写编码级别（avc1.64002A 这类）：画布 1920×1080、60 帧要几级由浏览器自己定，写死了反而可能报不支持。
   const RECORD_TYPES = ["video/mp4;codecs=avc1,mp4a.40.2", "video/mp4;codecs=avc1,opus", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  // 导出的帧率与码率：两条导出路共用，离线导出的文件和实时录的一样规格
+  const EXPORT_FPS = 60;
+  const EXPORT_BITRATE = 12_000_000;
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   const ICON = {
@@ -165,14 +173,16 @@
     soundBtn.setAttribute("aria-label", "静音");
     const saveBtn = el("button", "ctl-btn", ICON.save);
     saveBtn.type = "button";
-    const SAVE_LABEL = "导出视频文件（实时录制一遍，带声音）";
+    const canRecord = Boolean(window.MediaRecorder && canvas.captureStream);
+    const canEncode = Boolean(window.filmExport?.available());
+    const SAVE_LABEL = canEncode ? "导出视频文件（带声音，不用等它播完）" : "导出视频文件（实时录制一遍，带声音）";
     saveBtn.setAttribute("aria-label", SAVE_LABEL);
     saveBtn.title = SAVE_LABEL;
     const fullBtn = el("button", "ctl-btn", ICON.full);
     fullBtn.type = "button";
     fullBtn.setAttribute("aria-label", "全屏");
     bar.append(playBtn, track, time, soundBtn);
-    if (o.record && window.MediaRecorder && canvas.captureStream) bar.append(saveBtn);
+    if (o.record && (canRecord || canEncode)) bar.append(saveBtn);
     if (o.fullscreen && root.requestFullscreen) bar.append(fullBtn);
     root.replaceChildren(screen, bar);
 
@@ -187,7 +197,9 @@
     let cursor = 0;
     let timer = 0;
     let raf = 0;
-    let recording = null; // 导出中：{ recorder, chunks, cancelled, failed }
+    let recording = null; // 实时录制中：{ recorder, chunks, cancelled, failed }
+    let encoding = null; // 离线导出中：AbortController
+    let plan = null; // 离线导出用的编码格式（第一次导出时问浏览器，之后沿用）
     let savedUrl = "";
     let recShown = "";
     let started = false;
@@ -204,23 +216,28 @@
       }
     }
 
-    function draw() {
-      size();
-      const at = started ? u : o.still;
-      const sx = canvas.width / W;
-      const sy = canvas.height / H;
-      ctx.setTransform(sx, 0, 0, sy, 0, 0);
+    // 把第 at 秒（剧本秒）画到 g 的画布上：播放器的画布和离线导出的画布都只走这一个函数，画出来的东西才一模一样
+    function paint(g, at) {
+      const sx = g.canvas.width / W;
+      const sy = g.canvas.height / H;
+      g.setTransform(sx, 0, 0, sy, 0, 0);
       // 镜头：取景框（设计坐标里的一块 16:9）放大铺满画布；片子自己保证取景框不出画布、比例是 W:H
       const cam = o.camera ? o.camera(at) : null;
       if (cam) {
         const z = W / cam.w;
-        ctx.transform(z, 0, 0, z, -cam.x * z, -cam.y * z);
+        g.transform(z, 0, 0, z, -cam.x * z, -cam.y * z);
       }
-      o.render(ctx, at);
+      o.render(g, at);
       if (o.overlay) {
-        ctx.setTransform(sx, 0, 0, sy, 0, 0);
-        o.overlay(ctx, at, cam);
+        g.setTransform(sx, 0, 0, sy, 0, 0);
+        o.overlay(g, at, cam);
       }
+    }
+
+    function draw() {
+      size();
+      const at = started ? u : o.still;
+      paint(ctx, at);
       showProgress({ track, fill, time }, started ? u * k : 0, started ? u / BASE : 0, duration, {});
       recStatus();
     }
@@ -293,7 +310,7 @@
       if (synth && synth.ctx.state === "suspended") synth.ctx.resume();
       started = true;
       cover.hidden = true;
-      if (!recording) status(null);
+      if (!recording && !encoding) status(null);
       u = from >= BASE ? 0 : from;
       startU = u;
       startClock = clock() + 0.05;
@@ -362,16 +379,17 @@
     }
 
     function record() {
+      if (!canRecord) return status("fail", "导出失败：这个浏览器既编不了 H.264，也不能录制画布");
       if (playing) stop();
       start(0);
       if (!synth) return status("fail", "导出失败：这个浏览器不能合成声音");
       recording = { recorder: null, chunks: [], cancelled: false, failed: false };
       size(); // 先把画布定成 1920×1080，再开始抓流（录到一半改尺寸，有的播放器会花屏）
       try {
-        const stream = canvas.captureStream(60);
+        const stream = canvas.captureStream(EXPORT_FPS);
         synth.stream().getAudioTracks().forEach((t) => stream.addTrack(t));
         const type = RECORD_TYPES.find((m) => MediaRecorder.isTypeSupported(m));
-        recording.recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 12_000_000 });
+        recording.recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: EXPORT_BITRATE });
       } catch {
         recording = null;
         stop();
@@ -389,11 +407,7 @@
         if (r.cancelled) return status(null);
         const blob = new Blob(r.chunks, { type: r.recorder.mimeType });
         if (!blob.size) return status("fail", "导出失败：没有录到画面");
-        if (savedUrl) URL.revokeObjectURL(savedUrl); // 上一次的链接换掉；这一次的留着，自动下载被拦时还能手动点
-        savedUrl = URL.createObjectURL(blob);
-        const name = `${o.record.filename}.${blob.type.startsWith("video/mp4") ? "mp4" : "webm"}`;
-        status("done", `已导出 ${name}（${(blob.size / 1048576).toFixed(1)} MB）`, savedUrl, name);
-        rec.click();
+        deliver(blob);
       };
       r.recorder.onerror = () => {
         r.cancelled = r.failed = true;
@@ -405,8 +419,93 @@
       draw();
     }
 
+    // 导出好的文件：字条变成下载链接并自动点一下
+    function deliver(blob) {
+      if (savedUrl) URL.revokeObjectURL(savedUrl); // 上一次的链接换掉；这一次的留着，自动下载被拦时还能手动点
+      savedUrl = URL.createObjectURL(blob);
+      const name = `${o.record.filename}.${blob.type.startsWith("video/mp4") ? "mp4" : "webm"}`;
+      status("done", `已导出 ${name}（${(blob.size / 1048576).toFixed(1)} MB）`, savedUrl, name);
+      rec.click();
+    }
+
+    // 离线声音：片子的 Synth 在构造函数里自己 new AudioContext()。导出时把构造函数临时换成「交出这个离线 context」，
+    // 片子的声音代码一个字不用改；声音事件按播放时同一条换算（真实秒 = 剧本秒 × k）从 0 秒起一次排完。
+    function offlineSound(ac) {
+      const had = "webkitAudioContext" in window;
+      const saved = [window.AudioContext, window.webkitAudioContext];
+      // 不能用箭头函数：要能被 new，并且 new 出来的就是 ac 本身
+      const Lend = function () {
+        return ac;
+      };
+      window.AudioContext = window.webkitAudioContext = Lend;
+      let synth;
+      try {
+        synth = o.createSynth();
+      } finally {
+        window.AudioContext = saved[0];
+        if (had) window.webkitAudioContext = saved[1];
+        else delete window.webkitAudioContext;
+      }
+      const bus = synth.bus();
+      for (const e of score) synth.play(e, e.u * k, k, bus);
+    }
+
+    // 离线导出（见开头的 record 说明 ①）。save=false：只把文件交回去，不自动下载（自检页用）。
+    // 浏览器编不了时：按钮点进来的退回实时录制，自检页拿到 null。
+    async function exportVideo({ save = true, fallback = false } = {}) {
+      if (encoding || recording) return null; // 已经在导出了（自检页与按钮不会同时来，防一手）
+      const job = new AbortController();
+      encoding = job;
+      setSaveUi(true);
+      status("rec", "正在准备导出…");
+      const done = () => {
+        if (encoding === job) encoding = null;
+        setSaveUi(false);
+      };
+      try {
+        plan ||= await window.filmExport.plan({ width: W, height: H, fps: EXPORT_FPS, bitrate: EXPORT_BITRATE }).catch(() => null);
+        if (!plan || job.signal.aborted) {
+          done();
+          status(null);
+          if (!plan && fallback && !job.signal.aborted) record();
+          return null;
+        }
+        if (document.fonts) await document.fonts.ready;
+        const began = performance.now();
+        let shown = -1;
+        const blob = await window.filmExport.encode({
+          plan,
+          width: W,
+          height: H,
+          fps: EXPORT_FPS,
+          seconds: duration,
+          paint: (g, t) => paint(g, t / k),
+          sound: offlineSound,
+          signal: job.signal,
+          progress(r) {
+            const pct = Math.floor(r * 100);
+            if (pct === shown) return;
+            shown = pct;
+            const left = pct ? ((performance.now() - began) / 1000) * (1 / r - 1) : 0;
+            status("rec", `正在导出 ${pct}%${pct ? ` · 还需约 ${fmt(Math.ceil(left))}` : ""} · 不用等播放，可以切走`);
+          },
+        });
+        done();
+        if (save) deliver(blob);
+        else status(null);
+        return { blob, plan };
+      } catch (e) {
+        done();
+        if (job.signal.aborted) status(null);
+        else status("fail", `导出失败：${e?.message || "编码器出错"}`);
+        if (!save) throw e;
+        return null;
+      }
+    }
+
     saveBtn.addEventListener("click", () => {
-      if (!recording) return record();
+      if (encoding) return encoding.abort(); // 离线导出中再按一次：放弃
+      if (!recording) return canEncode ? exportVideo({ fallback: true }) : record();
       recording.cancelled = true; // 导出中再按一次：放弃
       stop();
       recording.recorder.stop();
@@ -444,6 +543,7 @@
         draw();
       },
       refresh,
+      exportVideo: (opts) => (canEncode ? exportVideo(opts) : Promise.resolve(null)),
     };
   }
 
