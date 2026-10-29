@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#faf8f5" />
+<meta name="author" content="黎路遥" />
+<script>
+try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
+</script>
+<title>导出自检 - 话术精灵</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="assets/favicon.png" />
+<link rel="stylesheet" href="assets/css/site.css?v=982ea138" />
+<link rel="stylesheet" href="assets/css/promo-film.css?v=80c6f37b" />
+<script src="assets/js/theme.js?v=46a65147" defer></script>
+<script src="assets/js/nav.js?v=d5aeb647" defer></script>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo-small.png" alt="" />
+      <span>话术精灵 SoftTalk</span>
+    </a>
+    <details class="nav-menu" id="nav-menu">
+      <summary class="nav-menu-toggle">
+        <svg class="nav-menu-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" /></svg>
+        <span>目录</span>
+      </summary>
+      <nav class="nav-links" aria-label="站点目录">
+        <div class="nav-group">
+          <p class="nav-group-name">了解</p>
+          <a class="nav-link" href="index.html">首页</a>
+          <a class="nav-link" href="promo.html">宣传片</a>
+          <a class="nav-link" href="why.html">解决什么问题</a>
+          <a class="nav-link" href="diff.html">有什么不同</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-group-name">上手</p>
+          <a class="nav-link" href="guide.html">怎么用</a>
+          <a class="nav-link" href="experience.html">客服经验分享</a>
+        </div>
+        <div class="nav-group">
+          <p class="nav-group-name">价格与联系</p>
+          <a class="nav-link" href="pricing.html">定价</a>
+          <a class="nav-link" href="contact.html">联系</a>
+          <a class="nav-link" href="https://www.kdocs.cn/l/cvnglmckRGBu" target="_blank" rel="noopener">下载</a>
+        </div>
+      </nav>
+    </details>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到白天模式" title="切换到白天模式">
+      <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.55 1.55M17.15 17.15l1.55 1.55M5.3 18.7l1.55-1.55M17.15 6.85l1.55-1.55" /></svg>
+      <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">自检</p>
+    <h1>离线导出<span class="hl">自检</span></h1>
+    <p class="lead">点下面的按钮，把宣传片离线导出一遍（不播放、不下载），量用了多久，再把文件拆开核对、整条解码一遍。结果同时打在控制台（F12）和下面的框里，整段复制回来就行。导出途中切到别的标签页也可以，回来看结果。</p>
+    <div class="actions">
+      <button class="btn btn--primary" id="export-run" type="button">开始自检</button>
+      <a class="btn btn--ghost" id="export-file" hidden>存下这次导出的文件</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <pre class="note" id="export-log" style="white-space: pre-wrap; overflow-wrap: anywhere" role="status" aria-live="polite">还没开始。</pre>
+    <div class="promo" data-promo-film data-duration="32" data-tagline="一句话，就在手边"></div>
+  </section>
+</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2025–2026 黎路遥 · 话术精灵 SoftTalk</p>
+  </div>
+</footer>
+
+<script src="assets/js/mp4-mux.js?v=ffa86590" defer></script>
+<script src="assets/js/mp4-inspect.js?v=1dd1b156" defer></script>
+<script src="assets/js/film-export.js?v=53a0fff4" defer></script>
+<script src="assets/js/film-engine.js?v=d1236702" defer></script>
+<script src="assets/js/check-export.js?v=e166acd9" defer></script>
+<script src="assets/js/promo-film.js?v=433bee61" defer></script>
+
+</body>
+</html>
