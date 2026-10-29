@@ -33,6 +33,8 @@
   const OLD = "48";
   const NEW = "24";
   const POST = "小时内发货哦～";
+  const POST_A = "小时内"; // 窄处折成两行：「亲，下单后24小时内」/「发货哦～」
+  const POST_B = "发货哦～";
   const OTHER_ROWS = [
     { title: "欢迎", text: "亲，在的，有什么可以帮您～" },
     { title: "售后", text: "收到货有问题随时找我哦～" },
@@ -63,11 +65,12 @@
     stamp: 17.4, // 「没必要」
     turn: 18.5, // 所以我做了一个软件
     brand: 20.0,
-    solve: 21.5, // 话术精灵：只改一次
-    beams: 24.4, // 所有店铺都能用
-    compare: 29.6, // 20 次 vs 1 次
-    value: 32.0, // 节约时间，快速高效率
-    end: 33.8, // 片尾：作者账号
+    solve: 21.5, // 话术精灵：一屏一家店，磁吸在它右边
+    dock: 21.85, // 「啪」地吸上
+    use: 24.0, // 双击贴入、回车发出，Alt+Tab 换下一家店
+    compare: 30.9, // 20 次 vs 1 次
+    value: 32.8, // 节约时间，快速高效率
+    end: 34.4, // 片尾：作者账号
   };
   const BEAT = 0.5; // 120 BPM
   // 每家店改那句话术的时刻：前四家镜头一家家跟着，后十六家越改越快（间隔按平方根收紧）
@@ -79,9 +82,8 @@
     return { s: 12.9 + 2.2 * Math.sqrt((i - 3) / 16), d: 0.25 };
   });
   const savedAt = (i) => EDITS[i].s + EDITS[i].d;
-  // 话术精灵里同一句只改一次；之后从主界面「发」到 20 家店的聊天窗口
-  const SOLVE_EDIT = { s: 22.9, d: 1.1 };
-  const beamAt = (i) => T.beams + 0.15 + i * 0.06;
+  // 话术精灵里同一句只改一次；之后一家店一家店双击发出
+  const SOLVE_EDIT = { s: 22.55, d: 1.0 };
 
   // ---------- 画笔 ----------
   function rr(ctx, x, y, w, h, r) {
@@ -253,9 +255,10 @@
     { from: T.done, to: T.reset - 0.05, l1: "20 家店，终于改完了……", l2: "" },
     { from: T.reset, to: T.stamp - 0.05, l1: "下次再优化？", l2: "[再来 20 遍]", hot: RED },
     { from: T.stamp, to: T.turn - 0.05, l1: "工作量太大", l2: "而且[完全没必要]", hot: RED },
-    { from: T.solve + 0.1, to: T.beams - 0.05, l1: "用话术精灵", l2: "话术[只改一次]" },
-    { from: T.beams, to: 26.6, l1: "[所有店铺]都能用", l2: "" },
-    { from: 26.7, to: T.compare - 0.05, l1: "哪家店的聊天窗口", l2: "[点一下]，直接发出" },
+    { from: T.solve + 0.1, to: T.use - 0.05, l1: "用话术精灵", l2: "话术[只改一次]" },
+    { from: T.use, to: 25.35, l1: "[双击]话术", l2: "贴进输入框，回车发出" },
+    { from: 25.4, to: 27.8, l1: "[Alt+Tab] 换一家店", l2: "话术精灵跟着磁吸过去" },
+    { from: 27.9, to: T.compare - 0.05, l1: "[每家店]都能用", l2: "同一句，不用再改" },
   ];
 
   function captions(ctx, u) {
@@ -311,15 +314,10 @@
       const g = PCX().draw(ctx, plat, winChat(p), { ...winOpts(p), shops, customer: "" });
       return { side: toCanvas(g.side, WIN_X, winY(p), WK), msgs: toCanvas(g.msgs, WIN_X, winY(p), WK), tabs: g.shops.map((r) => toCanvas(r, WIN_X, winY(p), WK)) };
     });
-    const small = PLATS.map((plat, p) => {
-      const c = gridCell(p);
-      const g = PCX().draw(ctx, plat, gridChat(p), { ...gridOpts(p), shops, customer: "" });
-      return { msgs: toCanvas(g.msgs, c.x, c.y, GK), tabs: g.shops.map((r) => toCanvas(r, c.x, c.y, GK)) };
-    });
-    geoCache = { wide, small };
+    geoCache = { wide };
     return geoCache;
   }
-  const tabRect = (i, which = "wide") => geo()[which][platOf(i)].tabs[tabOf(i)] || geo()[which][platOf(i)].tabs[0];
+  const tabRect = (i) => geo().wide[platOf(i)].tabs[tabOf(i)] || geo().wide[platOf(i)].tabs[0];
   const center = (r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
 
   // 片头的 20 个小方块（问题下面那一格格「要改的地方」）
@@ -639,38 +637,57 @@
     ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
   }
 
-  // ---------- ④ 21.5–29.6s：话术精灵主界面里改一次，20 家店的聊天窗口都用上 ----------
-  const PANEL = { x: 100, y: 500, w: 880, h: 450 };
-  // 下半屏：四个工作台排成 2×2，底边都贴着话术精灵的吸附搜索栏（真实的样子：话术精灵挂在每个平台窗口上）
-  const GK = 1.4;
-  const GW = 490;
-  const GH = 380;
-  const gridCell = (p) => ({ x: 40 + (p % 2) * (GW + 20), y: 1070 + Math.floor(p / 2) * (GH + 20), w: GW, h: GH });
-  const gridOpts = (p) => ({ list: false, notice: false, agent: false, headH: 30, inputH: 52, bar: true, barH: 20, tabW: 40 });
-  function gridChat(p) {
-    const d = PCX().dims(PLATS[p], gridOpts(p));
-    return { x: d.left, y: d.top, w: GW / GK - d.left, h: (GH - 20 * GK) / GK - d.top };
+  // ---------- ④ 21.5–30.9s：一屏只放一家店的工作台，话术精灵磁吸在它右边；改一次 → 双击贴入、回车发出 → Alt+Tab 换下一家店接着用（issue #13） ----------
+  // 真实场景（客户端 magnet_pin_mixin_pkg）：开了磁吸，话术精灵主界面贴在外部聊天窗口的右边、高度跟它一样；
+  // 小精灵站在选中的话术行上，发送时踩一脚（sprite_stage_pkg/stage.py）。双击话术＝只贴进输入框，回车才发出（同「怎么用」短片）。
+  const BENCH = { x: 24, y: 640, w: 620, h: 1060 }; // 前台那家店的工作台（画布坐标）
+  const BK = 2; // 工作台按原生像素画，放大 2 倍
+  const DOCK = { x: BENCH.x + BENCH.w, y: BENCH.y, w: 412, h: BENCH.h }; // 磁吸在右边的话术精灵
+  const ROW1_Y = DOCK.y + 306; // 要改、要双击的那一行
+  const ROW1_H = 132;
+  const benchOpts = { list: false, notice: false, headH: 44, inputH: 120, tabW: 60, pddAlert: false };
+  function benchChat(p) {
+    const d = PCX().dims(PLATS[p], benchOpts);
+    return { x: d.left, y: d.top, w: BENCH.w / BK - d.left, h: BENCH.h / BK - d.top };
   }
-  const SHOWCASE = 1; // 镜头推近看的那个工作台（千牛）
-  const PANEL_ROW_Y = PANEL.y + 352;
-  let camSolve = null;
-  const CAM_SOLVE = () => {
-    if (camSolve) return camSolve;
-    const m = geo().small[SHOWCASE].msgs;
-    const sc = { x: Math.min(m.x + m.w / 2, W - W / (2 * 2.4)), y: m.y + 60 };
-    camSolve = [
-      WIDE(T.solve, 0.9),
-      WIDE(22.4, 1),
-      { u: 22.9, x: W / 2, y: PANEL_ROW_Y - 40, z: 1.22 },
-      { u: 24.1, x: W / 2, y: PANEL_ROW_Y - 40, z: 1.22 },
-      WIDE(T.beams + 0.3, 1),
-      WIDE(26.5, 1),
-      { u: 27.3, ...sc, z: 2.4 },
-      { u: 28.9, ...sc, z: 2.4 },
-      WIDE(T.compare, 1),
-    ];
-    return camSolve;
+  // 每家店：双击 → 话术飞进输入框 → 按回车 → 发出；发完 Alt+Tab 换到下一家（四个工作台轮一遍）
+  const USE_AT = [24.4, 26.15, 27.9, 29.65];
+  const useBeat = (k) => {
+    const d = USE_AT[k];
+    return { d, fly: d + 0.15, land: d + 0.4, enter: d + 0.5, send: d + 0.6 };
   };
+  const altAt = (k) => useBeat(k).send + 0.4; // 第 k 次 Alt+Tab 按下 Alt（k = 0–2）
+  const ALT = { tab: 0.08, swap: 0.45, done: 0.7, up: 0.55 }; // 相对 altAt：按 Tab、松手后窗口换到前台、松开 Alt
+  // 此刻在前台的是哪家：{ cur, next, m }，m 是换到 next 的进度
+  function frontAt(u) {
+    let cur = 0;
+    for (let k = 0; k < USE_AT.length - 1; k++) {
+      const a = altAt(k);
+      if (u >= a + ALT.done) cur = k + 1;
+      else if (u >= a + ALT.swap) return { cur: k, next: k + 1, m: easeIO((u - a - ALT.swap) / (ALT.done - ALT.swap)) };
+    }
+    return { cur, next: cur, m: 0 };
+  }
+  let benchGeoCache = null;
+  const benchGeo = (p) => {
+    if (!benchGeoCache) {
+      const ctx = document.createElement("canvas").getContext("2d");
+      benchGeoCache = PLATS.map((plat, i) => PCX().draw(ctx, plat, benchChat(i), { ...benchOpts, shops: [{}] }));
+    }
+    return benchGeoCache[p];
+  };
+  const toBench = (x, y) => ({ x: BENCH.x + x * BK, y: BENCH.y + y * BK });
+
+  let camSolve = null;
+  const CAM_SOLVE = () =>
+    (camSolve ||= [
+      WIDE(T.solve, 0.92),
+      WIDE(22.2, 1),
+      { u: 22.5, x: W - W / (2 * 1.55), y: ROW1_Y + 60, z: 1.55 },
+      { u: 23.75, x: W - W / (2 * 1.55), y: ROW1_Y + 60, z: 1.55 },
+      WIDE(24.15, 1),
+      WIDE(T.compare, 1),
+    ]);
 
   function solveState(u) {
     const e = SOLVE_EDIT;
@@ -681,67 +698,83 @@
     return { phase: "saved", flash: 1 - sm(0, 0.6, u - e.s - e.d) };
   }
 
-  // 话术精灵主界面（客户端白色主题的简化复刻：标题栏 → 三个话术域页签 → 0–9 套号 → 一级分类 → 二级分类 → 话术行）
-  function panel(ctx, u, opts) {
-    const { x, y, w, h } = PANEL;
-    ctx.save();
-    rr(ctx, x, y, w, h, 14);
+  // 磁吸图标：一块 U 形磁铁（开着磁吸就是品牌橙）
+  function magnet(ctx, x, y, s, color) {
+    ctx.beginPath();
+    ctx.arc(x, y, s, Math.PI, 0, true);
+    ctx.lineWidth = s * 0.55;
+    ctx.strokeStyle = color;
+    ctx.lineCap = "butt";
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(x - s - s * 0.28, y - s * 0.05, s * 0.56, s * 0.35);
+    ctx.fillRect(x + s - s * 0.28, y - s * 0.05, s * 0.56, s * 0.35);
+  }
+
+  // 话术精灵主界面（客户端白色主题的竖条版：标题栏 → 三个话术域页签 → 0–9 套号 → 一级分类 → 二级分类 → 话术行 → 搜索行 → 底栏）
+  function dockPanel(ctx, u, x, snap) {
+    const { y, w, h } = DOCK;
+    rr(ctx, x, y, w, h, 8);
     ctx.fillStyle = P.frame;
     ctx.fill();
     ctx.lineWidth = 2;
     ctx.strokeStyle = P.base;
     ctx.stroke();
-    // 标题栏
-    drawLogo(ctx, opts, x + 44, y + 34, 40);
-    text(ctx, "话术精灵", x + 74, y + 35, { size: 28, weight: 800, color: P.ink, align: "left" });
-    [0, 1, 2].forEach((k) => {
-      ctx.beginPath();
-      ctx.arc(x + w - 40 - k * 40, y + 34, 9, 0, Math.PI * 2);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = P.digit;
-      ctx.stroke();
-    });
+    // 标题栏：磁吸开着（置顶按钮在磁吸时隐藏）
+    text(ctx, "话术精灵", x + 22, y + 34, { size: 26, weight: 800, color: P.ink, align: "left" });
+    const mx = x + w - 112;
+    if (snap > 0) glow(ctx, mx, y + 36, 70, "rgba(255,107,44,0.9)", snap * 0.7);
+    magnet(ctx, mx, y + 38, 11, ACCENT);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = P.digit;
+    ctx.beginPath();
+    ctx.moveTo(x + w - 74, y + 36);
+    ctx.lineTo(x + w - 56, y + 36);
+    ctx.moveTo(x + w - 36, y + 27);
+    ctx.lineTo(x + w - 18, y + 45);
+    ctx.moveTo(x + w - 18, y + 27);
+    ctx.lineTo(x + w - 36, y + 45);
+    ctx.stroke();
     // 页签
-    const tabs = ["团队话术", "个人话术", "离线话术"];
     const ty = y + 70;
     ctx.fillStyle = P.base;
-    ctx.fillRect(x + 20, ty + 52, w - 40, 1.5);
-    tabs.forEach((t, k) => {
-      const tx = x + 24 + k * 170;
+    ctx.fillRect(x + 12, ty + 50, w - 24, 1.5);
+    ["团队话术", "个人话术", "离线话术"].forEach((t, k) => {
+      const tx = x + 14 + k * 128;
       if (k === 0) {
         ctx.fillStyle = P.paper;
-        ctx.fillRect(tx, ty, 160, 53);
+        ctx.fillRect(tx, ty, 122, 51);
         ctx.lineWidth = 2;
         ctx.strokeStyle = P.ink;
         ctx.beginPath();
-        ctx.moveTo(tx, ty + 53);
+        ctx.moveTo(tx, ty + 51);
         ctx.lineTo(tx, ty);
-        ctx.lineTo(tx + 160, ty);
-        ctx.lineTo(tx + 160, ty + 53);
+        ctx.lineTo(tx + 122, ty);
+        ctx.lineTo(tx + 122, ty + 51);
         ctx.stroke();
       }
-      text(ctx, t, tx + 80, ty + 28, { size: 28, weight: k === 0 ? 800 : 500, color: k === 0 ? P.ink : P.digit });
+      text(ctx, t, tx + 61, ty + 27, { size: 24, weight: k === 0 ? 800 : 500, color: k === 0 ? P.ink : P.digit });
     });
     // 套号 0–9
-    const dy = y + 150;
-    text(ctx, "默认", x + 28, dy + 22, { size: 24, weight: 700, color: P.ink, align: "left" });
+    const dy = y + 138;
+    text(ctx, "默认", x + 16, dy + 20, { size: 21, weight: 700, color: P.ink, align: "left" });
     for (let d = 0; d < 10; d++) {
-      const dx = x + 110 + d * 72;
+      const dx = x + 70 + d * 33;
       if (d === 0) {
-        rr(ctx, dx, dy, 52, 44, 6);
+        rr(ctx, dx, dy, 30, 40, 5);
         ctx.fillStyle = P.peach;
         ctx.fill();
         ctx.lineWidth = 2;
         ctx.strokeStyle = P.ink;
         ctx.stroke();
       }
-      text(ctx, String(d), dx + 26, dy + 23, { size: 26, weight: d === 0 ? 800 : 500, color: d === 0 ? P.ink : P.digit, font: MONO });
+      text(ctx, String(d), dx + 15, dy + 21, { size: 22, weight: d === 0 ? 800 : 500, color: d === 0 ? P.ink : P.digit, font: MONO });
     }
     // 一级分类
-    const cy = y + 214;
+    const cy = y + 196;
     ["售前", "物流", "售后"].forEach((t, k) => {
-      const cx = x + 28 + k * 130;
-      rr(ctx, cx, cy, 112, 48, 8);
+      const cx = x + 16 + k * 110;
+      rr(ctx, cx, cy, 98, 44, 7);
       ctx.fillStyle = k === 1 ? P.peach : P.chip;
       ctx.fill();
       if (k === 1) {
@@ -749,92 +782,280 @@
         ctx.strokeStyle = P.ink;
         ctx.stroke();
       }
-      text(ctx, t, cx + 56, cy + 25, { size: 26, weight: k === 1 ? 800 : 500, color: P.ink });
+      text(ctx, t, cx + 49, cy + 23, { size: 24, weight: k === 1 ? 800 : 500, color: P.ink });
     });
     // 二级分类（展开的是桃色条）
-    const ly = y + 280;
     ctx.fillStyle = P.peach;
-    ctx.fillRect(x + 20, ly, w - 40, 44);
-    text(ctx, "▾ 发货", x + 34, ly + 23, { size: 26, weight: 700, color: P.ink, align: "left" });
-    // 话术行：改的就是它
+    ctx.fillRect(x + 12, y + 254, w - 24, 42);
+    text(ctx, "▾ 发货", x + 24, y + 276, { size: 24, weight: 700, color: P.ink, align: "left" });
+    // 第 1 行：改的、双击的都是它
     const st = solveState(u);
-    const ry = PANEL_ROW_Y;
+    const ry = ROW1_Y;
     if (st.phase !== "old") {
-      rr(ctx, x + 20, ry - 18, w - 40, 84, 8);
-      ctx.fillStyle = st.phase === "saved" ? `rgba(255,107,44,${0.12 + 0.25 * st.flash})` : P.paper;
+      rr(ctx, x + 10, ry, w - 20, ROW1_H, 8);
+      ctx.fillStyle = st.phase === "saved" ? (st.flash > 0 ? `rgba(255,107,44,${0.12 + 0.25 * st.flash})` : P.peach) : P.paper;
       ctx.fill();
       ctx.lineWidth = 2;
-      ctx.strokeStyle = st.phase === "saved" ? ACCENT : P.ink;
+      ctx.strokeStyle = st.phase === "saved" && st.flash > 0 ? ACCENT : P.ink;
       ctx.stroke();
     }
-    plane(ctx, x + 32, ry - 2, 36);
-    segs(ctx, [{ t: "1. ", color: P.digit }, { t: "发货时间", color: P.title }], x + 82, ry + 16, { size: 28, weight: 700 });
+    plane(ctx, x + 20, ry + 14, 32);
+    segs(ctx, [{ t: "1. ", color: P.digit }, { t: "发货时间", color: P.title }], x + 62, ry + 31, { size: 24, weight: 700 });
     let mid = { t: OLD, color: P.answer };
     if (st.phase === "sel") mid = { t: OLD, color: "#fff", bg: "#c2410c" };
     if (st.phase === "type") mid = { t: NEW.slice(0, st.typed), color: "#c2410c" };
     if (st.phase === "saved") mid = { t: NEW, color: "#c2410c" };
-    segs(ctx, [{ t: PRE, color: P.answer }, mid, { t: POST, color: P.answer }], x + 270, ry + 16, { size: 34, weight: 700 });
+    segs(ctx, [{ t: PRE, color: P.answer }, mid, { t: POST_A, color: P.answer }], x + 22, ry + 76, { size: 30, weight: 700 });
+    text(ctx, POST_B, x + 22, ry + 112, { size: 30, weight: 700, color: P.answer, align: "left" });
     if (st.phase === "type" && Math.floor(u * 6) % 2 === 0) {
-      ctx.font = `700 34px ${SANS}`;
+      ctx.font = `700 30px ${SANS}`;
       ctx.fillStyle = "#c2410c";
-      ctx.fillRect(x + 270 + ctx.measureText(PRE + NEW.slice(0, st.typed)).width + 1, ry - 4, 3, 40);
+      ctx.fillRect(x + 22 + ctx.measureText(PRE + NEW.slice(0, st.typed)).width + 1, ry + 58, 3, 36);
     }
+    // 另外两行
+    [["2. ", "物流查询", "亲，帮您查一下物流哦～"], ["3. ", "催发货", "已经帮您催仓库了～"]].forEach(([n, t, a], k) => {
+      const yy = ry + ROW1_H + 14 + k * 104;
+      plane(ctx, x + 20, yy + 8, 28);
+      segs(ctx, [{ t: n, color: P.digit }, { t, color: P.title }], x + 58, yy + 22, { size: 22, weight: 700 });
+      text(ctx, a, x + 22, yy + 62, { size: 24, weight: 500, color: P.answer, align: "left" });
+      ctx.fillStyle = "rgba(117,104,95,0.25)";
+      ctx.fillRect(x + 14, yy + 92, w - 28, 1);
+    });
+    ctx.fillStyle = P.chip;
+    ctx.fillRect(x + 12, y + 668, w - 24, 42);
+    text(ctx, "▸ 退换", x + 24, y + 690, { size: 24, weight: 600, color: P.ink, align: "left" });
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + 760, 18, 0, Math.PI * 2);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = P.digit;
+    ctx.stroke();
+    text(ctx, "+", x + w / 2, y + 760, { size: 28, weight: 500, color: P.digit });
+    // 搜索行 + 底栏
+    const sy = y + h - 150;
+    rr(ctx, x + 12, sy, w - 24, 56, 8);
+    ctx.fillStyle = P.paper;
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = P.base;
+    ctx.stroke();
+    text(ctx, "Alt+Q 定位搜索栏", x + 30, sy + 29, { size: 21, color: "#9a8b7d", align: "left" });
+    text(ctx, "全部", x + w - 52, sy + 29, { size: 21, weight: 700, color: P.ink });
+    text(ctx, "luyao2089.cc", x + 20, y + h - 46, { size: 19, color: P.digit, align: "left", font: MONO });
     // 「只改 1 次」
     if (st.phase === "saved") {
-      const p = easeBack(clamp((u - SOLVE_EDIT.s - SOLVE_EDIT.d) / 0.3, 0, 1));
-      ctx.save();
-      ctx.translate(x + w - 120, y + h + 2);
-      ctx.scale(p, p);
-      rr(ctx, -110, -34, 220, 68, 34);
-      ctx.fillStyle = ACCENT;
-      ctx.fill();
-      text(ctx, "只改 1 次", 0, 2, { size: 34, weight: 800, color: "#fff" });
-      ctx.restore();
+      const p = easeBack(clamp((u - SOLVE_EDIT.s - SOLVE_EDIT.d) / 0.3, 0, 1)) * (1 - sm(T.use - 0.3, T.use, u));
+      if (p > 0) {
+        ctx.save();
+        ctx.translate(x + w / 2, ry + ROW1_H + 40);
+        ctx.scale(p, p);
+        rr(ctx, -110, -34, 220, 68, 34);
+        ctx.fillStyle = ACCENT;
+        ctx.fill();
+        text(ctx, "只改 1 次", 0, 2, { size: 34, weight: 800, color: "#fff" });
+        ctx.restore();
+      }
     }
+  }
+
+  // 小精灵：先在底栏老家，开始改话术时跳上第 1 行、站在行的右上角；每次发送踩一脚
+  function sprite(ctx, u, opts, x) {
+    const img = opts.logo;
+    if (!img || !img.complete || !img.naturalWidth) return;
+    const home = { x: x + DOCK.w - 52, y: DOCK.y + DOCK.h - 14 };
+    const row = { x: x + DOCK.w - 58, y: ROW1_Y + 6 };
+    const j = sm(SOLVE_EDIT.s - 0.35, SOLVE_EDIT.s, u);
+    let fx = lerp(home.x, row.x, j);
+    let fy = lerp(home.y, row.y, j) - Math.sin(Math.PI * j) * 160;
+    let sx = 1;
+    let sy = 1;
+    USE_AT.forEach((_, k) => {
+      const b = useBeat(k);
+      const hop = clamp((u - (b.send - 0.3)) / 0.3, 0, 1);
+      if (hop > 0 && hop < 1) fy -= Math.sin(Math.PI * hop) * 46;
+      const sq = u >= b.send ? Math.exp(-(u - b.send) * 14) : 0;
+      sx *= 1 + 0.22 * sq;
+      sy *= 1 - 0.22 * sq;
+    });
+    // 改好那一下开心蹦一下
+    const sv = u - SOLVE_EDIT.s - SOLVE_EDIT.d;
+    if (sv >= 0 && sv < 0.35) fy -= Math.sin((Math.PI * sv) / 0.35) * 60;
+    const h = 78;
+    const w = (h * img.naturalWidth) / img.naturalHeight;
+    ctx.save();
+    ctx.translate(fx, fy);
+    ctx.scale(sx, sy);
+    ctx.drawImage(img, -w / 2, -h, w, h);
     ctx.restore();
   }
 
-  // 一个平台工作台（缩小版）：话术精灵一发，这家的每家店都用上了新话术——页签一家家打勾，聊天栏里发出新的那句
-  function gridBench(ctx, p, u) {
+  // 一个工作台（原生像素画好再放大）：顾客问「什么时候发货？」→ 输入框里贴进话术 → 回车发出
+  function bench(ctx, p, u) {
     const plat = PLATS[p];
     const sk = PCX().SKINS[plat];
-    const c = gridCell(p);
-    const shops = Array.from({ length: ROWS }, (_, t) => ({ done: u >= beamAt(t * COLS + p) + 0.3 }));
-    let act = 0;
-    for (let t = 0; t < ROWS; t++) if (u >= beamAt(t * COLS + p) + 0.3) act = t;
-    const first = beamAt(p) + 0.3;
-    const got = u >= first;
+    const b = useBeat(p);
+    const sent = u >= b.send;
+    const typing = u >= b.land && !sent;
+    const press = u >= b.enter && u < b.send + 0.12 ? 1 - sm(b.send, b.send + 0.12, u) : 0;
     ctx.save();
-    ctx.translate(c.x, c.y);
-    ctx.scale(GK, GK);
-    const g = PCX().draw(ctx, plat, gridChat(p), { ...gridOpts(p), shops, active: act, customer: "小陈", frame: got ? ACCENT : "#3f3f3f", barText: got && u < first + 1.2 ? "发货" : "" });
+    ctx.translate(BENCH.x, BENCH.y);
+    ctx.scale(BK, BK);
+    const shops = Array.from({ length: ROWS }, (_, t) => ({ done: t === 0 && sent }));
+    const g = PCX().draw(ctx, plat, benchChat(p), { ...benchOpts, shops, active: 0, customer: "小陈", typing, press, sendGlow: press, frame: "#3f3f3f" });
     ctx.save();
     rr(ctx, g.msgs.x, g.msgs.y, g.msgs.w, g.msgs.h, 0);
     ctx.clip();
-    askBubble(ctx, plat, g.msgs);
-    if (got) {
-      const pop = easeBack(clamp((u - first) / 0.25, 0, 1));
-      const label = PRE + NEW + POST;
-      ctx.font = `400 10.5px ${SANS}`;
-      const w = ctx.measureText(label).width + 16;
-      const bx = g.msgs.x + g.msgs.w - 32 - w;
-      const by = g.msgs.y + 40;
+    const m = g.msgs;
+    PCX().face(ctx, m.x + 10, m.y + 14, 26, { shape: sk.avatar, bg: "#c9b8a8" });
+    ctx.font = `400 15px ${SANS}`;
+    const ask = "什么时候发货？";
+    const aw = ctx.measureText(ask).width + 22;
+    rr(ctx, m.x + 44, m.y + 14, aw, 34, 6);
+    ctx.fillStyle = sk.in;
+    ctx.fill();
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = sk.inLine === sk.msgBg ? "#e3e5e8" : sk.inLine;
+    ctx.stroke();
+    text(ctx, ask, m.x + 55, m.y + 31.5, { size: 15, color: "#1f2329", align: "left" });
+    if (sent) {
+      const pop = easeBack(clamp((u - b.send) / 0.25, 0, 1));
+      ctx.font = `400 15px ${SANS}`;
+      const bw = ctx.measureText(PRE + NEW + POST_A).width + 22;
+      const bx = m.x + m.w - 44 - bw;
+      const by = m.y + 66;
       ctx.save();
-      ctx.translate(bx + w, by + 11);
+      ctx.translate(bx + bw, by + 26);
       ctx.scale(pop, pop);
-      ctx.translate(-(bx + w), -(by + 11));
-      PCX().face(ctx, g.msgs.x + g.msgs.w - 26, by, 18, { shape: sk.avatar, bg: sk.accent });
-      rr(ctx, bx, by, w, 22, 4);
+      ctx.translate(-(bx + bw), -(by + 26));
+      PCX().face(ctx, m.x + m.w - 36, by, 26, { shape: sk.avatar, bg: sk.accent });
+      rr(ctx, bx, by, bw, 54, 6);
       ctx.fillStyle = sk.own;
       ctx.fill();
-      segs(ctx, [{ t: PRE, color: "#1f2329" }, { t: NEW, color: "#c2410c" }, { t: POST, color: "#1f2329" }], bx + 8, by + 11.5, { size: 10.5, weight: 400 });
-      if (sk.read) PCX().readMark(ctx, bx - 4, by + 16, 8);
+      segs(ctx, [{ t: PRE, color: "#1f2329" }, { t: NEW, color: "#c2410c" }, { t: POST_A, color: "#1f2329" }], bx + 11, by + 16, { size: 15, weight: 400 });
+      text(ctx, POST_B, bx + 11, by + 38, { size: 15, color: "#1f2329", align: "left" });
+      if (sk.read) PCX().readMark(ctx, bx - 5, by + 46, 10);
       ctx.restore();
     }
     ctx.restore();
+    // 输入框：贴进来的话术（回车前可以改，这里直接发）
+    if (typing) {
+      segs(ctx, [{ t: PRE, color: "#1f2329" }, { t: NEW, color: "#c2410c" }, { t: POST, color: "#1f2329" }], g.text.x, g.text.y + 14, { size: 14, weight: 400 });
+      if (Math.floor(u * 4) % 2 === 0) {
+        ctx.font = `400 14px ${SANS}`;
+        ctx.fillStyle = "#1f2329";
+        ctx.fillRect(g.text.x + ctx.measureText(PRE + NEW + POST).width + 1, g.text.y + 5, 1, 18);
+      }
+    }
     ctx.restore();
-    const flash = got ? 1 - sm(0, 0.5, u - first) : 0;
-    if (flash > 0) glow(ctx, c.x + c.w / 2, c.y + c.h / 2, 260, "rgba(255,107,44,0.9)", flash * 0.5);
+    const flash = sent ? 1 - sm(0, 0.5, u - b.send) : 0;
+    if (flash > 0) glow(ctx, BENCH.x + BENCH.w / 2, toBench(0, m.y + 92).y, 300, "rgba(255,107,44,0.9)", flash * 0.4);
+  }
+
+  // 鼠标箭头
+  function cursor(ctx, x, y, press) {
+    ctx.save();
+    ctx.translate(x, y);
+    const s = 1.7 * (1 - press * 0.12);
+    ctx.scale(s, s);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, 22);
+    ctx.lineTo(5.5, 17);
+    ctx.lineTo(9.5, 26);
+    ctx.lineTo(13, 24.5);
+    ctx.lineTo(9, 15.8);
+    ctx.lineTo(16, 15.8);
+    ctx.closePath();
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.lineWidth = 1.3;
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#111";
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function keycap(ctx, x, y, label, { size = 1, press = 0, alpha = 1 } = {}) {
+    if (alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha *= alpha;
+    ctx.translate(x, y);
+    ctx.scale(size, size);
+    ctx.font = `700 64px ${SANS}`;
+    const w = Math.max(150, ctx.measureText(label).width + 80);
+    const h = 130;
+    const depth = 16 * (1 - press);
+    rr(ctx, -w / 2, -h / 2 + 16, w, h, 24);
+    ctx.fillStyle = "#3a1a0b";
+    ctx.fill();
+    rr(ctx, -w / 2, -h / 2 + (16 - depth), w, h, 24);
+    ctx.fillStyle = press > 0.5 ? ACCENT : "#f2ece6";
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(0,0,0,.35)";
+    ctx.stroke();
+    text(ctx, label, 0, 16 - depth, { size: 60, weight: 700, color: press > 0.5 ? "#fff" : "#1a1714" });
+    ctx.restore();
+  }
+
+  // Windows 的 Alt+Tab 切换器：屏幕中间一块深色面板，一排打开着的窗口缩略图，白框跟着 Tab 走；已经发过的店角上打勾
+  function altTab(ctx, u, k) {
+    const a = altAt(k);
+    const al = win(u, a, a + ALT.up + 0.12, 0.1);
+    if (al <= 0) return;
+    const sel = u >= a + ALT.tab ? k + 1 : k;
+    const n = PLATS.length;
+    const slot = 230;
+    const ox = (W - n * slot) / 2;
+    const top = 860;
+    ctx.save();
+    ctx.globalAlpha = al;
+    const pop = lerp(0.94, 1, easeOut(clamp((u - a) / 0.12, 0, 1)));
+    ctx.translate(W / 2, 1060);
+    ctx.scale(pop, pop);
+    ctx.translate(-W / 2, -1060);
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(0, 0, W, H);
+    rr(ctx, ox - 30, top - 30, n * slot + 60, 400, 18);
+    ctx.fillStyle = "rgba(38,38,38,0.96)";
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(255,255,255,0.18)";
+    ctx.stroke();
+    const ts = 0.5; // 缩略图：原生像素 × 0.5
+    PLATS.forEach((plat, i) => {
+      const sx = ox + i * slot;
+      if (i === sel) {
+        rr(ctx, sx + 4, top - 10, slot - 8, 352, 12);
+        ctx.fillStyle = "rgba(255,255,255,0.1)";
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#fff";
+        ctx.stroke();
+      }
+      // 窗口标题：图标位 + 打码的店名（不写平台名、不画标志）
+      rr(ctx, sx + 20, top + 6, 22, 22, 5);
+      ctx.fillStyle = PCX().SKINS[plat].accent;
+      ctx.fill();
+      rr(ctx, sx + 52, top + 11, 110, 12, 6);
+      ctx.fillStyle = "rgba(200,200,200,0.45)";
+      ctx.fill();
+      const tw = (BENCH.w / BK) * ts;
+      const tx = sx + (slot - tw) / 2;
+      ctx.save();
+      ctx.translate(tx, top + 42);
+      ctx.scale(ts, ts);
+      rr(ctx, 0, 0, BENCH.w / BK, BENCH.h / BK, 4);
+      ctx.clip();
+      PCX().draw(ctx, plat, benchChat(i), { ...benchOpts, shops: [{ done: u >= useBeat(i).send }], customer: "小陈" });
+      ctx.restore();
+      if (u >= useBeat(i).send) check(ctx, tx + tw - 8, top + 50, 22);
+    });
+    ctx.restore();
+    // 键帽：Alt 一直按着，Tab 按一下
+    const kp = win(u, a + ALT.tab - 0.02, a + ALT.tab + 0.18, 0.04);
+    keycap(ctx, W / 2 - 130, 1360, "Alt", { size: 0.75, press: u < a + ALT.up ? 1 : 0, alpha: al });
+    text(ctx, "+", W / 2, 1372, { size: 60, weight: 800, color: FG, alpha: al });
+    keycap(ctx, W / 2 + 140, 1360, "Tab", { size: 0.75, press: kp, alpha: al });
   }
 
   function sceneSolve(ctx, u, opts) {
@@ -844,49 +1065,108 @@
     ctx.save();
     ctx.globalAlpha = a;
     applyCam(ctx, cam);
-    const k = 1 + pulse(u) * 0.01;
-    ctx.translate(W / 2, 760);
-    ctx.scale(k, k);
-    ctx.translate(-W / 2, -760);
+    // 工作台弹出来；Alt+Tab 松手时上一家退到后面、下一家换到前台
     const pin = easeBack(clamp((u - T.solve) / 0.45, 0, 1));
-    ctx.save();
-    ctx.translate(W / 2, PANEL.y + PANEL.h / 2);
-    ctx.scale(lerp(0.7, 1, pin), lerp(0.7, 1, pin));
-    ctx.translate(-W / 2, -(PANEL.y + PANEL.h / 2));
-    panel(ctx, u, opts);
-    ctx.restore();
-    for (let p = 0; p < COLS; p++) {
-      const pop = easeBack(clamp((u - T.solve - 0.4 - p * 0.1) / 0.4, 0, 1));
-      if (pop <= 0) continue;
-      const c = gridCell(p);
+    const f = frontAt(u);
+    const layer = (p, alpha, s) => {
+      if (alpha <= 0) return;
       ctx.save();
-      ctx.globalAlpha = a * clamp(pop, 0, 1);
-      ctx.translate(c.x + c.w / 2, c.y + c.h / 2);
-      ctx.scale(pop, pop);
-      ctx.translate(-(c.x + c.w / 2), -(c.y + c.h / 2));
-      gridBench(ctx, p, u);
+      ctx.globalAlpha = a * alpha;
+      const cx = BENCH.x + BENCH.w / 2;
+      const cy = BENCH.y + BENCH.h / 2;
+      ctx.translate(cx, cy);
+      ctx.scale(s, s);
+      ctx.translate(-cx, -cy);
+      bench(ctx, p, u);
+      ctx.restore();
+    };
+    if (f.m > 0) {
+      layer(f.cur, 1 - f.m, 1 - 0.06 * f.m);
+      layer(f.next, f.m, 0.94 + 0.06 * f.m);
+    } else layer(f.cur, clamp(pin, 0, 1), lerp(0.7, 1, pin));
+    // 话术精灵从右边滑进来，「啪」地磁吸到工作台右边；每换一家店，它跟着重新吸一下
+    let dx = (1 - sm(T.solve + 0.15, T.dock, u, easeOut)) * 460;
+    let snap = u >= T.dock ? 1 - sm(0, 0.5, u - T.dock) : 0;
+    for (let k = 0; k < USE_AT.length - 1; k++) {
+      const s = altAt(k) + ALT.swap;
+      if (u >= s && u < s + 0.4) {
+        const t = (u - s) / 0.4;
+        dx += Math.sin(Math.PI * Math.min(1, t * 1.6)) * 26 * (1 - t);
+        snap = Math.max(snap, 1 - t);
+      }
+    }
+    const x = DOCK.x + dx;
+    ctx.save();
+    ctx.globalAlpha = a * sm(T.solve + 0.15, T.solve + 0.35, u);
+    dockPanel(ctx, u, x, snap);
+    sprite(ctx, u, opts, x);
+    ctx.restore();
+    // 双击：鼠标落到第 1 行上点两下 → 话术飞进输入框 → 回车
+    const rowC = { x: x + 210, y: ROW1_Y + 72 };
+    const ca = win(u, T.use - 0.1, T.compare, 0.15);
+    if (ca > 0) {
+      const enter = sm(T.use - 0.1, USE_AT[0] - 0.1, u);
+      const cx = lerp(rowC.x + 200, rowC.x, enter);
+      const cy = lerp(rowC.y + 520, rowC.y, enter);
+      let press = 0;
+      USE_AT.forEach((_, k) => {
+        const b = useBeat(k);
+        [b.d, b.d + 0.13].forEach((c, i) => {
+          const r = u - c;
+          if (r >= 0 && r < 0.4) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, 20 + r * 160, 0, Math.PI * 2);
+            ctx.lineWidth = 5 * (1 - r / 0.4);
+            ctx.strokeStyle = `rgba(255,107,44,${(1 - r / 0.4) * 0.9})`;
+            ctx.stroke();
+          }
+          if (r >= 0 && r < 0.08) press = 1;
+        });
+      });
+      ctx.save();
+      ctx.globalAlpha = a * ca;
+      cursor(ctx, cx, cy, press);
       ctx.restore();
     }
-    // 光束：从话术精灵连到每一家店的页签
-    const from = { x: W / 2, y: PANEL.y + PANEL.h + 40 };
-    for (let i = 0; i < SHOPS; i++) {
-      const b = beamAt(i);
-      if (u < b) continue;
-      const to = center(tabRect(i, "small"));
-      const p = sm(b, b + 0.3, u, easeOut);
-      const fade = 0.25 + 0.75 * (1 - sm(b + 0.3, b + 1.2, u));
-      ctx.beginPath();
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(lerp(from.x, to.x, p), lerp(from.y, to.y, p));
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = `rgba(255,107,44,${fade * 0.8})`;
-      ctx.stroke();
-      if (p < 1) glow(ctx, lerp(from.x, to.x, p), lerp(from.y, to.y, p), 40, "rgba(255,170,120,1)", 0.9);
-    }
+    USE_AT.forEach((_, k) => {
+      const b = useBeat(k);
+      const t = (u - b.fly) / (b.land - b.fly);
+      if (t >= 0 && t < 1) {
+        const g = benchGeo(k);
+        const to = toBench(g.text.x + 60, g.text.y + 14);
+        const e = easeIO(t);
+        const px = lerp(x + 30, to.x, e);
+        const py = lerp(ROW1_Y + 76, to.y, e) - Math.sin(Math.PI * e) * 220;
+        const s = lerp(1, 0.75, e);
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.scale(s, s);
+        ctx.font = `700 28px ${SANS}`;
+        const w = ctx.measureText(PRE + NEW + POST).width + 32;
+        rr(ctx, -20, -30, w, 60, 10);
+        ctx.fillStyle = P.paper;
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = ACCENT;
+        ctx.stroke();
+        segs(ctx, [{ t: PRE, color: P.answer }, { t: NEW, color: "#c2410c" }, { t: POST, color: P.answer }], -4, 1, { size: 28, weight: 700 });
+        ctx.restore();
+        glow(ctx, px, py, 120, "rgba(255,160,110,1)", 0.5 * (1 - t));
+      }
+      // 回车键帽：浮在工作台输入框上方
+      const ka = win(u, b.land - 0.1, b.send + 0.2, 0.08);
+      if (ka > 0) {
+        const g = benchGeo(k);
+        const at = toBench(g.send.x + g.send.w / 2, g.input.y);
+        const kp = u >= b.enter && u < b.send + 0.1 ? 1 : 0;
+        keycap(ctx, Math.min(at.x - 40, BENCH.x + BENCH.w - 130), at.y - 90, "Enter", { size: 0.62, press: kp, alpha: ka });
+      }
+    });
     ctx.restore();
+    for (let k = 0; k < USE_AT.length - 1; k++) altTab(ctx, u, k);
   }
 
-  // ---------- ⑤ 29.6–33.8s：以前 20 次 vs 现在 1 次 → 节约时间，快速高效率 ----------
+  // ---------- ⑤ 30.9–34.4s：以前 20 次 vs 现在 1 次 → 节约时间，快速高效率 ----------
   function sceneCompare(ctx, u) {
     const a = win(u, T.compare, T.value + 0.3, 0.3);
     if (a > 0) {
@@ -954,7 +1234,7 @@
     if (u < T.end + 0.4) glow(ctx, W / 2, 880, 700, "rgba(255,107,44,0.8)", 0.35 * land * (1 - settle));
   }
 
-  // ---------- ⑥ 33.8–40s：片尾——话术精灵 + 作者账号（底部留给播放器的「再看一遍」字条） ----------
+  // ---------- ⑥ 34.4–40s：片尾——话术精灵 + 作者账号（底部留给播放器的「再看一遍」字条） ----------
   function sceneEnd(ctx, u, opts) {
     const a = sm(T.end, T.end + 0.6, u);
     if (a <= 0) return;
@@ -1094,18 +1374,31 @@
     add(20.3, "riser", { len: 1.2 }, 1.2);
     // ④ 话术精灵：改一次，所有店铺都能用
     add(T.solve, "impact", { v: 0.8 });
-    groove(T.solve, T.end, MAJOR, { busy: [T.beams, T.compare] });
-    arp(T.beams, T.compare, T.solve, MAJOR);
-    add(22.4, "whoosh", { len: 0.5 }, 0.5);
+    groove(T.solve, T.end, MAJOR, { busy: [T.use, T.compare] });
+    arp(T.use, T.compare, T.solve, MAJOR);
+    add(T.solve + 0.15, "whoosh", { len: 0.5 }, 0.5);
+    add(T.dock, "snap", {});
+    add(22.2, "whoosh", { len: 0.4 }, 0.4);
+    add(SOLVE_EDIT.s - 0.3, "pop", { n: 79 });
     add(SOLVE_EDIT.s, "blip", { n: 79, v: 0.6 });
     add(SOLVE_EDIT.s + SOLVE_EDIT.d * 0.4, "key", {});
     add(SOLVE_EDIT.s + SOLVE_EDIT.d * 0.7, "key", {});
     add(SOLVE_EDIT.s + SOLVE_EDIT.d, "chime", { n: 84 });
-    add(T.beams, "zip", { up: 1 }, 0.4);
-    const PENTA = [72, 74, 76, 79, 81, 84, 86, 88, 91, 93];
-    for (let i = 0; i < SHOPS; i++) add(beamAt(i) + 0.3, "send", { n: PENTA[i % 10], v: 0.35 });
-    add(26.5, "whoosh", { len: 0.8 }, 0.8);
-    add(28.9, "whoosh", { len: 0.7, hi: 1 }, 0.7);
+    // 每家店：双击两下 → 飞进输入框 → 回车 → 发出；Alt+Tab：Tab 一下、换到前台、话术精灵重新吸上
+    const PENTA = [76, 79, 81, 84];
+    USE_AT.forEach((_, k) => {
+      const b = useBeat(k);
+      add(b.d, "tick", { v: 0.7 });
+      add(b.d + 0.13, "tick", { v: 0.7 });
+      add(b.fly, "zip", { up: 1 }, 0.3);
+      add(b.enter, "key", {});
+      add(b.send, "send", { n: PENTA[k], v: 0.5 });
+      if (k < USE_AT.length - 1) {
+        add(altAt(k) + ALT.tab, "key", {});
+        add(altAt(k) + ALT.swap, "whoosh", { len: 0.3, hi: 1 }, 0.3);
+        add(altAt(k) + ALT.swap + 0.1, "snap", {});
+      }
+    });
     // ⑤ 20 次 vs 1 次 → 节约时间，快速高效率
     for (let i = 0; i < SHOPS; i++) add(T.compare + 0.2 + i * 0.04, "tick", { v: 0.5 });
     add(T.compare + 1.3, "thud", { v: 0.8 });
@@ -1427,7 +1720,7 @@
       width: W,
       height: H,
       still: 2.55, // 封面停在片头的问题上：20 格都亮了、「20」刚落定
-      label: `短片「改一句话术，要改 20 次？」（${BASE} 秒，有声）：开了很多家店的客服，京东、天猫、拼多多、抖音每个平台都有好几家店，每家店都有平台自带的快捷短语；话术要经常优化，改一句就得每家店都重新编辑一遍，20 家店改 20 次，下次再优化又是 20 遍，工作量太大，而且完全没必要。所以我做了一个专门管理话术的软件——话术精灵：话术只改一次，所有店铺都能用，哪家店的聊天窗口点一下直接发出。以前改 20 次，现在改 1 次。节约时间，快速高效率。作者账号 ${WECHAT}。`,
+      label: `短片「改一句话术，要改 20 次？」（${BASE} 秒，有声）：开了很多家店的客服，京东、天猫、拼多多、抖音每个平台都有好几家店，每家店都有平台自带的快捷短语；话术要经常优化，改一句就得每家店都重新编辑一遍，20 家店改 20 次，下次再优化又是 20 遍，工作量太大，而且完全没必要。所以我做了一个专门管理话术的软件——话术精灵：话术只改一次，所有店铺都能用，一屏一家店：话术精灵磁吸在聊天窗口右边，双击话术贴进输入框、回车发出，按 Alt+Tab 换到下一家店，同一句接着用。以前改 20 次，现在改 1 次。节约时间，快速高效率。作者账号 ${WECHAT}。`,
       cover: { text: "播放短片 · 有声", again: "再看一遍" },
       render: (ctx, u) => render(ctx, u, opts),
       score: buildScore(),
