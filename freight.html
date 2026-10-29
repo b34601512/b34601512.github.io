@@ -61,10 +61,10 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
 }
 </script>
 <link rel="icon" href="assets/favicon.png" />
-<link rel="stylesheet" href="assets/css/site.css?v=982ea138" />
+<link rel="stylesheet" href="assets/css/site.css?v=8721f1ed" />
 <link rel="stylesheet" href="assets/css/promo-film.css?v=9529b9b6" />
 <script src="assets/js/theme.js?v=46a65147" defer></script>
-<script src="assets/js/nav.js?v=d5aeb647" defer></script>
+<script src="assets/js/nav.js?v=a7234f3f" defer></script>
 </head>
 <body>
 <header class="nav">
@@ -99,6 +99,11 @@ try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-
         </div>
       </nav>
     </details>
+    <script>
+try { window.softtalkNav = { key: "softtalk-nav", query: "(min-width: 1280px)", startsOpen: function navStartsOpen(stored, wide) {
+  return wide && stored !== "closed";
+} }; document.getElementById("nav-menu").open = softtalkNav.startsOpen(localStorage.getItem(softtalkNav.key), matchMedia(softtalkNav.query).matches); } catch {}
+</script>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到白天模式" title="切换到白天模式">
       <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.55 1.55M17.15 17.15l1.55 1.55M5.3 18.7l1.55-1.55M17.15 6.85l1.55-1.55" /></svg>
       <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>

@@ -1,5 +1,6 @@
 // 公共页面骨架：head 基础项、导航、页脚。公共信息只从 site-data.mjs 读取。
 import { siteData } from "./site-data.mjs";
+import { NAV_STORAGE_KEY, NAV_WIDE_QUERY, navStartsOpen } from "./nav-state.mjs";
 
 const DOWNLOAD_LINK = { label: "下载", href: siteData.downloadUrl, external: true };
 
@@ -7,6 +8,12 @@ const DOWNLOAD_LINK = { label: "下载", href: siteData.downloadUrl, external: t
 // 访客点过切换就按他的选择；没点过就跟随系统设置；系统没明确要深色（或读不到）就是白天。键名与 theme.js 共用。
 const THEME_BOOT = `<script>
 try { const t = localStorage.getItem("softtalk-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); if (t === "dark") document.documentElement.dataset.theme = "dark"; } catch {}
+</script>`;
+
+// 紧跟在目录后面同步执行：正文还没解析、也还没绘制，宽屏按记住的选择把目录摊开，不会先收起再弹开。
+// 判据是 nav-state.mjs 里的纯函数原样内联；挂到 window 上给 nav.js 复用。
+const NAV_BOOT = `<script>
+try { window.softtalkNav = { key: "${NAV_STORAGE_KEY}", query: "${NAV_WIDE_QUERY}", startsOpen: ${navStartsOpen} }; document.getElementById("nav-menu").open = softtalkNav.startsOpen(localStorage.getItem(softtalkNav.key), matchMedia(softtalkNav.query).matches); } catch {}
 </script>`;
 
 // 页面定义需要提供：outputFile、navLabel、head、main、可选 styles、bodyEnd 与 navUnder。
@@ -45,7 +52,8 @@ function renderPageStyles(page) {
 
 // 导航是一个竖排目录（GitHub issue #7：页面越来越多，横排放不下）：<details> 展开，没开 JS 也能用；
 // 页面按 navGroup 分组，组的先后按 sitePages 里第一次出现的顺序；「下载」挂在最后一组。
-// nav.js 只补「点外面 / 按 Esc / 点了链接就收起」。
+// 宽屏（≥ 1280px）展开时是贴在页面右侧的常驻侧栏，开合记在 localStorage（issue #12）；窄屏仍是顶栏下拉。
+// nav.js 补「记住开合」，以及窄屏下「点外面 / 按 Esc / 点了链接就收起」。
 function renderNav(page, sitePages) {
   const groups = new Map();
   sitePages
@@ -87,6 +95,7 @@ function renderNav(page, sitePages) {
         ${sections}
       </nav>
     </details>
+    ${NAV_BOOT}
     ${THEME_TOGGLE}
   </div>
 </header>`;
