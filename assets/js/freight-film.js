@@ -5,7 +5,7 @@
 // 竖屏 1080×1920（issue #9：抖音手机上的竖屏比例）：聊天窗在上、话术精灵在下，和官网窄屏演示区同一个摆法。
 //
 // 挂到任何页面：放一个容器 <div class="promo promo--tall" data-freight-film></div>，引 assets/css/promo-film.css（播放器外框与宣传片同一套）
-// 与 assets/js/film-engine.js、assets/js/freight-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、导出、全屏）在 film-engine.js。
+// 与 assets/js/film-engine.js、assets/js/freight-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、全屏）在 film-engine.js。
 (() => {
   const W = 1080;
   const H = 1920;
@@ -2501,13 +2501,6 @@
       fb.connect(d1);
       lp.connect(this.master);
     }
-    stream() {
-      if (!this.dest) {
-        this.dest = this.ctx.createMediaStreamDestination();
-        this.comp.connect(this.dest);
-      }
-      return this.dest.stream;
-    }
     bus() {
       const g = this.ctx.createGain();
       g.connect(this.master);
@@ -2752,7 +2745,6 @@
         track: "promo-track",
         fill: "promo-fill",
         time: "promo-time",
-        rec: "promo-rec",
       },
       base,
       duration: base,
@@ -2767,7 +2759,6 @@
       score: film.TL.score,
       createSynth: () => new Synth(),
       fullscreen: true,
-      record: { filename: "话术精灵-补运费登记案例" },
     });
     logo.addEventListener("load", refresh);
     root.freightFilm = { ...api, film };

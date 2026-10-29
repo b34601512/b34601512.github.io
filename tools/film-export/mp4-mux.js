@@ -1,7 +1,7 @@
 // MP4 封装（issue #15）：把 WebCodecs 编出来的 H.264 画面与 AAC / Opus 声音拼成一个普通的 MP4 文件。
-// 离线导出时所有样本都已在内存里，所以写的是「moov 在前、mdat 在后」的普通 MP4（不是分片 MP4）：
+// 离线出片时所有样本都已在内存里，所以写的是「moov 在前、mdat 在后」的普通 MP4（不是分片 MP4）：
 // 播放器与上传网站拿到文件头就知道总时长、每一帧在哪，边下边播、拖进度条都不用先读到文件尾。
-// 不依赖浏览器：只用 TypedArray，Node 里的自检（tests/mp4-mux.test.mjs）跑的就是这一份。
+// 不依赖浏览器：只用 TypedArray，Node 里的自检（mp4-mux.test.mjs）跑的就是这一份。不进站点。
 //
 //   Mp4Mux.mux({ tracks }) → { parts: Uint8Array[], size }   // parts 按顺序拼起来就是整个文件（浏览器里直接 new Blob(parts)）
 //   track（视频）{ kind: "video", codec: "avc1", width, height, timescale, config: avcC, samples }

@@ -40,9 +40,7 @@ export const freightPage = {
     </div>
   </section>
 </div>`,
-  bodyEnd: `<script src="assets/js/mp4-mux.js" defer></script>
-<script src="assets/js/film-export.js" defer></script>
-<script src="assets/js/film-engine.js" defer></script>
+  bodyEnd: `<script src="assets/js/film-engine.js" defer></script>
 <script src="assets/js/platform-chat.js" defer></script>
 <script src="assets/js/freight-film.js" defer></script>`,
 };

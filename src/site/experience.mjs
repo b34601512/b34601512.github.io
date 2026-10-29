@@ -5,7 +5,7 @@
 //   summary   列表页的一句话简介
 //   duration  片长（秒，按 Chrome 播放器上显示的总长写；tests/experience.test.mjs 对着片子的时间线核对，允许差 1 秒）
 //   href      该期页面地址（= page.outputFile）
-//   cover     列表页的静帧：片子封面那一帧导出的图（scripts/build-episode-covers.mjs）
+//   cover     列表页的静帧：片子封面那一帧存成的图（scripts/build-episode-covers.mjs）
 //   page      该期的页面模块
 import { freightPage } from "./pages/freight.mjs";
 
