@@ -1,5 +1,25 @@
-# [AGENTS.md](http://AGENTS.md)
+# SoftTalk 官网 · Repository Rules
 
-本地官网路径：D:\SoftTalk官网，GitHub：<https://github.com/b34601512/b34601512.github.io>
+- Local repository: `D:\SoftTalk官网`
+- GitHub: <https://github.com/b34601512/b34601512.github.io>
+- Work and acceptance criteria: repository GitHub Issues.
 
-本地永远是最新，GitHub仓库是用来备份代码的，所有改动测试通过后帮我自动备份到GitHub仓库，并合并到主线，关闭已经完成的issues。
+## Boundaries
+
+- The site is a static GitHub Pages project. Generated HTML and `sitemap.xml` come from `scripts/build-site.mjs`; do not hand-edit generated output as a second source.
+- Public claims, interaction behavior, prices, and feature names must be checked against the current SoftTalk client source before publication.
+- Keep the site minimal: each fact appears on its owning page; do not reintroduce removed FAQ, screenshot, feature-card, or blog sections without an explicit issue.
+- Credentials, analytics secrets, real customer data, and private screenshots do not enter the repository.
+
+## Verification and release
+
+```powershell
+node scripts/build-site.mjs
+node scripts/check-site.mjs
+```
+
+Run focused browser checks for changed interactions, then commit and push `main` so GitHub Pages republishes. A build is complete only when generated files are clean on a second build and the issue's real page behavior is verified.
+
+## Context index
+
+`CLAUDE.md` is a short index. Detailed rules are split under `docs/ai-context/`; read only the topic needed for the current change.
