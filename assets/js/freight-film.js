@@ -1076,7 +1076,7 @@
   };
   const MODE_DUR = 0.45; // 话术精灵滑进 / 滑出的时长
   const HEART_FLY = 0.35; // 顾客道谢 → 一颗心飞到右上角好评数（到了数字才跳）
-  const CUT = 0.12; // 快切：整屏板子、片尾进出都用这么短的一下（翻页过渡另见 issue #18）
+  const CUT = 0.12; // 快切：整屏板子、片尾进出原来的那一下；现在这一下被翻页盖住（issue #18），翻页的 from / to 按它算
   // 整屏板子里的排版坐标（板子各自按 BOARDS 的取景框放大到整屏，和窗口摆在哪无关）
   const LOW_Y = 1030; // 时间线、话术卡片从哪开始
   const TIMELINE_H = 700; // 时间线（九行 + 合计）的高度
@@ -2846,7 +2846,21 @@
       ctx.restore();
     }
 
-    return { TL, render, overlay, camera, cameraTrack };
+    // 翻页（issue #18，assets/js/film-page-turn.js）：只在换到不相干的画面时翻——整屏板子一串的两头、急停后换片尾。
+    // 板子之间首尾相接（时间线 → 话术卡片）不翻；镜头在同一段操作里的推拉也不翻。from / to 就是原来快切的头和尾。
+    function turns() {
+      const list = boardList();
+      const out = [];
+      list.forEach((b, i) => {
+        const [s0, s1] = b.span;
+        if (!(i && Math.abs(list[i - 1].span[1] - s0) < 1e-6)) out.push({ from: Math.abs(m.hook[1] - s0) < 1e-6 ? s0 - CUT : s0, to: s0 + CUT, why: "board-in" });
+        if (!(list[i + 1] && Math.abs(list[i + 1].span[0] - s1) < 1e-6)) out.push({ from: s1 - CUT, to: s1, why: "board-out" });
+      });
+      out.push({ from: m.end[0], to: m.end[0] + CUT, why: "end" });
+      return out;
+    }
+
+    return { TL, render, overlay, camera, cameraTrack, turns };
   }
 
   // 小精灵图（标题栏与片尾）：加载好之前这两处先不画
@@ -3221,6 +3235,7 @@
   function mount(root) {
     const film = makeFilm();
     const base = film.TL.base;
+    const view = globalThis.FilmPageTurn.compose({ width: W, height: H, render: film.render, camera: film.camera, overlay: film.overlay, turns: film.turns() });
     logo.src = root.dataset.logo || "assets/logo.png";
     const { refresh, ...api } = window.mountFilm(root, {
       classes: {
@@ -3241,9 +3256,7 @@
       still: 2.6, // 封面：钩子标题条 + 顾客第一句 + 客服正在手打的回复，都已在画面里
       label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：开场一句「${L.hook.join("")}」；没有话术时客服问一句、顾客等很久才回一句，整个流程花费非常长；其实一条话术就能一次问齐；用话术精灵新增、编辑、双击、发送；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此双击一下话术就发出去，顾客一次性回「好的谢谢」；接着在京东、天猫、拼多多的聊天窗之间一个个切过去，每次都是在话术精灵里双击、回车，顾客回的都是满意的话；然后一个聊天窗接一个聊天窗：点一下话术左边的纸飞机直接发出，顾客道谢，窗口滑走，下一个落下来，越来越快，最后话术精灵像机枪一样把话术一发发打进聊天框，右上角好评数一路往上跳，钟从下午走到半夜；急停之后最后一位顾客回「好的谢谢」，第二天早上新的窗口又落下来。片尾：话术精灵，节约时间，快速高效率。`,
       cover: { text: "播放 · 补运费登记案例 · 有声", again: "再看一遍" },
-      render: film.render,
-      camera: film.camera,
-      overlay: film.overlay,
+      render: view.render, // 镜头与镜头外那一层由翻页模块按页各自走（翻页时一帧里有两页）
       score: film.TL.score,
       createSynth: () => new Synth(),
       fullscreen: true,

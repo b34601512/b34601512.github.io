@@ -73,7 +73,9 @@
     end: 34.4, // 片尾：作者账号
   };
   const BEAT = 0.5; // 120 BPM
-  const CUT = 0.12; // 换到不相干的画面（店铺墙 → 所以我做了一个软件 → 一屏一家店 → 20 次 vs 1 次）用快切，不慢慢淡（issue #16；翻页过渡另见 #18）
+  const CUT = 0.12; // 换到不相干的画面（店铺墙 → 所以我做了一个软件 → 一屏一家店 → 20 次 vs 1 次）用快切，不慢慢淡（issue #16）；这一下现在被翻页盖住（issue #18，见 TURNS）
+  // 翻页（issue #18，assets/js/film-page-turn.js）：就在上面这几处快切上翻，from / to 是快切的头和尾
+  const TURNS = [T.turn, T.solve, T.compare].map((t) => ({ from: t, to: t + CUT }));
   // 每家店改那句话术的时刻：前四家镜头一家家跟着，后十六家越改越快（间隔按平方根收紧）
   const EDITS = Array.from({ length: SHOPS }, (_, i) => {
     if (i === 0) return { s: 8.9, d: 1.0 };
@@ -1728,7 +1730,7 @@
       still: 2.55, // 封面停在片头的问题上：20 格都亮了、「20」刚落定
       label: `短片「改一句话术，要改 20 次？」（${BASE} 秒，有声）：开了很多家店的客服，京东、天猫、拼多多、抖音每个平台都有好几家店，每家店都有平台自带的快捷短语；话术要经常优化，改一句就得每家店都重新编辑一遍，20 家店改 20 次，下次再优化又是 20 遍，工作量太大，而且完全没必要。所以我做了一个专门管理话术的软件——话术精灵：话术只改一次，所有店铺都能用，一屏一家店：话术精灵磁吸在聊天窗口右边，双击话术贴进输入框、回车发出，按 Alt+Tab 换到下一家店，同一句接着用。以前改 20 次，现在改 1 次。节约时间，快速高效率。作者账号 ${WECHAT}。`,
       cover: { text: "播放短片 · 有声", again: "再看一遍" },
-      render: (ctx, u) => render(ctx, u, opts),
+      render: globalThis.FilmPageTurn.compose({ width: W, height: H, render: (ctx, u) => render(ctx, u, opts), turns: TURNS }).render,
       score: buildScore(),
       createSynth: () => new Synth(),
       fullscreen: true,

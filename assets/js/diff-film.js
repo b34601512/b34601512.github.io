@@ -118,7 +118,9 @@
     end: 35.6, // 片尾：作者账号
   };
   const BEAT = 0.5; // 120 BPM
-  const CUT = 0.12; // 换到不相干的画面（30 格 → 工作台 + 话术精灵 → 只能人用 → AI 并排 → 关系图）用快切，不慢慢淡（issue #16；翻页过渡另见 #18）
+  const CUT = 0.12; // 换到不相干的画面（30 格 → 工作台 + 话术精灵 → 只能人用 → AI 并排 → 关系图）用快切，不慢慢淡（issue #16）；这一下现在被翻页盖住（issue #18，见 TURNS）
+  // 翻页（issue #18，assets/js/film-page-turn.js）：就在上面这几处快切上翻，from / to 是快切的头和尾
+  const TURNS = [T.press, T.turn2, T.ai, T.share].map((t) => ({ from: t, to: t + CUT }));
   const huntAt = (k) => T.search + 0.2 + k * ((T.found - T.search - 0.4) / (HUNT.length - 1));
   const doneAt = (k) => T.tidy + 0.5 + k * 0.7;
 
@@ -1931,7 +1933,7 @@
       still: 2.75, // 封面停在片头的问题上：分类块全掉下来了
       label: `短片「话术软件，有什么不同？」（${BASE} 秒，有声）：话术上千条，找一句翻半天？普通话术软件把所有话术挤在一套里，一级分类越堆越多，售前、售后、图片、文件全混着，找一句话术翻了 12 秒。话术精灵不一样：第一，30 套话术分开存——团队、个人、离线三类话术，每类 0–9 十套，共 30 套；售前一套、售后一套、图片一套、文件一套，每套只有自己的分类，按数字 1 直接切到售后那一套，以前 12 秒，现在 1 秒。第二，普通话术软件只能人用，话术精灵还能和本机 AI 助手一起用：跟 AI 说一句，它就在话术精灵里优化、新增、整理话术；顾客问什么，AI 从话术精灵里调话术来答；删除和导入仍要你在客户端批准。人和 AI 共用一套话术。节约时间，快速高效率。想用、想问，加我 ${WECHAT}。`,
       cover: { text: "播放短片 · 有声", again: "再看一遍" },
-      render: (ctx, u) => render(ctx, u, opts),
+      render: globalThis.FilmPageTurn.compose({ width: W, height: H, render: (ctx, u) => render(ctx, u, opts), turns: TURNS }).render,
       score: buildScore(),
       createSynth: () => new Synth(),
       fullscreen: true,
