@@ -1,6 +1,6 @@
 // diff.html：用一条竖屏短片讲清「话术精灵跟普通话术软件有什么不同」（GitHub issue #7）。
 // 两点不同：0–9 十套 × 团队/个人/离线三类 = 30 套话术分开存；能连本机 AI 助手一起整理、调用话术。
-// 画面 Canvas 现画、声音 Web Audio 现合成（assets/js/diff-film.js），播放器与宣传片共用 film-engine.js 和 promo-film.css。
+// 画面 Canvas 现画、声音 Web Audio 现合成（assets/js/diff-film.js），播放器与其他短片共用 film-engine.js 和 promo-film.css。
 // 爬虫不执行 JS，所以短片讲的事在 noscript 里留一段原文，搜索引擎照样有正文可索引。
 import { breadcrumb, ogImageUrl, seoHead } from "../seo.mjs";
 import { pageUrl, siteData } from "../site-data.mjs";

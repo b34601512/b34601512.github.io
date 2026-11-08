@@ -13,7 +13,7 @@ const filmShots = { chat: "" };
 
 // 「点一下打开声音」提示的喇叭图标（没开 JS 时提示与两个开关都 hidden）。
 const speaker = `<svg class="film-icon film-icon--sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12 3.8a6 6 0 0 1 0 8.4" /></svg>`;
-// 控制条上的按钮和宣传片同一套（site.css 的 .ctl-btn），图标也一样（同 assets/js/promo-film.js 的 ICON.sound / ICON.mute，`ctl-btn__wave` 是描边的那几笔），
+// 控制条上的按钮和其他短片同一套（site.css 的 .ctl-btn），图标也一样（同 assets/js/film-engine.js 的 ICON.sound / ICON.mute，`ctl-btn__wave` 是描边的那几笔），
 // 特效是同样 1.5px 描边的一大一小两颗星。
 const ctlSound = `<svg class="film-icon--sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path class="ctl-btn__wave" d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12 3.8a6 6 0 0 1 0 8.4" /></svg>`;
 const ctlMute = `<svg class="film-icon--mute" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2Z" /><path class="ctl-btn__wave" d="M10.5 6l4 4M14.5 6l-4 4" /></svg>`;
