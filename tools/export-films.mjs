@@ -1,5 +1,5 @@
 // 离线出片（issue #15）：官网不提供导出，片子由这条命令在本机出成 MP4 文件。
-//   node tools/export-films.mjs <输出目录> [--only=宣传片,对比] [--webm]
+//   node tools/export-films.mjs <输出目录> [--only=补运费,对比] [--webm]
 // 起一个本地静态服务指向仓库根目录（构建产物），用 headless Chromium 打开每条片子的页面，
 // 页面加载前挂钩子截下片子交给 window.mountFilm 的选项，再把 tools/film-export/ 里的离线编码注进去：
 // WebCodecs 逐帧编 H.264 + OfflineAudioContext 合成声音 + 自拼 MP4，60fps，带声音。
@@ -18,7 +18,6 @@ import { pathToFileURL } from "node:url";
 import vm from "node:vm";
 
 const FILMS = [
-  { name: "宣传片", page: "promo.html" },
   { name: "补运费", page: "freight.html" },
   { name: "为什么", page: "why.html" },
   { name: "对比", page: "diff.html" },
@@ -33,7 +32,7 @@ const repo = resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
 const outArg = args.find((a) => !a.startsWith("--"));
 if (!outArg) {
-  console.error("用法：node tools/export-films.mjs <输出目录> [--only=宣传片,对比] [--webm]");
+  console.error("用法：node tools/export-films.mjs <输出目录> [--only=补运费,对比] [--webm]");
   process.exit(2);
 }
 const outDir = resolve(outArg);
