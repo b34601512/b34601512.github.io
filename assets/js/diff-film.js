@@ -7,13 +7,13 @@
 // 核心价值「节约时间，快速高效率」，片尾是作者账号。
 // 竖屏 1080×1920（给手机上刷短视频的人看）：远景看「多」、特写看「字」，镜头按关键帧推拉，字在手机上也读得清。
 // 第 0 帧就是问题本身（刷到的人 1 秒内知道这条讲什么），封面也停在这道题上。
-// 画面与声音都是剧本时间 u（0–42 秒）的函数：拖到哪一秒都能还原同一帧，声音按同一条时间线排程。
+// 画面与声音都是剧本时间 u（0–36.4 秒）的函数：拖到哪一秒都能还原同一帧，声音按同一条时间线排程。
 // 画笔、镜头、合成器与 why-film.js 同一套（每部片子自带一份，互不牵连）。
 //
 // 挂到任何页面：放一个容器 <div class="promo promo--tall" data-diff-film></div>，引 assets/css/promo-film.css
 // 与 assets/js/film-engine.js、assets/js/diff-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、全屏）在 film-engine.js。
 (() => {
-  const BASE = 42;
+  const BASE = 36.4;
   const W = 1080;
   const H = 1920;
   const SANS = '"MiSans", "HarmonyOS Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif';
@@ -58,31 +58,15 @@
   const HUNT = [3, 12, 27, 9, 40, 18, 33, 6, 45, 22, 15, 37, 29, 42, TARGET_CHIP];
   const FOUND_ROW = { title: "退货运费", text: "亲，质量问题退货，运费我们来承担哦～" };
 
-  // 话术精灵：三类话术 × 0–9 十套。套名是客户端里可以改的备注名，团队话术的前四套就是老板举的例子
+  // 话术精灵：三类话术 × 0–9 十套
   const SCOPES = ["团队话术", "个人话术", "离线话术"];
-  const SET_NAMES = [
-    ["售前", "售后", "图片", "文件", "活动", "物流", "新品", "大促", "老客", "备用"],
-    ["我的常用", "第1套", "第2套", "第3套", "第4套", "第5套", "第6套", "第7套", "第8套", "第9套"],
-    ["默认话术", "第1套", "第2套", "第3套", "第4套", "第5套", "第6套", "第7套", "第8套", "第9套"],
-  ];
-  // 推近时看到的：每套只有自己的几个一级分类
+  // 每套只有自己的几个一级分类（主界面里售前、售后两套用到）
   const SET_CHIPS = [
     ["欢迎", "价格", "尺码", "优惠"],
     ["退货", "换货", "运费", "质量"],
     ["实拍", "尺码表", "细节图"],
     ["说明书", "发票", "合同"],
   ];
-  // 普通软件里的分类原本属于哪一套（飞进 30 格时往哪格飞）
-  const chipHome = (i) => {
-    const name = OLD_CHIPS[i];
-    const k = SET_CHIPS.findIndex((list) => list.includes(name));
-    if (k >= 0) return k;
-    if (["售前", "活动", "颜色", "材质", "库存", "预售"].includes(name)) return 0;
-    if (["售后", "退款", "破损", "少件", "保修"].includes(name)) return 1;
-    if (["图片", "视频"].includes(name)) return 2;
-    if (["文件", "安装"].includes(name)) return 3;
-    return 4 + (i % 6);
-  };
   // 话术精灵里「售后」那一套的话术
   const AFTER_ROWS = [
     { title: "退货运费", text: "亲，质量问题退货，运费我们来承担哦～" },
@@ -105,20 +89,18 @@
     search: 5.5, // 开始找一句
     found: 8.4, // 12 秒后终于找到
     turn: 9.6, // 话术精灵不一样 ①
-    sets: 11.4, // 30 套
-    zoom: 14.3, // 推近团队话术前四套
-    press: 17.0, // 主界面按数字 1 切到售后
-    key: 17.7, // 按下那一刻
-    turn2: 20.6, // 不一样 ②：不只人能用
-    ai: 22.6, // 连上 AI
-    tidy: 24.6, // AI 动手：优化、新增、整理
-    answer: 28.4, // 顾客问 → AI 从话术精灵调话术
-    share: 31.2, // 人和 AI 共用一套话术
-    value: 33.6, // 节约时间，快速高效率
-    end: 35.6, // 片尾：作者账号
+    press: 11.4, // 主界面按数字 1 切到售后（原 11.4–17 秒的 30 格总览整段删掉，issue #19）
+    key: 12.1, // 按下那一刻
+    turn2: 15.0, // 不一样 ②：不只人能用
+    ai: 17.0, // 连上 AI
+    tidy: 19.0, // AI 动手：优化、新增、整理
+    answer: 22.8, // 顾客问 → AI 从话术精灵调话术
+    share: 25.6, // 人和 AI 共用一套话术
+    value: 28.0, // 节约时间，快速高效率
+    end: 30.0, // 片尾：作者账号
   };
   const BEAT = 0.5; // 120 BPM
-  const CUT = 0.12; // 换到不相干的画面（30 格 → 工作台 + 话术精灵 → 只能人用 → AI 并排 → 关系图）用快切，不慢慢淡（issue #16）；这一下现在被翻页盖住（issue #18，见 TURNS）
+  const CUT = 0.12; // 换到不相干的画面（「不一样在哪」→ 工作台 + 话术精灵 → 只能人用 → AI 并排 → 关系图）用快切，不慢慢淡（issue #16）；这一下现在被翻页盖住（issue #18，见 TURNS）
   // 翻页（issue #18，assets/js/film-page-turn.js）：就在上面这几处快切上翻，from / to 是快切的头和尾
   const TURNS = [T.press, T.turn2, T.ai, T.share].map((t) => ({ from: t, to: t + CUT }));
   const huntAt = (k) => T.search + 0.2 + k * ((T.found - T.search - 0.4) / (HUNT.length - 1));
@@ -287,7 +269,7 @@
 
 
   // 鼓点脉冲：每拍开头冲到 1、迅速衰减
-  const beatFrom = (u) => (u >= T.old && u < T.turn ? T.old : u >= T.sets && u < T.value ? T.sets : null);
+  const beatFrom = (u) => (u >= T.old && u < T.turn ? T.old : u >= T.press && u < T.value ? T.press : null);
   const pulse = (u) => {
     const from = beatFrom(u);
     return from === null ? 0 : Math.exp(-((u - from) % BEAT) * 9);
@@ -298,10 +280,8 @@
     { from: T.old + 0.1, to: T.search - 0.05, l1: "普通话术软件", l2: "所有话术挤在[一套]里" },
     { from: T.search, to: 7.2, l1: "一级分类[越堆越多]", l2: "售前、售后、图片、文件全混着" },
     { from: 7.3, to: T.turn - 0.05, l1: "找一句话术", l2: "[翻了 12 秒]", hot: RED },
-    { from: T.sets + 0.15, to: T.zoom - 0.05, l1: "团队、个人、离线三类话术", l2: "每类 0–9 十套，共 [30 套]" },
-    { from: T.zoom, to: T.press - 0.05, l1: "[售前]一套，[售后]一套", l2: "[图片]一套，[文件]一套" },
-    { from: T.press + 0.05, to: 18.9, l1: "按数字 [1]", l2: "直接切到售后那一套" },
-    { from: 19.0, to: T.turn2 - 0.05, l1: "分类少，一眼就找到", l2: "以前 12 秒，现在 [1 秒]" },
+    { from: T.press + 0.05, to: 13.3, l1: "按数字 [1]", l2: "直接切到售后那一套" },
+    { from: 13.4, to: T.turn2 - 0.05, l1: "分类少，一眼就找到", l2: "以前 12 秒，现在 [1 秒]" },
     { from: T.ai + 0.1, to: T.tidy - 0.05, l1: "跟 AI 说一句", l2: "它就在[话术精灵]里干活" },
     { from: T.tidy, to: T.answer - 0.05, l1: "AI 帮你[优化]、[新增]、[整理]", l2: "话术库越用越顺手" },
     { from: T.answer + 0.05, to: T.share - 0.05, l1: "顾客问什么", l2: "AI 从话术精灵里[调话术]来答" },
@@ -309,7 +289,7 @@
   ];
 
   function captions(ctx, u) {
-    const band = win(u, T.old - 0.1, T.turn, 0.3) + win(u, T.sets, T.turn2, 0.3) + win(u, T.ai, T.value, 0.3);
+    const band = win(u, T.old - 0.1, T.turn, 0.3) + win(u, T.press, T.turn2, 0.3) + win(u, T.ai, T.value, 0.3);
     if (band > 0) {
       const g = ctx.createLinearGradient(0, 0, 0, 600);
       g.addColorStop(0, `rgba(0,0,0,${0.92 * band})`);
@@ -701,39 +681,24 @@
   }
 
   function sceneOld(ctx, u) {
-    if (u > T.sets + 0.8) return;
-    // 话术精灵一出场，普通软件就散开：分类块飞去 30 格
-    const burst = sm(T.sets - 0.1, T.sets + 0.8, u);
+    if (u >= T.press + CUT) return;
     const cam = camAt(CAM_OLD, u);
     const shake = u >= T.found && u < T.found + 0.3 ? (1 - sm(T.found, T.found + 0.3, u)) * 14 : 0;
     ctx.save();
     ctx.translate(Math.sin(u * 83) * shake, Math.cos(u * 61) * shake);
     applyCam(ctx, cam);
     const away = u > T.turn ? sm(T.turn, T.turn + 0.5, u) : 0;
-    if (u < T.sets) {
-      ctx.globalAlpha = 1 - away * 0.85;
-      oldPanel(ctx, u);
-    } else {
-      OLD_CHIPS.forEach((name, i) => {
-        const a = OLD_LAYOUT[i];
-        const home = chipHome(i);
-        const b = cellRect(0, home);
-        const t = clamp((burst - rnd(i) * 0.3) / 0.7, 0, 1);
-        const e = easeIO(t);
-        const r = { x: lerp(a.x, b.x + b.w / 2 - a.w / 2, e), y: lerp(a.y, b.y + b.h / 2 - a.h / 2, e), w: a.w * lerp(1, 0.5, e), h: a.h * lerp(1, 0.5, e) };
-        ctx.globalAlpha = 0.5 * (1 - e);
-        chip(ctx, name, r, 26 * lerp(1, 0.5, e), { fill: "#22262b", stroke: "#3a3f46", color: "#c9ced4" });
-      });
-    }
+    ctx.globalAlpha = 1 - away * 0.85;
+    oldPanel(ctx, u);
     ctx.restore();
     // 秒表：开始找就转，找到时停在 12 秒
     const secs = clamp(((u - T.search) / (T.found - T.search)) * 12, 0, 12);
     stopwatch(ctx, W / 2, 1780, secs, u >= T.found ? RED : FG, win(u, T.search, T.turn, 0.25));
   }
 
-  // ---------- ③ 9.6–11.4s：话术精灵不一样 ----------
+  // ---------- ③ 9.6–11.4s：话术精灵不一样，直接接按数字切套的演示 ----------
   function sceneTurn(ctx, u, opts) {
-    const a = win(u, T.turn, T.sets + 0.2, 0.3);
+    const a = sm(T.turn, T.turn + 0.3, u) * (1 - sm(T.press, T.press + CUT, u)); // 切到工作台 + 话术精灵用快切
     if (a <= 0) return;
     const pop = easeBack(clamp((u - T.turn) / 0.35, 0, 1));
     ctx.save();
@@ -752,106 +717,7 @@
       segs(ctx, marked("[30 套话术]，分开存", FG), W / 2, 1290, { size: 96, weight: 900, align: "center" });
       ctx.restore();
     }
-    glow(ctx, W / 2, 860, 600, "rgba(255,107,44,0.7)", 0.3 * a * (1 - sm(T.turn + 0.3, T.sets, u)));
-  }
-
-  // ---------- ④ 11.4–17s：三类 × 十套 = 30 格 ----------
-  const CELL_W = 300;
-  const CELL_H = 96;
-  const CELL_GX = 30;
-  const CELL_GY = 12;
-  const GRID_Y = 700;
-  const cellRect = (col, row) => ({ x: 60 + col * (CELL_W + CELL_GX), y: GRID_Y + row * (CELL_H + CELL_GY), w: CELL_W, h: CELL_H });
-  const cellAt = (col, row) => T.sets + 0.25 + row * 0.07 + col * 0.12;
-  // 推近团队话术前四套：格子被拉高，露出各自的一级分类
-  const grow = (u) => sm(T.zoom + 0.1, T.zoom + 0.8, u);
-  const zoomCellRect = (row, g) => {
-    const base = cellRect(0, row);
-    const h = lerp(CELL_H, 180, g);
-    const y = GRID_Y + row * (h + CELL_GY);
-    return { x: base.x, y, w: lerp(CELL_W, 520, g), h };
-  };
-  const CAM_SETS = [
-    { u: T.sets, x: W / 2, y: H / 2 + 120, z: 1 },
-    { u: T.zoom, x: W / 2, y: H / 2 + 120, z: 1 },
-    { u: T.zoom + 0.8, x: 60 + 260, y: GRID_Y + 270, z: 1.8 },
-    { u: T.press - 0.2, x: 60 + 260, y: GRID_Y + 285, z: 1.84 },
-  ];
-
-  function sceneSets(ctx, u) {
-    const a = sm(T.sets, T.sets + 0.3, u) * (1 - sm(T.press, T.press + CUT, u)); // 切到工作台 + 话术精灵用快切
-    if (a <= 0) return;
-    const cam = camAt(CAM_SETS, u);
-    const g = grow(u);
-    ctx.save();
-    ctx.globalAlpha = a;
-    applyCam(ctx, cam);
-    const k = 1 + pulse(u) * 0.012;
-    // 三列的抬头
-    SCOPES.forEach((name, col) => {
-      const r = cellRect(col, 0);
-      const fade = col === 0 ? 1 : 1 - g;
-      text(ctx, name, r.x + r.w / 2, GRID_Y - 46, { size: 46, weight: 800, color: col === 0 ? ACCENT : FG, alpha: sm(T.sets, T.sets + 0.3, u) * fade });
-    });
-    for (let col = 0; col < 3; col++) {
-      for (let row = 0; row < 10; row++) {
-        const at = cellAt(col, row);
-        if (u < at) continue;
-        const pop = easeBack(clamp((u - at) / 0.3, 0, 1));
-        const focus = col === 0 && row < 4;
-        const fade = focus ? 1 : 1 - g * 0.92;
-        const r = focus ? zoomCellRect(row, g) : cellRect(col, row);
-        ctx.save();
-        ctx.globalAlpha = a * fade;
-        const cx = r.x + r.w / 2;
-        const cy = r.y + r.h / 2;
-        ctx.translate(cx, cy);
-        ctx.scale(pop * k, pop * k);
-        ctx.translate(-cx, -cy);
-        rr(ctx, r.x, r.y, r.w, r.h, 12);
-        ctx.fillStyle = SURFACE;
-        ctx.fill();
-        ctx.lineWidth = focus && g > 0 ? 3 : 1.5;
-        ctx.strokeStyle = focus ? ACCENT : LINE;
-        ctx.stroke();
-        // 套号 + 套名
-        rr(ctx, r.x + 14, r.y + 16, 62, 62, 10);
-        ctx.fillStyle = col === 0 ? "rgba(255,107,44,0.18)" : "#22201d";
-        ctx.fill();
-        text(ctx, String(row), r.x + 45, r.y + 48, { size: 42, weight: 800, color: col === 0 ? ACCENT : MUTED, font: MONO });
-        text(ctx, SET_NAMES[col][row], r.x + 96, r.y + 48, { size: 40, weight: 800, color: col === 0 ? FG : MUTED, align: "left" });
-        // 推近后：每套只有自己的几个分类
-        if (focus && g > 0.3) {
-          ctx.globalAlpha = a * sm(0.3, 1, g);
-          text(ctx, `${SET_CHIPS[row].length} 个分类`, r.x + r.w - 20, r.y + 48, { size: 26, weight: 600, color: DIM, align: "right" });
-          let cxp = r.x + 16;
-          SET_CHIPS[row].forEach((name) => {
-            const w = name.length * 26 + 30;
-            chip(ctx, name, { x: cxp, y: r.y + 104, w, h: 54 }, 26, { fill: "#22201d", stroke: LINE, color: FG });
-            cxp += w + 10;
-          });
-        }
-        ctx.restore();
-      }
-    }
-    ctx.restore();
-    // 远景里的大字：30
-    const n = win(u, T.sets + 1.2, T.zoom, 0.25);
-    if (n > 0) {
-      const p = easeBack(clamp((u - T.sets - 1.2) / 0.3, 0, 1));
-      ctx.save();
-      ctx.globalAlpha = n;
-      rr(ctx, W / 2 - 260, 1795 - 70, 520, 140, 70);
-      ctx.fillStyle = "rgba(0,0,0,0.85)";
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = ACCENT;
-      ctx.stroke();
-      ctx.translate(W / 2, 1799);
-      ctx.scale(p, p);
-      segs(ctx, [{ t: "3 × 10 = ", color: MUTED }, { t: "30", color: ACCENT }, { t: " 套", color: FG }], 0, 0, { size: 76, weight: 900, align: "center" });
-      ctx.restore();
-    }
+    glow(ctx, W / 2, 860, 600, "rgba(255,107,44,0.7)", 0.3 * a * (1 - sm(T.turn + 0.3, T.press, u)));
   }
 
   // ---------- 话术精灵主界面：客户端白色主题的窄长条（同 why-film.js 的磁吸竖条：标题栏 → 三个话术域页签 → 0–9 套号 → 一级分类 → 二级分类 → 话术行 → 搜索行 → 底栏） ----------
@@ -1044,14 +910,14 @@
     text(ctx, "luyao2089.cc", x + 20, y + h - 46, { size: 19, color: P.digit, align: "left", font: MONO });
   }
 
-  // ---------- ⑤ 17–20.6s：工作台在左、话术精灵磁吸在右；按 1，切到售后那一套 ----------
+  // ---------- ⑤ 11.4–15s：工作台在左、话术精灵磁吸在右；按 1，切到售后那一套 ----------
   // 先全景看清位置，再高速推到套号和键帽上，按下后拉到话术行
   const CAM_PRESS = [
     { u: T.press, x: W / 2, y: H / 2, z: 0.96 },
     { u: T.press + 0.35, x: W / 2, y: H / 2, z: 1 },
     { u: T.key - 0.05, x: RIGHT(1.8), y: 910, z: 1.8 },
     { u: T.key + 1.0, x: RIGHT(1.8), y: 910, z: 1.8 },
-    { u: 19.1, x: RIGHT(1.3), y: 1150, z: 1.3 },
+    { u: 13.5, x: RIGHT(1.3), y: 1150, z: 1.3 },
     { u: T.turn2, x: RIGHT(1.3), y: 1150, z: 1.3 },
   ];
 
@@ -1085,7 +951,7 @@
     ctx.restore();
     // 键帽「1」在工作台右上的空白里，紧挨套号那一行
     const down = u >= T.key && u < T.key + 0.25 ? 1 : 0;
-    const show = sm(T.press + 0.4, T.press + 0.6, u) * (1 - sm(19.0, 19.3, u));
+    const show = sm(T.press + 0.4, T.press + 0.6, u) * (1 - sm(13.4, 13.7, u));
     if (show > 0) {
       ctx.save();
       ctx.globalAlpha *= show;
@@ -1103,7 +969,7 @@
     }
     ctx.restore();
     // 以前 12 秒 / 现在 1 秒
-    const cmp = win(u, 19.0, T.turn2, 0.25);
+    const cmp = win(u, 13.4, T.turn2, 0.25);
     if (cmp > 0) {
       ctx.save();
       ctx.globalAlpha = cmp;
@@ -1119,14 +985,14 @@
       const full = ctx.measureText("12 秒  →  1 秒").width;
       const w12 = ctx.measureText("12 秒").width;
       const sx = W / 2 - full / 2;
-      const strike = sm(19.3, 19.6, u);
+      const strike = sm(13.7, 14.0, u);
       ctx.fillStyle = RED;
       ctx.fillRect(sx - 6, 1772, (w12 + 12) * strike, 7);
       ctx.restore();
     }
   }
 
-  // ---------- ⑥ 20.6–22.6s：不同 ②——以前只能人用 ----------
+  // ---------- ⑥ 15–17s：不同 ②——以前只能人用 ----------
   // 一个小人：圆头 + 半圆身子
   function person(ctx, x, y, s, color) {
     ctx.beginPath();
@@ -1181,7 +1047,7 @@
     ctx.restore();
   }
 
-  // ---------- ⑦ 22.6–31.2s：AI 连上话术精灵——优化、新增、整理，调话术回答 ----------
+  // ---------- ⑦ 17–25.6s：AI 连上话术精灵——优化、新增、整理，调话术回答 ----------
   // 左右并排（issue #16）：AI 助手的聊天卡在左，话术精灵在右（同一个磁吸位），中间一根横向的连接线；
   // 干活时数据点从左往右流（写进话术精灵），调话术时从右往左流（从话术精灵拿出来）
   const CARD = { x: 24, y: 640, w: 500, h: 1060 };
@@ -1381,7 +1247,7 @@
     ctx.restore();
   }
 
-  // ---------- ⑧ 31.2–33.6s：人和 AI 共用一套话术 ----------
+  // ---------- ⑧ 25.6–28s：人和 AI 共用一套话术 ----------
   function sceneShare(ctx, u, opts) {
     const a = sm(T.share, T.share + CUT, u) * (1 - sm(T.value - 0.1, T.value + 0.2, u)); // 关系图快切进来
     if (a <= 0) return;
@@ -1447,7 +1313,7 @@
     }
   }
 
-  // ---------- ⑨ 35.6–42s：片尾——话术精灵 + 作者账号（底部留给播放器的「再看一遍」字条） ----------
+  // ---------- ⑨ 30–36.4s：片尾——话术精灵 + 作者账号（底部留给播放器的「再看一遍」字条） ----------
   function sceneEnd(ctx, u, opts) {
     const a = sm(T.end, T.end + 0.6, u);
     if (a <= 0) return;
@@ -1462,9 +1328,8 @@
     if (w2 > 0) {
       ctx.save();
       ctx.globalAlpha = w2;
-      text(ctx, "想用、想问，加我", W / 2, 1110, { size: 60, weight: 700 });
       const p = easeBack(clamp((u - T.end - 1.0) / 0.4, 0, 1));
-      ctx.translate(W / 2, 1270);
+      ctx.translate(W / 2, 1130);
       ctx.scale(p, p);
       rr(ctx, -360, -90, 720, 180, 90);
       ctx.fillStyle = ACCENT;
@@ -1473,7 +1338,7 @@
       const n = clamp(Math.floor((u - T.end - 1.3) / 0.08), 0, WECHAT.length);
       segs(ctx, [{ t: WECHAT.slice(0, n), color: "#000" }, { t: WECHAT.slice(n), color: "rgba(0,0,0,0)" }], 0, 4, { size: 88, weight: 800, align: "center", font: SANS });
       ctx.restore();
-      glow(ctx, W / 2, 1270, 520, "rgba(255,107,44,0.7)", 0.2 * w2);
+      glow(ctx, W / 2, 1130, 520, "rgba(255,107,44,0.7)", 0.2 * w2);
     }
   }
 
@@ -1483,7 +1348,6 @@
     sceneOld(ctx, u);
     sceneHook(ctx, u);
     sceneTurn(ctx, u, opts);
-    sceneSets(ctx, u);
     scenePress(ctx, u);
     sceneTurn2(ctx, u);
     sceneAI(ctx, u);
@@ -1572,23 +1436,18 @@
     // ③ 话术精灵不一样
     add(T.turn - 0.5, "riser", { len: 0.5 }, 0.5);
     add(T.turn, "impact", { v: 0.8 });
-    add(T.turn, "pad", { notes: [48, 55, 60, 64], v: 0.7, long: 1 }, T.sets - T.turn);
+    add(T.turn, "pad", { notes: [48, 55, 60, 64], v: 0.7, long: 1 }, T.press - T.turn);
     [0, 0.09, 0.18, 0.27].forEach((d, i) => add(T.turn + 0.05 + d, "chime", { n: [72, 76, 79, 84][i], v: 0.55 }));
     add(T.turn + 0.6, "shimmer", {}, 0.8);
-    // ④ 30 套 → ⑤ 按 1：亮色进行
-    add(T.sets, "impact", { v: 0.7 });
-    groove(T.sets, T.turn2, MAJOR, { busy: [T.zoom, T.press] });
-    arp(T.zoom, T.turn2, T.sets, MAJOR);
-    add(T.sets, "zip", { up: 1 }, 0.4);
-    const PENTA = [72, 74, 76, 79, 81, 84, 86, 88, 91, 93];
-    for (let col = 0; col < 3; col++) for (let row = 0; row < 10; row++) if ((row + col) % 2 === 0) add(cellAt(col, row), "pop", { n: PENTA[row] - 12 + col * 2 });
-    add(T.sets + 1.2, "chime", { n: 84, v: 0.6 });
-    add(T.zoom, "whoosh", { len: 0.8 }, 0.8);
+    // ⑤ 按 1：亮色进行
+    add(T.press, "impact", { v: 0.7 });
+    groove(T.press, T.turn2, MAJOR);
+    arp(T.press, T.turn2, T.press, MAJOR);
     add(T.press, "whoosh", { len: 0.5, hi: 1 }, 0.5);
     add(T.key, "key", { v: 1 });
     add(T.key + 0.02, "send", { n: 84 });
     add(T.key + 0.5, "chime", { n: 88 });
-    add(19.3, "snap", {});
+    add(13.7, "snap", {});
     // ⑥ 不同 ②
     add(T.turn2, "impact", { v: 0.7 });
     add(T.turn2, "pad", { notes: [45, 52, 57, 60], v: 0.6 }, T.ai - T.turn2);
