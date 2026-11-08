@@ -48,3 +48,15 @@ test("片尾以前，连续 2 秒以上没有新东西出现的地方一处都�
   const ev = events().filter((u) => u <= TL.m.end[0]);
   for (let i = 1; i < ev.length; i++) assert.ok(ev[i] - ev[i - 1] < 2, `${ev[i - 1].toFixed(1)}–${ev[i].toFixed(1)} 秒停了 ${(ev[i] - ev[i - 1]).toFixed(1)} 秒`);
 });
+
+test("全片只有一次双击：老王那段（05）；02 段阿杰那次是单击，且 02 段不出现「双击」字样（issue #16b）", () => {
+  const dbl = TL.clicks.filter((c) => c.kind === "dbl");
+  assert.equal(dbl.length, 1, "双击次数");
+  assert.ok(dbl[0].at > TL.m.s2[1], "那一次双击得在 02 段之后（老王那段）");
+  assert.ok(TL.flies.some((f) => f.at >= TL.m.s2[0] && f.at <= TL.m.s2[1]), "02 段单击后话术照样飞进输入框");
+  const src = readFileSync(resolve(import.meta.dirname, "../assets/js/freight-film.js"), "utf8");
+  const seg = src.slice(src.indexOf("// ② 后面用了话术精灵"), src.indexOf("// ③ 然后没有话术精灵"));
+  assert.ok(seg.length > 0 && !seg.includes("双击"), "02 段剧本里还有「双击」");
+  assert.ok(!src.includes('"双击话术"'), "02 段步骤条还写着「双击话术」");
+  assert.equal(TL.base, 129, "总时长");
+});
