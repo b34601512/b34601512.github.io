@@ -1,5 +1,6 @@
 // 补运费短片的镜头（issue #5）：取景框永远在画布里、比例 9:16（issue #9 起竖屏），推拉连续不跳，每一拍都包住它对准的东西；
 // issue #16 起没有片头：第一帧镜头已经推近聊天窗，顾客第一句马上进来，钩子标题条从第 0 秒挂起。
+// issue #16 起整屏板子（时间线、话术卡片、对比条、六问对照）都砍了，翻页只剩换顾客的三处和片尾。
 // issue #18 起换到不相干的画面用翻页（assets/js/film-page-turn.js）：一帧里可能有两页，逐帧检查按「实际画出来的每一页」走——
 // 同一页上镜头必须连续；只有翻页进来的新页可以和上一帧不连续，而且它必须从屏幕右边外面进来、只出现在登记过的画面交界上。
 // 运行：node --test tests/
@@ -50,21 +51,25 @@ const smooth = (prev, c, u) => {
   assert.ok(pan < 50, `第 ${u.toFixed(2)} 秒摇得太快（${pan.toFixed(1)}px）`);
 };
 
-test("片子自己的镜头逐帧（60 帧/秒）都在画布里、比例 9:16，推拉每帧不超过 2%，中心每帧不超过 50 画面像素", () => {
+// 翻页盖住的那一下（from–to，原来的快切）从来不画出来：换顾客时镜头在这里直接对准新聊天窗，不算跳
+const hidden = (a, b) => view.turns.some((t) => a < t.to + 1e-9 && b > t.from - 1e-9);
+
+test("片子自己的镜头逐帧（60 帧/秒）都在画布里、比例 9:16，推拉每帧不超过 2%，中心每帧不超过 50 画面像素（翻页盖住的快切除外）", () => {
   let prev = film.camera(0);
   for (let u = 1 / 60; u <= film.TL.base; u += 1 / 60) {
     const c = film.camera(u);
     inCanvas(c, u);
-    smooth(prev, c, u);
+    if (!hidden(u - 1 / 60, u)) smooth(prev, c, u);
     prev = c;
   }
 });
 
-test("翻页只在不相干的画面交界上：整屏板子一串的两头、片尾；时长 0.35–0.5 秒、互不重叠，片长不变", () => {
-  assert.equal(film.TL.base, 211);
+test("翻页只在不相干的画面交界上：换了一位顾客（一家平台）的三处、片尾；时长 0.35–0.5 秒、互不重叠", () => {
   assert.ok(view.DUR >= 0.35 && view.DUR <= 0.5, `翻页 ${view.DUR} 秒`);
   const m = film.TL.m;
-  const edges = [m.timeline[0], m.card[1], m.compare[0], m.compare[1], m.reveal[0], m.reveal[1], m.end[0]];
+  // 换顾客：新的一段聊天（session）从翻页的 to 开始
+  const switches = ["B", "C", "D"].map((id) => film.TL.sessions.find((x) => x.id === id).at);
+  const edges = [...switches, m.end[0]];
   assert.equal(view.turns.length, edges.length, "翻页次数不对");
   view.turns.forEach((t, i) => {
     assert.ok(edges.some((e) => Math.abs(t.from - e) <= 0.121 || Math.abs(t.to - e) < 1e-6), `第 ${i + 1} 次翻页（${t.from.toFixed(2)} 秒）不在画面交界上`);
