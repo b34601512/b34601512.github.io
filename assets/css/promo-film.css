@@ -21,10 +21,11 @@
   aspect-ratio: 16 / 9;
 }
 
-/* 竖屏短片（why.html、freight.html，1080×1920，给手机上刷短视频的人看）：桌面上不超过一屏高、最宽 460px，和标题一样靠左；控制条跟画面一样宽 */
+/* 竖屏短片（why.html、freight.html、diff.html，1080×1920，给手机上刷短视频的人看）：桌面上不超过一屏高、最宽 460px，在页面里水平居中（标题和下面的按钮仍靠左，issue #22）；控制条跟画面一样宽 */
 .promo--tall {
   width: min(100%, 460px, calc((100vh - 160px) * 9 / 16));
   min-width: min(100%, 300px);
+  margin-inline: auto;
 }
 
 .promo--tall .promo-canvas {
