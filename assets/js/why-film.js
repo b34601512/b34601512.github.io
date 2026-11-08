@@ -73,6 +73,9 @@
     end: 34.4, // 片尾：作者账号
   };
   const BEAT = 0.5; // 120 BPM
+  const CUT = 0.12; // 换到不相干的画面（店铺墙 → 所以我做了一个软件 → 一屏一家店 → 20 次 vs 1 次）用快切，不慢慢淡（issue #16）；这一下现在被翻页盖住（issue #18，见 TURNS）
+  // 翻页（issue #18，assets/js/film-page-turn.js）：就在上面这几处快切上翻，from / to 是快切的头和尾
+  const TURNS = [T.turn, T.solve, T.compare].map((t) => ({ from: t, to: t + CUT }));
   // 每家店改那句话术的时刻：前四家镜头一家家跟着，后十六家越改越快（间隔按平方根收紧）
   const EDITS = Array.from({ length: SHOPS }, (_, i) => {
     if (i === 0) return { s: 8.9, d: 1.0 };
@@ -184,13 +187,17 @@
 
   // 镜头：keys = [{ u, x, y, z, dip }]，相邻两帧之间位置按 easeIO 走、缩放按对数插值；
   // dip 是转场中途拉远的比例（从一家店甩到下一家时先退半步再推上去）
+  // CAM_SPEED：镜头速度倍率（issue #16）。每一段推拉只用原来 1/CAM_SPEED 的时长，到位时刻不变（先停着、再更快地推过去），
+  // 所以字幕、改字、双击仍对得上镜头；1 = 老板看过、说「就目前这样的就挺好的」的那一版
+  const CAM_SPEED = 1;
   function camAt(keys, u) {
     if (u <= keys[0].u) return keys[0];
     for (let i = 1; i < keys.length; i++) {
       const b = keys[i];
       if (u > b.u) continue;
       const a = keys[i - 1];
-      const t = (u - a.u) / (b.u - a.u || 1);
+      const span = (b.u - a.u) / CAM_SPEED;
+      const t = clamp((u - (b.u - span)) / (span || 1), 0, 1);
       const e = easeIO(t);
       const z = Math.exp(lerp(Math.log(a.z), Math.log(b.z), e)) * (1 - (b.dip || 0) * Math.sin(Math.PI * t));
       return { x: lerp(a.x, b.x, e), y: lerp(a.y, b.y, e), z };
@@ -298,7 +305,8 @@
   const WIN_X = 40;
   const WIN_H = 280;
   const winY = (p) => 560 + p * (WIN_H + 12);
-  const winOpts = (p) => ({ listW: 150, side: "quick", compact: true, sideW: 220, headH: 30, inputH: 50, pddAlert: false, tabW: 92 });
+  // 不画会话列表（issue #16：工作台只留店铺页签、导航、聊天区）；窗口宽不变，聊天栏顺势变宽，右边平台自带的快捷短语面板照旧
+  const winOpts = (p) => ({ list: false, side: "quick", compact: true, sideW: 220, headH: 30, inputH: 50, pddAlert: false, tabW: 92 });
   function winChat(p) {
     const d = PCX().dims(PLATS[p], winOpts(p));
     return { x: d.left, y: d.top, w: WN - d.left - d.sideW, h: WIN_H / WK - d.top };
@@ -469,8 +477,8 @@
 
   // ① 0–3s：问题本身 + 20 个小方块；② 3–18.5s：四个平台的工作台、20 家店，推近、一家家改、全部打回原形
   function sceneShops(ctx, u) {
-    if (u > T.turn + 0.7) return;
-    const out = 1 - sm(T.turn, T.turn + 0.6, u);
+    if (u > T.turn + CUT) return;
+    const out = 1 - sm(T.turn, T.turn + CUT, u);
     const content = sm(T.shops + 0.2, T.shops + 0.8, u);
     const cam = u < T.shops ? WIDE(0) : camAt(CAM_SHOPS(), u);
     // 「没必要」盖章那一下屏幕抖
@@ -599,7 +607,7 @@
 
   // ③ 18.5–21.5s：所以我做了一个软件 → 话术精灵
   function sceneTurn(ctx, u, opts) {
-    const a = win(u, T.turn + 0.1, T.solve + 0.3, 0.3);
+    const a = win(u, T.turn, T.solve + CUT, CUT);
     if (a <= 0) return;
     ctx.save();
     ctx.globalAlpha = a;
@@ -1059,7 +1067,7 @@
   }
 
   function sceneSolve(ctx, u, opts) {
-    const a = win(u, T.solve, T.compare + 0.3, 0.35);
+    const a = win(u, T.solve, T.compare + CUT, CUT);
     if (a <= 0) return;
     const cam = camAt(CAM_SOLVE(), u);
     ctx.save();
@@ -1168,7 +1176,7 @@
 
   // ---------- ⑤ 30.9–34.4s：以前 20 次 vs 现在 1 次 → 节约时间，快速高效率 ----------
   function sceneCompare(ctx, u) {
-    const a = win(u, T.compare, T.value + 0.3, 0.3);
+    const a = win(u, T.compare, T.value + 0.3, CUT);
     if (a > 0) {
       ctx.save();
       ctx.globalAlpha = a;
@@ -1722,7 +1730,7 @@
       still: 2.55, // 封面停在片头的问题上：20 格都亮了、「20」刚落定
       label: `短片「改一句话术，要改 20 次？」（${BASE} 秒，有声）：开了很多家店的客服，京东、天猫、拼多多、抖音每个平台都有好几家店，每家店都有平台自带的快捷短语；话术要经常优化，改一句就得每家店都重新编辑一遍，20 家店改 20 次，下次再优化又是 20 遍，工作量太大，而且完全没必要。所以我做了一个专门管理话术的软件——话术精灵：话术只改一次，所有店铺都能用，一屏一家店：话术精灵磁吸在聊天窗口右边，双击话术贴进输入框、回车发出，按 Alt+Tab 换到下一家店，同一句接着用。以前改 20 次，现在改 1 次。节约时间，快速高效率。作者账号 ${WECHAT}。`,
       cover: { text: "播放短片 · 有声", again: "再看一遍" },
-      render: (ctx, u) => render(ctx, u, opts),
+      render: globalThis.FilmPageTurn.compose({ width: W, height: H, render: (ctx, u) => render(ctx, u, opts), turns: TURNS }).render,
       score: buildScore(),
       createSynth: () => new Synth(),
       fullscreen: true,
