@@ -2,13 +2,17 @@
 // 讲的是老板原话里的事：京东、天猫、拼多多、抖音开了很多店，平台自带的快捷短语按店铺存，改一句话术每家店都要改一遍；
 // 话术精灵专门管话术，只改一次，所有店铺都能用。核心价值「节约时间，快速高效率」，片尾是作者账号。
 // 竖屏 1080×1920（给手机上刷短视频的人看）：远景看「多」、特写看「字」，镜头按关键帧推拉，字在手机上也读得清。
-// 第 0 帧就是问题本身（刷到的人 1 秒内知道这条讲什么），封面也停在这道题上。
-// 画面与声音都是剧本时间 u（0–40 秒）的函数：拖到哪一秒都能还原同一帧，声音按同一条时间线排程。
+// 片子从剧本第 8 秒放起（issue #20）：第 0 帧就是店铺和平台自带的快捷短语，封面也停在这一帧。
+// 画面与声音都是剧本时间 u（0–40 秒）的函数，播放时片子时间 = u − START（共 32 秒）：拖到哪一秒都能还原同一帧，声音按同一条时间线排程。
 //
 // 挂到任何页面：放一个容器 <div class="promo promo--tall" data-why-film></div>，引 assets/css/promo-film.css
 // 与 assets/js/film-engine.js、assets/js/why-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、全屏）在 film-engine.js。
 (() => {
-  const BASE = 40;
+  // 剧本按旧的 40 秒时间线写（T / EDITS / 字幕 / 音效都用剧本秒 u）；片子从剧本第 START 秒开始放（issue #20：砍掉片头 0–8 秒），
+  // 只在播放入口统一偏移：画面 render(u + START)，翻页 / 音效减 START。不要改 T 的值来平移。
+  const SCRIPT = 40;
+  const START = 8;
+  const BASE = SCRIPT - START; // 32 秒
   const W = 1080;
   const H = 1920;
   const SANS = '"MiSans", "HarmonyOS Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif';
@@ -75,14 +79,15 @@
   const BEAT = 0.5; // 120 BPM
   const CUT = 0.12; // 换到不相干的画面（店铺墙 → 所以我做了一个软件 → 一屏一家店 → 20 次 vs 1 次）用快切，不慢慢淡（issue #16）；这一下现在被翻页盖住（issue #18，见 TURNS）
   // 翻页（issue #18，assets/js/film-page-turn.js）：就在上面这几处快切上翻，from / to 是快切的头和尾
-  const TURNS = [T.turn, T.solve, T.compare].map((t) => ({ from: t, to: t + CUT }));
+  const TURNS = [T.turn, T.solve, T.compare].map((t) => ({ from: t - START, to: t + CUT - START })); // 片子时间（已减 START）
   // 每家店改那句话术的时刻：前四家镜头一家家跟着，后十六家越改越快（间隔按平方根收紧）
+  // 第三家（issue #20）改 0.9 秒、镜头停到保存之后，48→24 看得清；后面顺延，最后一家仍在 T.done 前保存（15.25 < 15.4）
   const EDITS = Array.from({ length: SHOPS }, (_, i) => {
     if (i === 0) return { s: 8.9, d: 1.0 };
     if (i === 1) return { s: 10.85, d: 0.45 };
-    if (i === 2) return { s: 11.85, d: 0.3 };
-    if (i === 3) return { s: 12.5, d: 0.3 };
-    return { s: 12.9 + 2.2 * Math.sqrt((i - 3) / 16), d: 0.25 };
+    if (i === 2) return { s: 11.85, d: 0.9 };
+    if (i === 3) return { s: 13.1, d: 0.3 };
+    return { s: 13.5 + 1.5 * Math.sqrt((i - 3) / 16), d: 0.25 };
   });
   const savedAt = (i) => EDITS[i].s + EDITS[i].d;
   // 话术精灵里同一句只改一次；之后一家店一家店双击发出
@@ -339,7 +344,7 @@
   // 要改的那一行（第二条短语）落在屏幕偏下一点，上方留给字幕
   const focus = (i, u, z = FOCUS_Z) => {
     const r = geo().wide[platOf(i)].side;
-    return { u, x: Math.min(r.x + r.w / 2 - 40, W - W / (2 * z)), y: r.y + (QROW + QROW / 2) * WK - 60 / z, z };
+    return { u, x: Math.min(r.x + r.w / 2 - 40, W - W / (2 * z)), y: r.y + (editSlot(r.h / WK) * QROW + QROW / 2) * WK - 60 / z, z };
   };
   const WIDE = (u, z = 1) => ({ u, x: W / 2, y: H / 2, z });
   let camShops = null;
@@ -352,9 +357,9 @@
       { ...focus(1, 10.8), dip: 0.35 },
       focus(1, 11.4),
       { ...focus(2, 11.8), dip: 0.3 },
-      focus(2, 12.2),
-      { ...focus(3, 12.5), dip: 0.25 },
-      focus(3, 12.85),
+      focus(2, 12.85),
+      { ...focus(3, 13.1), dip: 0.25 },
+      focus(3, 13.45),
       WIDE(15.2, 1),
       WIDE(T.stamp, 1),
       WIDE(T.stamp + 0.12, 1.06),
@@ -383,11 +388,13 @@
 
   // 平台自带的快捷短语面板里的三条短语：改的是中间那条「发货时间」
   const QROW = 38; // 快捷短语一行的高（原生像素）
+  // 「发货时间」排第几行：面板只放得下一行时（第三家店那个平台）排第一行，不然要改的那句根本露不出来（issue #20）
+  const editSlot = (h) => (h >= 2 * QROW ? 1 : 0);
   function quickRows(ctx, r, i, u) {
     const st = shopState(i, u);
     const saved = st.phase === "saved";
     const x = r.x + 6;
-    const rows = [OTHER_ROWS[0], null, OTHER_ROWS[1]];
+    const rows = editSlot(r.h) ? [OTHER_ROWS[0], null, OTHER_ROWS[1]] : [null, OTHER_ROWS[0], OTHER_ROWS[1]];
     rows.forEach((row, k) => {
       const ry = r.y + 4 + k * QROW;
       if (ry + QROW - 4 > r.y + r.h) return; // 面板放不下就少露一条
@@ -1354,8 +1361,8 @@
     arp(T.grind, T.done, T.shops, MINOR);
     for (let i = 0; i < SHOPS; i++) add(T.shops + 0.05 + i * 0.03, "pop", { n: 72 + (i % 8) * 2 });
     add(T.focus, "whoosh", { len: 0.9 }, 0.9);
-    [T.grind, 11.4, 12.2].forEach((u) => add(u, "whoosh", { len: 0.4, hi: 1 }, 0.4));
-    add(12.85, "whoosh", { len: 2.2 }, 2.2);
+    [T.grind, 11.4, 12.85].forEach((u) => add(u, "whoosh", { len: 0.4, hi: 1 }, 0.4));
+    add(13.45, "whoosh", { len: 1.75 }, 1.75);
     EDITS.forEach((e, i) => {
       if (i < 4) {
         add(e.s, "blip", { n: 76, v: 0.6 });
@@ -1414,12 +1421,20 @@
     add(T.value - 0.5, "riser", { len: 0.5 }, 0.5);
     add(T.value, "impact", { v: 1.2 });
     // ⑥ 片尾
-    add(T.end, "pad", { notes: [48, 60, 64, 67, 72], v: 0.9, long: 1 }, BASE - T.end);
+    add(T.end, "pad", { notes: [48, 60, 64, 67, 72], v: 0.9, long: 1 }, SCRIPT - T.end);
     [0, 1, 2, 3].forEach((k) => add(T.end + k, "kick", { v: 0.5 }));
     for (let i = 0; i < WECHAT.length; i++) add(T.end + 1.3 + i * 0.08, "type", { v: 0.6 });
     add(T.end + 2.2, "chime", { n: 91, v: 0.5 });
     add(T.end + 2.3, "shimmer", {}, 0.8);
-    return ev.sort((a, b) => a.u - b.u);
+    // 换到片子时间（减 START）：START 之前结束的丢掉；跨过 START 的持续音（店铺段的和弦垫）从 0 开始、只留剩下的长度
+    return ev
+      .filter((e) => e.u >= START || e.u + e.dur > START + 0.05)
+      .map((e) => {
+        if (e.u >= START) return { ...e, u: e.u - START };
+        const cut = START - e.u;
+        return { ...e, u: 0, dur: e.dur - cut, arg: e.arg.len ? { ...e.arg, len: e.arg.len - cut } : e.arg };
+      })
+      .sort((a, b) => a.u - b.u);
   }
 
   class Synth {
@@ -1727,10 +1742,10 @@
       duration: BASE,
       width: W,
       height: H,
-      still: 2.55, // 封面停在片头的问题上：20 格都亮了、「20」刚落定
+      still: 0, // 封面停在新的第 0 帧（剧本第 8 秒）：店铺和平台自带的快捷短语
       label: `短片「改一句话术，要改 20 次？」（${BASE} 秒，有声）：开了很多家店的客服，京东、天猫、拼多多、抖音每个平台都有好几家店，每家店都有平台自带的快捷短语；话术要经常优化，改一句就得每家店都重新编辑一遍，20 家店改 20 次，下次再优化又是 20 遍，工作量太大，而且完全没必要。所以我做了一个专门管理话术的软件——话术精灵：话术只改一次，所有店铺都能用，一屏一家店：话术精灵磁吸在聊天窗口右边，双击话术贴进输入框、回车发出，按 Alt+Tab 换到下一家店，同一句接着用。以前改 20 次，现在改 1 次。节约时间，快速高效率。作者账号 ${WECHAT}。`,
       cover: { text: "播放短片 · 有声", again: "再看一遍" },
-      render: globalThis.FilmPageTurn.compose({ width: W, height: H, render: (ctx, u) => render(ctx, u, opts), turns: TURNS }).render,
+      render: globalThis.FilmPageTurn.compose({ width: W, height: H, render: (ctx, u) => render(ctx, u + START, opts), turns: TURNS }).render,
       score: buildScore(),
       createSynth: () => new Synth(),
       fullscreen: true,
