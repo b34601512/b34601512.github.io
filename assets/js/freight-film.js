@@ -5,28 +5,28 @@
 // 竖屏 1080×1920（issue #9：抖音手机上的竖屏比例）。摆法照真电脑（issue #16）：商家工作台在左、话术精灵磁吸在它右边，
 // 不因为画布是竖的就改成上下；全景按真实比例占满宽度、上下留白，要看字时镜头推近、看完退回全景。
 // 开场不放片头（issue #16：观众只有两秒耐心）：第一帧就是顾客发来消息，钩子问话作为标题条同时挂在画面顶上，之后收成一条题目条挂到片尾。
+// issue #23 起最前面加了一段 2.8 秒的无声片头（assets/js/film-brand-intro.js，各片通用）：正片整条时间线从 INTRO 起算，片头一结束就是顾客发来消息。
 // 整片没有「整屏只有字」的画面（issue #16）：能演的不说，一段里没有新东西出现就压短；灯泡只是叠在画面上的提示，不停下来等。
 //
 // 挂到任何页面：放一个容器 <div class="promo promo--tall" data-freight-film></div>，引 assets/css/promo-film.css（播放器外框与宣传片同一套）
-// 与 assets/js/film-engine.js、assets/js/freight-film.js（都 defer，引擎在前）。播放器（封面、控制条、时钟、声音排程、全屏）在 film-engine.js。
+// 与 assets/js/film-engine.js、film-palette.js、platform-chat.js、film-brand-intro.js、film-page-turn.js、freight-film.js（都 defer，按这个顺序）。播放器（封面、控制条、时钟、声音排程、全屏）在 film-engine.js。
 (() => {
   const W = 1080;
   const H = 1920;
   const SANS = '"MiSans", "HarmonyOS Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif';
   const MONO = 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace';
-  const ACCENT = "#ff6b2c";
-  const ACCENT_HOT = "#ff9a5c";
-  const FG = "#f5f5f5";
+  // 品牌橙、舞台主文字、舞台底色与话术精灵主界面的颜色都在 film-palette.js（和片头共用一份，issue #23）
+  const { ACCENT, ACCENT_HOT, FG, STAGE } = globalThis.FilmPalette;
   const MUTED = "#b8b8b8";
   const DIM = "#8c8c8c";
   const HEART = "💗";
   const PINK = "#ff4d8d";
-  // 话术精灵主界面：客户端白色主题（同 demo.css 的 --p-*，取样自客户端实机截图）
-  const P = {
-    frame: "#fbf6ec", paper: "#fffdf8", tab: "#f4eadb", peach: "#ffe4d1", ink: "#2a1a12", chip: "#f4ebde",
-    muted: "#7f7b74", digit: "#8c7b6b", answer: "#4a3a2e", box: "#8d8279", base: "#75685f", tabLine: "#b3a79b",
-    chipLine: "#d6cabb", lv2Line: "#645145", hover: "#fdf3e7", badge: "#fff3e7", hot: "#c2410c", focus: "#e07f4a", title: "#e53935",
-  };
+  // 片头（issue #23，assets/js/film-brand-intro.js）：插在最前面，正片整条时间线往后挪 INTRO 秒（build 从 INTRO 起算），一帧不改。
+  // 页面没引片头脚本就是 0，和原来一样。
+  const INTRO = globalThis.SoftTalkBrandIntro ? globalThis.SoftTalkBrandIntro.DURATION : 0;
+  // 话术精灵主界面：客户端白色主题（同 demo.css 的 --p-*，取样自客户端实机截图；值在 film-palette.js）
+  const P = globalThis.FilmPalette.P;
+
   // 聊天窗：默认是微信样子（issue #8）——自己发的气泡是微信绿 + 深字、发送键是微信绿；
   // 原来的品牌橙会和「灵机一动」的橙色底撞成一片，橙色只留给话术精灵自己的动作（灯泡、双击、贴入闪光）
   const C = { bg: "#ededed", head: "#f7f7f7", line: "#e3e3e3", in: "#ffffff", inFg: "#1a1a1a", sub: "#8a8a8a", note: "#a54626" };
@@ -171,9 +171,13 @@
     const shots = []; // 镜头：每一拍对准什么（target）、几秒推过去（dur）；makeFilm 里换算成取景框
     const turns = []; // 翻页：{ from, to }（assets/js/film-page-turn.js）
     const m = {}; // 各段的起止时刻
-    let t = 0;
+    let t = INTRO; // 片头之后才开始（issue #23）：整条时间线、镜头、声音、翻页一起往后挪
     let sess = null;
     let bulbCount = 0;
+    // 打字节奏的伪随机种子：每段打字换一个（issue #23）。原来拿当时的 t 当种子，Math.sin 把 t 末位的一点差别放大成几十毫秒，
+    // 时间线一整体平移（片头）就前后对不上、Node 与 Chrome 也会差一秒；按「第几段打字」取种子，平移多少都是同一套节奏。
+    let jitterSeed = 0;
+    const nextJitter = () => (jitterSeed += 97.3);
     const sfx = (u, type, arg = {}, dur = 0) => score.push({ u, type, arg, dur });
     const shot = (target, dur = 0.9, at = t) => shots.push({ at, dur: dur / CAM_SPEED, target });
 
@@ -203,12 +207,13 @@
     const stamp = (label) => msgs.push({ s: sess, at: t, side: "time", text: label });
     // 客服在聊天输入框里手打
     const typeChat = (text) => {
+      nextJitter();
       let acc = "";
       chars(text).forEach((c, i) => {
         acc += c;
         inputSet(acc);
         sfx(t, "key", { v: 0.4 + rnd(i) * 0.3 });
-        t += (0.1 + rnd(i * 3 + t) * 0.06) / TYPE_SPEED;
+        t += (0.1 + rnd(i * 3 + jitterSeed) * 0.06) / TYPE_SPEED;
       });
       t += 0.3;
     };
@@ -254,17 +259,19 @@
     };
     // 话术编辑框里打字（一个字一个键）
     const typeField = (field, text) => {
+      nextJitter();
       let acc = app.dialog[field];
       chars(text).forEach((c, i) => {
         acc += c;
         dlg({ [field]: acc, caret: field, ci: chars(acc).length });
         sfx(t, "key", { v: 0.35 + rnd(i + 50) * 0.3 });
-        t += (0.065 + rnd(i * 5 + t) * 0.04) / TYPE_SPEED;
+        t += (0.065 + rnd(i * 5 + jitterSeed) * 0.04) / TYPE_SPEED;
       });
       t += 0.25;
     };
     // 「又在刚才的话术编辑了一下」：点到要改的地方，退格删掉旧字，再打新字
     const editBody = (to) => {
+      nextJitter();
       const now = chars(app.dialog.body);
       const ops = diff(now, chars(to));
       let pos = 0;
@@ -299,7 +306,7 @@
           p++;
           dlg({ body: now.join(""), ci: p });
           sfx(t, "key", { v: 0.35 + rnd(i + 70) * 0.3 });
-          t += (0.065 + rnd(i * 7 + t) * 0.04) / TYPE_SPEED;
+          t += (0.065 + rnd(i * 7 + jitterSeed) * 0.04) / TYPE_SPEED;
         });
         pos = p;
         t += 0.2;
@@ -328,7 +335,7 @@
     say("in", null, { kind: "redact", bars: [[64, 96, 96, 80]], note: "收款方式", hold: 1.4 });
     typeChat(L.a2);
     send(L.a2, 0.7);
-    m.hook = [0, t];
+    m.hook = [INTRO, t];
     waitLong(L.wait1, 10 * 60 + 4, 11 * 60 + 37, 3.4);
     stamp("11:37");
     say("in", null, { kind: "redact", bars: [[72]], note: "姓名", hold: 1.3 });
@@ -633,7 +640,7 @@
     sfx(t + 0.9, "chime", { n: 91 });
     t += END;
 
-    const base = Math.ceil(t);
+    const base = INTRO + Math.ceil(t - INTRO); // 正片照旧取整到秒，片头的 INTRO 秒原样加在前面
     music(score, m, waits, base);
     return { base, msgs, sessions, inputs, appKeys, cur, clicks, caps, heads, bulbs, scenes, waits, keys, steps, flies, shots, turns, m, rush, score: score.sort((a, b) => a.u - b.u) };
   }
@@ -648,7 +655,7 @@
   ];
   function music(score, m, waits, base) {
     const add = (u, type, arg = {}, dur = 0) => score.push({ u, type, arg, dur });
-    const start = 0.2;
+    const start = INTRO + 0.2; // 片头不出声，音乐从正片开始
     const stop = m.gun[0]; // 机枪一响音乐就停，只剩枪声和往上爬的嗡鸣；急停以后一片安静，片尾一个长和弦
     const quiet = (u) => waits.some((w) => u > w.from - 0.3 && u < w.to + 0.1);
     // 一窗接一窗（issue #17）：拍子一路变快，到机枪前快到原来的两倍
@@ -1347,13 +1354,14 @@
       return track;
     }
     function camera(u) {
+      if (u < INTRO) return WIDE; // 片头整幅画，不推镜头
       const list = cameraTrack();
       return beatAt(list[Math.max(0, lastAt(list, u))], u);
     }
 
     // ---------- 背景 ----------
     function background(ctx, u) {
-      ctx.fillStyle = "#0b0a09";
+      ctx.fillStyle = STAGE;
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = "rgba(255,255,255,0.045)";
       const off = (u * 12) % 48;
@@ -2520,6 +2528,7 @@
     }
 
     function render(ctx, u) {
+      if (u < INTRO) return globalThis.SoftTalkBrandIntro.draw(ctx, u, { width: W, height: H, logo });
       ctx.save();
       background(ctx, u);
       const lay = layoutAt(u);
@@ -2543,6 +2552,7 @@
     }
     // 镜头外那一层：灯泡、步骤条、钩子标题条 / 题目条、章节标题、字幕、暗角——按画面坐标画，推近时不跟着变大、也不被推出画面
     function overlay(ctx, u, cam) {
+      if (u < INTRO) return; // 片头自己画全了（暗角也在里面）
       const lay = layoutAt(u);
       ctx.save();
       drawBulb(ctx, lay, u, cam || WIDE);
@@ -2933,8 +2943,8 @@
       duration: base,
       width: W,
       height: H,
-      still: 2.6, // 封面：钩子标题条 + 顾客第一句 + 客服正在手打的回复，都已在画面里
-      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${base % 60} 秒，有声）：开场一句「${L.hook.join("")}」，题目「${L.title}」从头挂到尾；没有话术时客服问一句、顾客等很久才回一句；用话术精灵新增一条话术一次问齐，点一下、发送，顾客一次给齐；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此双击一下话术就发出去，气泡里六句话对上六次追问一起亮起，顾客一次性回「好的谢谢」；然后一个聊天窗接一个聊天窗、平台换着来：点一下话术左边的纸飞机直接发出，顾客道谢，窗口滑走，下一个落下来，越来越快，最后话术精灵像机枪一样把话术一发发打进聊天框，右上角好评数一路往上跳，钟从下午走到半夜；急停之后最后一位顾客回「好的谢谢」，第二天早上新的窗口又落下来。片尾：话术精灵，节约时间，快速高效率。`,
+      still: INTRO + 2.6, // 封面（正片第 2.6 秒）：钩子标题条 + 顾客第一句 + 客服正在手打的回复，都已在画面里
+      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${Math.floor(base % 60)} 秒，有声）：${INTRO ? `先是 ${INTRO} 秒无声片头：商家聊天窗里客服和顾客一问一答、干等、时间一路往后跳，一下切到用了话术精灵，点一下纸飞机话术就发出去，顾客回「太省心了」和一颗心，最后是小精灵和「话术精灵」四个字；` : ""}正片开场一句「${L.hook.join("")}」，题目「${L.title}」从头挂到尾；没有话术时客服问一句、顾客等很久才回一句；用话术精灵新增一条话术一次问齐，点一下、发送，顾客一次给齐；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此双击一下话术就发出去，气泡里六句话对上六次追问一起亮起，顾客一次性回「好的谢谢」；然后一个聊天窗接一个聊天窗、平台换着来：点一下话术左边的纸飞机直接发出，顾客道谢，窗口滑走，下一个落下来，越来越快，最后话术精灵像机枪一样把话术一发发打进聊天框，右上角好评数一路往上跳，钟从下午走到半夜；急停之后最后一位顾客回「好的谢谢」，第二天早上新的窗口又落下来。片尾：话术精灵，节约时间，快速高效率。`,
       cover: { text: "播放 · 补运费登记案例 · 有声", again: "再看一遍" },
       render: view.render, // 镜头与镜头外那一层由翻页模块按页各自走（翻页时一帧里有两页）
       score: film.TL.score,

@@ -9,7 +9,7 @@ import vm from "node:vm";
 
 const sandbox = {};
 sandbox.globalThis = sandbox;
-for (const f of ["platform-chat.js", "film-page-turn.js", "freight-film.js"]) vm.runInNewContext(readFileSync(resolve(import.meta.dirname, `../assets/js/${f}`), "utf8"), sandbox);
+for (const f of ["film-palette.js", "platform-chat.js", "film-brand-intro.js", "film-page-turn.js", "freight-film.js"]) vm.runInNewContext(readFileSync(resolve(import.meta.dirname, `../assets/js/${f}`), "utf8"), sandbox);
 const film = sandbox.__freightFilm();
 const TL = film.TL;
 
@@ -58,5 +58,5 @@ test("全片只有一次双击：老王那段（05）；02 段阿杰那次是单
   const seg = src.slice(src.indexOf("// ② 后面用了话术精灵"), src.indexOf("// ③ 然后没有话术精灵"));
   assert.ok(seg.length > 0 && !seg.includes("双击"), "02 段剧本里还有「双击」");
   assert.ok(!src.includes('"双击话术"'), "02 段步骤条还写着「双击话术」");
-  assert.equal(TL.base, 129, "总时长");
+  assert.ok(Math.abs(TL.base - (129 + sandbox.SoftTalkBrandIntro.DURATION)) < 1e-9, "总时长：正片 129 秒 + 片头");
 });
