@@ -5,7 +5,7 @@
 // 竖屏 1080×1920（issue #9：抖音手机上的竖屏比例）。摆法照真电脑（issue #16）：商家工作台在左、话术精灵磁吸在它右边，
 // 不因为画布是竖的就改成上下；全景按真实比例占满宽度、上下留白，要看字时镜头推近、看完退回全景。
 // 开场不放片头（issue #16：观众只有两秒耐心）：第一帧就是顾客发来消息，钩子问话作为标题条同时挂在画面顶上，之后收成一条题目条挂到片尾。
-// issue #23 起最前面加了一段 2.8 秒的无声片头（assets/js/film-brand-intro.js，各片通用）：正片整条时间线从 INTRO 起算，片头一结束就是顾客发来消息。
+// issue #23 起最前面加了一段 2.8 秒的片头（assets/js/film-brand-intro.js，各片通用；只有起手、切点两声，见 INTRO_CUES）：正片整条时间线从 INTRO 起算，片头一结束就是顾客发来消息。
 // 整片没有「整屏只有字」的画面（issue #16）：能演的不说，一段里没有新东西出现就压短；灯泡只是叠在画面上的提示，不停下来等。
 //
 // 挂到任何页面：放一个容器 <div class="promo promo--tall" data-freight-film></div>，引 assets/css/promo-film.css（播放器外框与宣传片同一套）
@@ -24,6 +24,8 @@
   // 片头（issue #23，assets/js/film-brand-intro.js）：插在最前面，正片整条时间线往后挪 INTRO 秒（build 从 INTRO 起算），一帧不改。
   // 页面没引片头脚本就是 0，和原来一样。
   const INTRO = globalThis.SoftTalkBrandIntro ? globalThis.SoftTalkBrandIntro.DURATION : 0;
+  // 片头的两声（片头秒）：0.05 顾客的问话进来（起手），1.4 硬切到「用了话术精灵」（落点）。只用下面 Synth 已有的音色，都在 INTRO 之前响完。
+  const INTRO_CUES = INTRO ? [[0.05, "msgIn", {}], [1.4, "drop", { v: 0.45 }]] : [];
   // 话术精灵主界面：客户端白色主题（同 demo.css 的 --p-*，取样自客户端实机截图；值在 film-palette.js）
   const P = globalThis.FilmPalette.P;
 
@@ -180,6 +182,7 @@
     const nextJitter = () => (jitterSeed += 97.3);
     const sfx = (u, type, arg = {}, dur = 0) => score.push({ u, type, arg, dur });
     const shot = (target, dur = 0.9, at = t) => shots.push({ at, dur: dur / CAM_SPEED, target });
+    INTRO_CUES.forEach(([u, type, arg]) => sfx(u, type, arg));
 
     let app = { rows: [], sel: -1, dialog: null, menu: null, flash: null };
     const appSet = (patch) => {
@@ -655,7 +658,7 @@
   ];
   function music(score, m, waits, base) {
     const add = (u, type, arg = {}, dur = 0) => score.push({ u, type, arg, dur });
-    const start = INTRO + 0.2; // 片头不出声，音乐从正片开始
+    const start = INTRO + 0.2; // 片头只有 INTRO_CUES 两声，音乐从正片开始
     const stop = m.gun[0]; // 机枪一响音乐就停，只剩枪声和往上爬的嗡鸣；急停以后一片安静，片尾一个长和弦
     const quiet = (u) => waits.some((w) => u > w.from - 0.3 && u < w.to + 0.1);
     // 一窗接一窗（issue #17）：拍子一路变快，到机枪前快到原来的两倍
@@ -2944,7 +2947,7 @@
       width: W,
       height: H,
       still: INTRO + 2.6, // 封面（正片第 2.6 秒）：钩子标题条 + 顾客第一句 + 客服正在手打的回复，都已在画面里
-      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${Math.floor(base % 60)} 秒，有声）：${INTRO ? `先是 ${INTRO} 秒无声片头：商家聊天窗里客服和顾客一问一答、干等、时间一路往后跳，一下切到用了话术精灵，点一下纸飞机话术就发出去，顾客回「太省心了」和一颗心，最后是小精灵和「话术精灵」四个字；` : ""}正片开场一句「${L.hook.join("")}」，题目「${L.title}」从头挂到尾；没有话术时客服问一句、顾客等很久才回一句；用话术精灵新增一条话术一次问齐，点一下、发送，顾客一次给齐；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此双击一下话术就发出去，气泡里六句话对上六次追问一起亮起，顾客一次性回「好的谢谢」；然后一个聊天窗接一个聊天窗、平台换着来：点一下话术左边的纸飞机直接发出，顾客道谢，窗口滑走，下一个落下来，越来越快，最后话术精灵像机枪一样把话术一发发打进聊天框，右上角好评数一路往上跳，钟从下午走到半夜；急停之后最后一位顾客回「好的谢谢」，第二天早上新的窗口又落下来。片尾：话术精灵，节约时间，快速高效率。`,
+      label: `推广视频《补运费登记案例》（${Math.floor(base / 60)} 分 ${Math.floor(base % 60)} 秒，有声）：${INTRO ? `先是 ${INTRO} 秒片头：商家聊天窗里顾客问「运费怎么退？」，客服一次只问一样，顾客一直「等下」，时间一路往后跳；一下切到用了话术精灵，点一下纸飞机，「截图、姓名、账号发我」一句就发出去，顾客回「太省心了」和一颗心，最后是小精灵和「话术精灵」四个字；` : ""}正片开场一句「${L.hook.join("")}」，题目「${L.title}」从头挂到尾；没有话术时客服问一句、顾客等很久才回一句；用话术精灵新增一条话术一次问齐，点一下、发送，顾客一次给齐；顾客一句句追问，客服每次灵机一动把答案补进同一条话术；从此双击一下话术就发出去，气泡里六句话对上六次追问一起亮起，顾客一次性回「好的谢谢」；然后一个聊天窗接一个聊天窗、平台换着来：点一下话术左边的纸飞机直接发出，顾客道谢，窗口滑走，下一个落下来，越来越快，最后话术精灵像机枪一样把话术一发发打进聊天框，右上角好评数一路往上跳，钟从下午走到半夜；急停之后最后一位顾客回「好的谢谢」，第二天早上新的窗口又落下来。片尾：话术精灵，节约时间，快速高效率。`,
       cover: { text: "播放 · 补运费登记案例 · 有声", again: "再看一遍" },
       render: view.render, // 镜头与镜头外那一层由翻页模块按页各自走（翻页时一帧里有两页）
       score: film.TL.score,

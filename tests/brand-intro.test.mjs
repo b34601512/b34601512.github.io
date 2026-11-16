@@ -48,12 +48,14 @@ function stubCtx() {
           return (x, y) => (mul(x, 0, 0, y, 0, 0), log.push(["s", x, y]));
         case "transform":
           return (...a) => (mul(...a), log.push(["tf", ...a]));
+        case "getTransform":
+          return () => ({ a: m[0], b: m[1], c: m[2], d: m[3], e: m[4], f: m[5] });
         case "measureText":
           return (s) => ({ width: Array.from(s).length * parseFloat(String(state.font).match(/([\d.]+)px/)[1]) });
         case "fillText":
           return (s, x, y) => {
             const [px, py] = apply(x, y);
-            texts.push({ s, x: px, y: py, size: parseFloat(String(state.font).match(/([\d.]+)px/)[1]) * Math.abs(m[3]), alpha: state.globalAlpha });
+            texts.push({ s, x: px, y: py, size: parseFloat(String(state.font).match(/([\d.]+)px/)[1]) * Math.abs(m[3]), alpha: state.globalAlpha, align: state.textAlign });
             log.push(["text", s, px, py, state.fillStyle, state.font, state.globalAlpha]);
           };
         case "drawImage":
@@ -107,43 +109,153 @@ test("每一帧的字和图都在画布里；别的比例（横屏、方形）�
       const { texts, images } = frame(u, { width, height, logo });
       for (const t of texts) {
         if (t.alpha <= 0) continue;
-        const half = (Array.from(t.s).length * t.size) / 2;
-        assert.ok(t.x - half > -t.size && t.x + half < width + t.size && t.y > 0 && t.y < height, `${width}×${height} 第 ${u.toFixed(2)} 秒「${t.s}」出了画布（${t.x.toFixed(0)}, ${t.y.toFixed(0)}）`);
+        // 量字宽：中文一个字宽、ASCII 与空格半个字宽；按对齐方式算左右边
+        const w = Array.from(t.s).reduce((a, c) => a + (c.charCodeAt(0) < 128 ? 0.55 : 1), 0) * t.size;
+        const x0 = t.align === "left" || t.align === "start" ? t.x : t.align === "right" || t.align === "end" ? t.x - w : t.x - w / 2;
+        assert.ok(x0 > -t.size && x0 + w < width + t.size && t.y > 0 && t.y < height, `${width}×${height} 第 ${u.toFixed(2)} 秒「${t.s}」出了画布（${t.x.toFixed(0)}, ${t.y.toFixed(0)}）`);
       }
       for (const i of images) assert.ok(i.x0 >= 0 && i.y0 >= 0 && i.x1 <= width && i.y1 <= height, `第 ${u.toFixed(2)} 秒小精灵出了画布`);
     }
   }
 });
 
-test("字数预算：整段片头自己写的字不超过 10 个汉字，没有英文；片尾卡只有小精灵 + 「话术精灵」", () => {
-  const own = new Set();
-  for (let u = 0; u <= INTRO + 1e-9; u += 0.02) {
-    // 平台窗口外壳（导航栏、发送键）是 PlatformChat 画的界面，不算片头文案；这里只看片头模块自己写的字
-    const s = stubCtx();
-    const PC = full.PlatformChat;
-    const draw = PC.draw;
-    let inShell = false;
-    PC.draw = (...a) => {
-      inShell = true;
-      try {
-        return draw(...a);
-      } finally {
-        inShell = false;
-      }
-    };
-    const orig = s.ctx.fillText;
-    const texts = [];
-    const ctx = new Proxy(s.ctx, { get: (t, k) => (k === "fillText" ? (str, ...r) => (inShell || texts.push(str), orig(str, ...r)) : t[k]), set: (t, k, v) => ((t[k] = v), true) });
-    Intro.draw(ctx, u, { width: 1080, height: 1920, logo });
+// 片头模块自己写的字（不含 PlatformChat 画的平台外壳：导航栏、工作台、发送键……）
+function ownTexts(u, o = { width: 1080, height: 1920, logo }) {
+  const s = stubCtx();
+  const PC = full.PlatformChat;
+  const draw = PC.draw;
+  let inShell = false;
+  PC.draw = (...a) => {
+    inShell = true;
+    try {
+      return draw(...a);
+    } finally {
+      inShell = false;
+    }
+  };
+  const orig = s.ctx.fillText;
+  const texts = [];
+  const ctx = new Proxy(s.ctx, {
+    get: (t, k) => (k === "fillText" ? (str, ...r) => (inShell || texts.push({ s: str, alpha: t.globalAlpha }), orig(str, ...r)) : t[k]),
+    set: (t, k, v) => ((t[k] = v), true),
+  });
+  try {
+    Intro.draw(ctx, u, o);
+  } finally {
     PC.draw = draw;
-    texts.forEach((x) => own.add(x));
   }
-  const han = [...own].join("").match(/\p{Script=Han}/gu) || [];
-  assert.ok(new Set(han).size <= 10 && [...own].filter((x) => /\p{Script=Han}/u.test(x)).join("").length <= 10, `片头的字：${[...own].join(" | ")}`);
-  assert.ok(![...own].some((x) => /[A-Za-z]/.test(x)), `片头里有英文：${[...own].join(" | ")}`);
+  return texts;
+}
+const PLATFORM_LABELS = new Set(["已读"]); // 平台自带的小标签（正片的气泡旁也画），不算文案
+const WORDMARK = "话术精灵";
+
+test("真字不打码：聊天里是真句子（不超过 24 个汉字），没有问号占位、没有英文；片尾卡只有小精灵 + 「话术精灵」", () => {
+  const lines = new Set();
+  for (let u = 0; u <= INTRO + 1e-9; u += 0.02) ownTexts(u).forEach((x) => lines.add(x.s));
+  // 打字到一半的输入框（「截」「截图」）是整句的前缀，不另算
+  const copy = [...lines].filter((x) => /\p{Script=Han}/u.test(x) && !PLATFORM_LABELS.has(x) && !Array.from(WORDMARK).includes(x) && ![...lines].some((y) => y !== x && y.startsWith(x)));
+  const han = copy.join("").match(/\p{Script=Han}/gu) || [];
+  assert.ok(han.length <= 24, `聊天文案 ${han.length} 个汉字：${copy.join(" | ")}`);
+  // 以前、现在两边都是真句子：顾客的问话、客服一样一样地问、顾客「等下」；现在一整句话术 + 顾客满意
+  for (const must of ["运费怎么退？", "截图？", "姓名？", "等下", "截图、姓名、账号发我", "太省心了"]) assert.ok(lines.has(must), `少了「${must}」：${[...lines].join(" | ")}`);
+  assert.ok(![...lines].some((x) => /^[?？]+$/.test(x)), "还有只写问号的占位");
+  assert.ok(![...lines].some((x) => /[A-Za-z]/.test(x)), `片头里有英文：${[...lines].join(" | ")}`);
+  // 不再画打码条：片头源码里没有 rows/bars 那套
+  assert.ok(!/\bBAR\s*=\s*10\b|rows:\s*\[\[/.test(js("film-brand-intro.js")), "片头里还有打码条");
   const end = frame(INTRO, { width: 1080, height: 1920, logo });
-  assert.deepEqual(end.texts.filter((t) => t.alpha > 0).map((t) => t.s).join(""), "话术精灵");
+  assert.deepEqual(end.texts.filter((t) => t.alpha > 0).map((t) => t.s).join(""), WORDMARK);
   assert.equal(end.images.length, 1, "片尾卡没有小精灵");
+});
+
+// 平台窗口在画布上的外框（量 PlatformChat.draw 被调用时的变换）
+function windowBox(u, o = { width: 1080, height: 1920 }) {
+  const s = stubCtx();
+  const PC = full.PlatformChat;
+  const draw = PC.draw;
+  let box = null;
+  PC.draw = (ctx, key, chat, opt) => {
+    const out = draw(ctx, key, chat, opt);
+    const t = ctx.getTransform();
+    const w = out.win;
+    const h = w.h + (out.bar ? out.bar.h : 0);
+    box = { x0: t.a * w.x + t.e, y0: t.d * w.y + t.f, x1: t.a * (w.x + w.w) + t.e, y1: t.d * (w.y + h) + t.f, alpha: ctx.globalAlpha };
+    return out;
+  };
+  try {
+    Intro.draw(s.ctx, u, { ...o, logo });
+  } finally {
+    PC.draw = draw;
+  }
+  return box;
+}
+
+test("竖屏满屏：聊天窗和正片第一帧一样宽、上下几乎顶满，没有 16:9 的黑边舞台", () => {
+  for (const u of [0.1, 0.9, 1.3, 1.5, 2.2]) {
+    const b = windowBox(u);
+    assert.ok(b, `第 ${u} 秒没画窗口`);
+    assert.ok(b.x0 <= 30 && b.x1 >= 1050, `第 ${u} 秒窗口左右 ${b.x0.toFixed(0)}–${b.x1.toFixed(0)}`);
+    assert.ok(b.y0 <= 100, `第 ${u} 秒窗口顶边 ${b.y0.toFixed(0)}`);
+    assert.ok(b.y1 >= 1740, `第 ${u} 秒窗口底边 ${b.y1.toFixed(0)}`);
+    assert.ok(b.y1 - b.y0 >= 0.85 * 1920, `第 ${u} 秒窗口只有 ${(b.y1 - b.y0).toFixed(0)} 高`);
+  }
+});
+
+test("第一帧就进画面：0–0.08 秒窗口已经整块在（不淡入、没有黑场），0.1 秒问话和时间戳都看得清", () => {
+  for (const u of [0, 0.04, 0.08]) {
+    const b = windowBox(u);
+    assert.ok(b && b.alpha >= 0.99, `第 ${u} 秒窗口还没出来`);
+    // 这一段除了窗口和问话，别的什么都没有（没有鼠标、话术卡、片尾卡）
+    const extra = ownTexts(u).filter((x) => x.alpha > 0 && !["运费怎么退？", "10:02"].includes(x.s));
+    assert.deepEqual(extra.map((x) => x.s), [], `第 ${u} 秒多画了东西`);
+    assert.equal(frame(u, { width: 1080, height: 1920, logo }).images.length, 0, `第 ${u} 秒画了小精灵`);
+  }
+  const t = ownTexts(0.1);
+  const ask = t.find((x) => x.s === "运费怎么退？");
+  assert.ok(ask && ask.alpha >= 0.9, "0.1 秒顾客的问话还看不清");
+  assert.ok(t.some((x) => x.s === "10:02" && x.alpha >= 0.9), "0.1 秒时间戳还看不清");
+});
+
+test("一键发送：点纸飞机以后不再按发送键，话术直接变成气泡发出去", () => {
+  const presses = [];
+  const PC = full.PlatformChat;
+  const draw = PC.draw;
+  PC.draw = (ctx, key, chat, opt) => (presses.push([cur, opt.press || 0]), draw(ctx, key, chat, opt));
+  let cur = 0;
+  try {
+    for (cur = 1.4; cur <= 2.4; cur += 0.01) Intro.draw(stubCtx().ctx, cur, { width: 1080, height: 1920, logo });
+  } finally {
+    PC.draw = draw;
+  }
+  assert.ok(presses.length > 50 && presses.every(([, p]) => p === 0), "「现在」里发送键被按了");
+  // 「以前」还是手动按发送
+  const before = [];
+  PC.draw = (ctx, key, chat, opt) => (before.push(opt.press || 0), draw(ctx, key, chat, opt));
+  try {
+    for (let u = 0.3; u <= 0.5; u += 0.01) Intro.draw(stubCtx().ctx, u, { width: 1080, height: 1920, logo });
+  } finally {
+    PC.draw = draw;
+  }
+  assert.ok(before.some((p) => p > 0.5), "「以前」没按发送键");
+  // 话术先进输入框、再成为气泡；气泡出来时输入框已经空了
+  const big = (u) => ownTexts(u).filter((x) => x.s === "截图、姓名、账号发我" && x.alpha > 0.5).length;
+  assert.ok(big(1.5) >= 1, "结果里看不到那条话术");
+  assert.ok(big(2.2) === 1, "发出去以后不是正好一个气泡");
+});
+
+test("片尾卡有分量：小精灵 200 像素以上宽，2.55–2.8 秒「话术精灵」四个字和小精灵同时完整在画面上", () => {
+  for (const u of [2.55, 2.65, 2.75, 2.79, INTRO]) {
+    const f = frame(u, { width: 1080, height: 1920, logo });
+    assert.equal(f.images.length, 1, `第 ${u} 秒没有小精灵`);
+    const img = f.images[0];
+    const w = img.x1 - img.x0;
+    assert.ok(w >= 200 && w <= 320, `第 ${u} 秒小精灵 ${w.toFixed(0)} 宽`);
+    assert.ok((img.y0 + img.y1) / 2 < 960, "小精灵不在画面中线以上");
+    const marks = f.texts.filter((t) => Array.from(WORDMARK).includes(t.s) && t.alpha >= 0.99);
+    assert.equal(marks.map((t) => t.s).join(""), WORDMARK, `第 ${u} 秒「话术精灵」不完整`);
+    assert.ok(marks.every((t) => t.size >= 120 && t.y > img.y1), "「话术精灵」不在小精灵下面或字太小");
+    // 窗口已经退干净
+    assert.equal(windowBox(u), null, `第 ${u} 秒还画着聊天窗`);
+  }
 });
 
 const film = full.__freightFilm();
@@ -157,12 +269,21 @@ test("接上片头：整条时间线往后挪 INTRO 秒，片长多 INTRO 秒；
   film.TL.turns.forEach((x, i) => near(x.from, plain.TL.turns[i].from, "翻页"));
   near(film.TL.m.end[0], plain.TL.m.end[0], "片尾");
   near(film.TL.m.hook[0], plain.TL.m.hook[0], "钩子标题条");
-  assert.equal(film.TL.score.length, plain.TL.score.length, "声音事件数");
-  film.TL.score.forEach((x, i) => near(x.u, plain.TL.score[i].u, `声音 ${x.type}`));
+  const filmScore = film.TL.score.filter((e) => e.u >= INTRO);
+  assert.equal(filmScore.length, plain.TL.score.length, "声音事件数");
+  filmScore.forEach((x, i) => near(x.u, plain.TL.score[i].u, `声音 ${x.type}`));
 });
 
-test("片头里没有正片的东西：没有声音事件、镜头整幅、第一拍镜头在 INTRO 以后", () => {
-  assert.ok(film.TL.score.every((e) => e.u >= INTRO), "片头里有声音事件");
+test("片头只有两声（0.05 起手、1.4 切点），都是 Synth 已有的音色、在正片之前响完；镜头整幅、第一拍镜头在 INTRO 以后", () => {
+  const cues = film.TL.score.filter((e) => e.u < INTRO);
+  assert.equal(JSON.stringify(cues.map((e) => e.u)), "[0.05,1.4]");
+  const src = js("freight-film.js");
+  const types = [...src.matchAll(/case "(\w+)":/g)].map((x) => x[1]);
+  for (const e of cues) {
+    assert.ok(types.includes(e.type), `片头用了 Synth 没有的音色 ${e.type}`);
+    assert.ok(!e.dur && e.u + 0.5 < INTRO, `片头的 ${e.type} 拖进了正片`);
+  }
+  assert.ok(!plain.TL.score.some((e) => e.type === "msgIn" && e.u === 0.05), "没引片头时也响了片头的声音");
   assert.ok(film.TL.shots[0].at >= INTRO);
   assert.ok(film.cameraTrack()[0].at >= INTRO);
   assert.deepEqual({ ...film.camera(0.5) }, { x: 0, y: 0, w: 1080, h: 1920 });
