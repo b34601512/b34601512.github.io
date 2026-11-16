@@ -1,5 +1,6 @@
 // 补运费短片的镜头（issue #5）：取景框永远在画布里、比例 9:16（issue #9 起竖屏），推拉连续不跳，每一拍都包住它对准的东西；
-// issue #16 起没有片头：第一帧镜头已经推近聊天窗，顾客第一句马上进来，钩子标题条从第 0 秒挂起。
+// issue #16：正片第一帧镜头已经推近聊天窗，顾客第一句马上进来，钩子标题条从正片第 0 秒挂起。
+// issue #23 起最前面是 INTRO 秒的片头（整幅画，镜头不动）：正片的「第 0 秒」就是 INTRO，片头切进正片那一下是硬切，不算镜头跳。
 // issue #16 起整屏板子（时间线、话术卡片、对比条、六问对照）都砍了，翻页只剩换顾客的三处和片尾。
 // issue #18 起换到不相干的画面用翻页（assets/js/film-page-turn.js）：一帧里可能有两页，逐帧检查按「实际画出来的每一页」走——
 // 同一页上镜头必须连续；只有翻页进来的新页可以和上一帧不连续，而且它必须从屏幕右边外面进来、只出现在登记过的画面交界上。
@@ -15,8 +16,9 @@ const H = 1920;
 const sandbox = {};
 sandbox.globalThis = sandbox;
 // 工作台外壳的尺寸由 platform-chat.js 量（页面上也是它先加载）
-for (const f of ["platform-chat.js", "film-page-turn.js", "freight-film.js"]) vm.runInNewContext(readFileSync(resolve(import.meta.dirname, `../assets/js/${f}`), "utf8"), sandbox);
+for (const f of ["film-palette.js", "platform-chat.js", "film-brand-intro.js", "film-page-turn.js", "freight-film.js"]) vm.runInNewContext(readFileSync(resolve(import.meta.dirname, `../assets/js/${f}`), "utf8"), sandbox);
 const film = sandbox.__freightFilm();
+const INTRO = sandbox.SoftTalkBrandIntro.DURATION; // issue #23：片头之后正片才开始
 const track = film.cameraTrack();
 const view = sandbox.FilmPageTurn.compose({ width: W, height: H, render: film.render, camera: film.camera, overlay: film.overlay, turns: film.turns() });
 
@@ -26,18 +28,23 @@ test("每一拍剧本镜头都进了镜头表，按时间排好", () => {
   for (let i = 1; i < track.length; i++) assert.ok(track[i].at >= track[i - 1].at);
 });
 
-test("开场不放片头：第一帧就推近聊天窗，顾客第一句 0.3 秒内进来并在取景框里，钩子标题条从第 0 秒挂起", () => {
+test("片头一结束：正片第一帧就推近聊天窗，顾客第一句 0.3 秒内进来并在取景框里，钩子标题条从正片第 0 秒挂起", () => {
   const first = film.TL.msgs.find((x) => x.side === "in");
-  assert.ok(first.at <= 0.3, `顾客第一句在第 ${first.at} 秒才来`);
+  assert.ok(first.at >= INTRO && first.at <= INTRO + 0.3, `顾客第一句在第 ${first.at} 秒才来`);
   const beat = track[0];
-  assert.equal(beat.at, 0);
+  assert.equal(beat.at, INTRO);
   assert.equal(beat.target, "chat");
-  const c = film.camera(0);
+  const c = film.camera(INTRO);
   assert.deepEqual({ ...c }, { ...beat.focus }, "第一帧镜头已经到位，不是从全景推过去");
   assert.ok(c.w < W / 1.5, `第一帧推近不够（${(W / c.w).toFixed(2)} 倍）`);
   const a = beat.aim;
   assert.ok(a.y >= c.y && a.y + a.h <= c.y + c.h, "顾客第一句不在取景框里");
-  assert.equal(film.TL.m.hook[0], 0);
+  assert.equal(film.TL.m.hook[0], INTRO);
+});
+
+test("片头里镜头是整幅画（不推近），正片第一帧（INTRO）起才推到聊天窗", () => {
+  for (let u = 0; u < INTRO; u += 0.05) assert.deepEqual({ ...film.camera(u) }, { x: 0, y: 0, w: W, h: H }, `第 ${u.toFixed(2)} 秒`);
+  assert.ok(film.camera(INTRO).w < W / 1.5);
 });
 
 const inCanvas = (c, u) => {
@@ -59,7 +66,7 @@ test("片子自己的镜头逐帧（60 帧/秒）都在画布里、比例 9:16�
   for (let u = 1 / 60; u <= film.TL.base; u += 1 / 60) {
     const c = film.camera(u);
     inCanvas(c, u);
-    if (!hidden(u - 1 / 60, u)) smooth(prev, c, u);
+    if (!hidden(u - 1 / 60, u) && u - 1 / 60 >= INTRO) smooth(prev, c, u);
     prev = c;
   }
 });
@@ -97,8 +104,8 @@ test("实际画出来的每一页逐帧（60 帧/秒）：取景框在画布里�
       smooth(prevLive.cam, old.cam, u);
       assert.ok(neu.dx >= W * 0.85, `第 ${u.toFixed(2)} 秒新页不是从右边推进来（dx=${neu.dx.toFixed(0)}）`);
       assert.equal(neu.dim, 0);
-    } else {
-      smooth(prevLive.cam, live.cam, u);
+    } else if (u - 1 / 60 >= INTRO) {
+      smooth(prevLive.cam, live.cam, u); // 片头 → 正片是硬切（片头整幅，正片第一帧已推近）
     }
     if (now.turn >= 0) {
       const [old, neu] = now.list;

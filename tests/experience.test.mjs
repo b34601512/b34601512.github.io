@@ -29,6 +29,8 @@ test("片长与片子的时间线一致（差不超过 1 秒）", () => {
     assert.ok(film, `${episode.href} 没登记片子脚本`);
     const sandbox = {};
     sandbox.globalThis = sandbox;
+    // 页面上片子脚本之前先引配色与片头（issue #23），片长里包含片头
+    for (const dep of ["assets/js/film-palette.js", "assets/js/film-brand-intro.js"]) vm.runInNewContext(readFileSync(resolve(repo, dep), "utf8"), sandbox);
     vm.runInNewContext(readFileSync(resolve(repo, film[0]), "utf8"), sandbox);
     const base = sandbox[film[1]]().TL.base;
     assert.ok(Math.abs(base - episode.duration) <= 1, `${episode.href}：数据写 ${episode.duration} 秒，片子时间线 ${base} 秒`);
