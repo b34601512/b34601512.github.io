@@ -58,5 +58,5 @@ test("全片只有一次双击：老王那段（05）；02 段阿杰那次是单
   const seg = src.slice(src.indexOf("// ② 后面用了话术精灵"), src.indexOf("// ③ 然后没有话术精灵"));
   assert.ok(seg.length > 0 && !seg.includes("双击"), "02 段剧本里还有「双击」");
   assert.ok(!src.includes('"双击话术"'), "02 段步骤条还写着「双击话术」");
-  assert.equal(TL.base, 129, "总时长");
+  assert.equal(TL.base, 126, "总时长");
 });
